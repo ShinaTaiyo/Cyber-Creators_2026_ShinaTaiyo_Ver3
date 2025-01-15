@@ -1,0 +1,111 @@
+#-------------------------------------------
+#
+#プレイヤーのパーツを読み込む
+#Author:ShinaTaiyo
+#
+#-------------------------------------------
+
+#-------------------------------------------
+#読み込むモデルの最大数
+#-------------------------------------------
+NUM_MODEL = 11
+
+#-------------------------------------------
+#モデルのパス
+#-------------------------------------------
+MODEL_FILENAME = data/CHARACTER/Body_000.x		#体_0
+MODEL_FILENAME = data/CHARACTER/Face_000.x		#頭_1
+MODEL_FILENAME = data/CHARACTER/RightArm_000.x		#右腕_2
+MODEL_FILENAME = data/CHARACTER/RightHand_000.x		#右手_3
+MODEL_FILENAME = data/CHARACTER/LeftArm_000.x		#左腕_4
+MODEL_FILENAME = data/CHARACTER/LeftHand_000.x		#左手_5
+MODEL_FILENAME = data/CHARACTER/RightThich_000.x		#右腿_6
+MODEL_FILENAME = data/CHARACTER/RightFoot_000.x		#右足_7
+MODEL_FILENAME = data/CHARACTER/LeftThigh_000.x		#左腿_8
+MODEL_FILENAME = data/CHARACTER/LeftFoot_000.x		#左足_9
+MODEL_FILENAME = data/CHARACTER/10_magicWand.x		#魔法の杖_10
+
+
+#-------------------------------------------
+#モデル情報
+#-------------------------------------------
+MODELSET
+TYPE 0 #体
+IDX -1 #親
+POS 0.0 15.0 0.0
+ROT 0.0 0.0 0.0
+ENDMODELSET
+
+MODELSET
+TYPE 1 #頭
+IDX 0 #親
+POS 0.0 15.0 0.0
+ROT 0.0 0.0 0.0
+ENDMODELSET
+
+MODELSET
+TYPE 2 #右腕
+IDX 0 #体
+POS -5.0 13.0 0.0
+ROT 0.0 0.0 0.0
+ENDMODELSET
+
+MODELSET
+TYPE 3 #右手
+IDX 2 #右腕
+POS -11.5 0.0 0.0
+ROT 0.0 0.0 0.0
+ENDMODELSET
+
+MODELSET
+TYPE 4 #左腕
+IDX 0 #体
+POS 5.0 13.0 0.0
+ROT 0.0 0.0 0.0
+ENDMODELSET
+
+MODELSET
+TYPE 5 #左手
+IDX 4 #左腕
+POS 11.5 0.0 0.0
+ROT 0.0 0.0 0.0
+ENDMODELSET
+
+MODELSET
+TYPE 6 #右腿
+IDX 0 #体
+POS -3.0 0.0 0.0
+ROT 0.0 0.0 0.0
+ENDMODELSET
+
+MODELSET
+TYPE 7 #右足
+IDX 6 #右腿
+POS 0.0 -9.0 0.0
+ROT 0.0 0.0 0.0
+ENDMODELSET
+
+MODELSET
+TYPE 8 #左腿
+IDX 0 #体
+POS 3.0 0.0 0.0
+ROT 0.0 0.0 0.0
+ENDMODELSET
+
+MODELSET
+TYPE 9 #左足
+IDX 8 #左腿
+POS 0.0 -9.0 0.0
+ROT 0.0 0.0 0.0
+ENDMODELSET
+
+MODELSET
+TYPE 10 #剣
+IDX 3 #右手
+POS 0.0 0.0 0.0
+ROT 0.0 0.0 0.0
+ENDMODELSET
+
+ENDSCRIPT #この行は絶対消さない！
+
+
