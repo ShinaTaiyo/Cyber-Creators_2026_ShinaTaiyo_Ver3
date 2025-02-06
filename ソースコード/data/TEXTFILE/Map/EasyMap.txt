@@ -1,0 +1,25 @@
+#======================================================================================================
+#
+#マップのロードを行うテキストファイル
+#Author:ShinaTaiyo
+#
+#======================================================================================================
+
+#==================================================
+#マップ番号とパス
+#==================================================
+
+FILENAME = data/TEXTFILE/stagemanager/Easy/Tutorial.txt #0
+FILENAME = data/TEXTFILE/stagemanager/Easy/NormalStage001.txt #1
+FILENAME = data/TEXTFILE/stagemanager/Easy/Tutorial2.txt #2
+FILENAME = data/TEXTFILE/stagemanager/Easy/Stage002_BattleMain.txt #3
+FILENAME = data/TEXTFILE/stagemanager/Easy/Stage003.txt #4
+FILENAME = data/TEXTFILE/stagemanager/Easy/Tutorial3.txt #5
+FILENAME = data/TEXTFILE/stagemanager/Easy/Stage004.txt #6
+FILENAME = data/TEXTFILE/stagemanager/Easy/Tutorial4_Magic.txt #7
+FILENAME = data/TEXTFILE/stagemanager/Easy/Tutorial5_WallJump.txt #8
+FILENAME = data/TEXTFILE/stagemanager/Easy/Stage005.txt #9
+FILENAME = data/TEXTFILE/stagemanager/Easy/Stage006.txt #10
+FILENAME = data/TEXTFILE/stagemanager/Easy/BossStage.txt #11
+
+END_SCRIPT

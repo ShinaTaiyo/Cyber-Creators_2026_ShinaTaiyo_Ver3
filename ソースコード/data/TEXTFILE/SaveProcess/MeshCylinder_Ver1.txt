@@ -1,0 +1,163 @@
+	VERTEX_3D* pVtx;
+
+	//頂点バッファをロックし、頂点情報へのポインタを取得
+	m_pVtxBuff->Lock(0, 0, (void**)&pVtx, 0);
+
+	int nCntArray = 0;
+	float fRatioXZ = 0.0f;
+	float fRatioY = 0.0f;
+	D3DXVECTOR3 MeasureNor = D3DXVECTOR3(0.0f, 0.0f, 0.0f);//法線計算用
+	for (int nCntVtxY = 0; nCntVtxY < m_nNumDivisionY; nCntVtxY++)
+	{
+		fRatioY = (1.0f / (m_nNumDivisionY - 1)) * nCntVtxY;
+		for (int nCntVtxXZ = 0; nCntVtxXZ < m_nNumDivisionXZ; nCntVtxXZ++)
+		{
+			fRatioXZ = (1.0f / (m_nNumDivisionXZ - 1)) * nCntVtxXZ;
+			if (nCntVtxY == 0 && nCntVtxXZ == 0)
+			{//一周目と最後の周で上面と下面を設定する
+
+				if (nCntVtxY == 0)
+				{//上面の中心に頂点を展開
+					pVtx[nCntArray].pos = m_Pos + D3DXVECTOR3(0.0f, m_fHeight, 0.0f);//0
+				}
+				pVtx[nCntArray].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+				MeasureNor = pVtx[nCntArray].pos - m_Pos;
+				D3DXVec3Normalize(&MeasureNor, &MeasureNor);
+				pVtx[nCntArray].nor = MeasureNor;
+				pVtx[nCntArray].tex = D3DXVECTOR2(0.0f, fRatioY);
+
+				//SetVertexInfo(&pVtx[nCntArray], fRatioXZ, fRatioY, nCntVtxXZ, nCntVtxY);
+				nCntArray++;
+			}
+			SetVertexInfo(&pVtx[nCntArray], fRatioXZ, fRatioY, nCntVtxXZ, nCntVtxY);
+
+			//配列カウント
+			nCntArray++;
+
+			if (nCntVtxY == m_nNumDivisionY - 1 && nCntVtxXZ == m_nNumDivisionXZ - 1)
+			{//最後
+				pVtx[nCntArray].pos = m_Pos;//底面の中心に位置を設定
+				pVtx[nCntArray].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+				MeasureNor = pVtx[nCntArray].pos - m_Pos;
+				D3DXVec3Normalize(&MeasureNor, &MeasureNor);
+				pVtx[nCntArray].nor = MeasureNor;
+				pVtx[nCntArray].tex = D3DXVECTOR2(0.0f, fRatioY);
+
+			}
+		}
+	}
+	//頂点バッファをアンロックする 
+	m_pVtxBuff->Unlock();
+
+	//==============================
+	//インデックス情報の設定
+	//==============================
+
+	//インデックスバッファのロック
+	WORD* pIdx;
+	m_pIdxBuff->Lock(0, 0, (void**)&pIdx, 0);
+
+	int nCntIdx = 0;//インデックス計算用
+	//int nCntIdx2 = 0;//インデックス計算用２
+	//int nCntIdxX = 0;//X方向のインデックス計算用
+	//int nIdx = 0; //インデックス代入用
+	//int nIdx2 = 0;//インデックス代入用２
+	int nCntArray2 = 0;//配列計算用２
+
+	bool bSide = false;//側面かどうか
+
+	for (int nCntVtxY = 0; nCntVtxY < m_nNumDivisionY + 1; nCntVtxY++)//１は上面、下面の分
+	{//ブロック数分、設定を行う
+		nCntIdx = (m_nNumDivisionXZ) * nCntVtxY + 1;//1,9,17・・・（上面→側面→側面→底面）
+		if (nCntVtxY == 0)
+		{//上面の中心
+			//pIdx[nCntArray2] = 0;//最初の頂点が上面の中心
+			bSide = false;
+			//nCntArray2++;
+		}
+		else if (nCntVtxY == m_nNumDivisionY)
+		{//底面の中心
+			bSide = false;
+			//pIdx[nCntArray2] = m_nNumIdx - m_nNumDivisionXZ;//(18 - 8)
+			//nCntArray2++;
+		}
+		else
+		{//側面
+			bSide = true;
+		}
+
+		if (bSide == true)
+		{//普通に頂点を構成（側面)
+			for (int nCntVtxXZ = 0; nCntVtxXZ < m_nNumDivisionXZ + 1; nCntVtxXZ++)
+			{
+				if (nCntVtxXZ != m_nNumDivisionXZ)
+				{
+					pIdx[nCntArray2] = nCntVtxXZ + nCntIdx;   //9,10,11,12,13,14,15,16,
+					pIdx[nCntArray2 + 1] = nCntIdx - m_nNumDivisionXZ + nCntVtxXZ;//1, 2, 3, 4, 5, 6, 7, 8
+				}
+				else
+				{//最後の頂点なので最初の頂点にインデックスを合わせる
+					pIdx[nCntArray2] = nCntIdx;                        //9
+					pIdx[nCntArray2 + 1] = nCntIdx - m_nNumDivisionXZ; //1
+				}
+				nCntArray2 += 2;//設定したインデックス番号分次に進める
+			}
+		}
+		else
+		{//底面か上面なのでそれぞれの面の中心点を基準にインデックスを構成
+			for (int nCntVtxXZ = 0; nCntVtxXZ < m_nNumDivisionXZ + 1; nCntVtxXZ++)
+			{
+				if (nCntVtxY == 0)
+				{//上面
+					if (nCntVtxXZ != m_nNumDivisionXZ)
+					{
+						pIdx[nCntArray2] = nCntVtxXZ + nCntIdx;   //1,2,3,4,5,6,7,8
+						pIdx[nCntArray2 + 1] = 0;//0,0,0,0,0,0,0,0,0
+					}
+					else
+					{//最後のつなぎ
+						pIdx[nCntArray2] = nCntIdx;   //1
+						pIdx[nCntArray2 + 1] = 0;     //0
+					}
+				}
+				else
+				{//下面
+					if (nCntVtxXZ != m_nNumDivisionXZ)
+					{
+						pIdx[nCntArray2] = m_nNumVtx - m_nNumDivisionXZ - 1 + nCntVtxXZ;    //17.18,19,20,21,22,23,24
+						pIdx[nCntArray2 + 1] = m_nNumVtx - 1;      //頂点数 - 1(配列最大数)(底面の中心点)25
+					}
+					else
+					{//最後のつなぎ
+						pIdx[nCntArray2] = m_nNumVtx - m_nNumDivisionXZ - 1;    //17
+						pIdx[nCntArray2 + 1] = m_nNumVtx - 1;      //頂点数 - 1(配列最大数)(底面の中心点)25
+					}
+				}
+
+				nCntArray2 += 2;//設定したインデックス番号分次に進める
+			}
+		}
+
+		if (nCntVtxY != m_nNumDivisionY)
+		{//最後の行以外なら縮退ポリゴンを設定
+			if (nCntVtxY == 0)
+			{//一周目なら中心点から下の段の最初につなげる
+				pIdx[nCntArray2] = 0;                       //上面の中心↓//0
+				pIdx[nCntArray2 + 1] = m_nNumDivisionXZ + 1;//下の段の最初//9
+			}
+			else if (nCntVtxY == m_nNumDivisionY - 1)
+			{//最後の縮退
+				pIdx[nCntArray2] = (nCntVtxY - 1) * m_nNumDivisionXZ + 1;//9
+				pIdx[nCntArray2 + 1] = nCntVtxY * m_nNumDivisionXZ + 1;//17
+			}
+			else
+			{//最初と最後の周以外なら
+				pIdx[nCntArray2] = (nCntVtxY - 1) * m_nNumDivisionXZ + 1;//1
+				pIdx[nCntArray2 + 1] = (nCntVtxY + 1) * m_nNumDivisionXZ + 1;//17
+			}
+			nCntArray2 += 2;
+		}
+	}
+
+	//インデックスバッファのアンロック
+	m_pIdxBuff->Unlock();
