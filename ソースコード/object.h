@@ -43,6 +43,7 @@ public:
 		EFFECT,          //エフェクト
 		PARTICLE,        //パーティクル
 		UI3D,            //UI3D
+		BG,              //背景
 		NUMBER,          //数字
 		NUMBER3D,        //数字3D
 	    PARTICLE2D,      //パーティクル２D
@@ -54,7 +55,6 @@ public:
 		PHASEMANAGER,    //フェーズマネージャー
 		EVENTMANAGER,    //イベントマネージャー
 		TUTORIAL,        //チュートリアル
-		BG,              //背景
 		FADE,            //フェード
 		MAX
 	};

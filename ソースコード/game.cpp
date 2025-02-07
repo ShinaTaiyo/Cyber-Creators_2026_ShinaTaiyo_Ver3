@@ -33,7 +33,7 @@ CStageManager* CGame::m_pStageManager = nullptr;
 CPhaseManager* CGame::m_pPhaseManager = nullptr;
 CTutorial* CGame::m_pTutorial = nullptr;
 int CGame::s_nPhaseNum = 0;
-bool CGame::s_bUseGamePad = false;
+bool CGame::s_bGameClear = false;//ゲームをクリアしたかどうか
 //=========================================================================================================================
 
 //=============================================================
@@ -46,7 +46,7 @@ CGame::CGame(bool bUseGamePad)
 	m_pPhaseManager = nullptr;
 	m_pTutorial = nullptr;
 	s_nPhaseNum = 0;
-	s_bUseGamePad = bUseGamePad;
+	s_bGameClear = false;//ゲームをクリアしたかどうか（初期設定はクリアしていない状態）
 }
 //=========================================================================================================================
 
@@ -152,17 +152,10 @@ void CGame::Uninit()
 //=============================================================
 void CGame::Update()
 {
-#ifdef _DEBUG
 	if (CManager::GetInputKeyboard()->GetTrigger(DIK_RETURN) == true || CManager::GetInputJoypad()->GetTrigger(CInputJoypad::JOYKEY::START) == true)
 	{
 		CManager::GetSceneFade()->SetSceneFade(CFade::FADEMODE_IN, CScene::MODE_RESULT);
 	}
 	CManager::GetDebugText()->PrintDebugText("現在の敵の数；%d\n", CEnemy::GetNumEnemy());
-#else
-	if (CManager::GetInputKeyboard()->GetTrigger(DIK_1) == true || CManager::GetInputJoypad()->GetTrigger(CInputJoypad::JOYKEY::START) == true)
-	{
-		CManager::GetSceneFade()->SetSceneFade(CFade::FADEMODE_IN, CScene::MODE_RESULT);
-	}
-#endif // !_DEBUG
 }
 //=========================================================================================================================

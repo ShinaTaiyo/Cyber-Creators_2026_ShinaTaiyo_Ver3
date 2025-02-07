@@ -194,9 +194,12 @@ void CPhaseManager::AdvancePhase()
 
 			}
 			s_nNowPhase++;
-			CEventManager::Create(DBG_NEW CNowEvent_NextPhase(CUi::Create(CUi::UITYPE::PHASETEXT, CObject2D::POLYGONTYPE::SENTERROLLING, 200.0f, 100.0f, 100, false,
-				D3DXVECTOR3(SCREEN_WIDTH, SCREEN_HEIGHT / 2, 0.0f), D3DXVECTOR3(sinf(D3DX_PI * -0.5f) * 10.0f, cosf(D3DX_PI * -0.5f) * 10.0f, 0.0f),
-				D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f)), s_nNowPhase, 80.0f, 80.0f));
+			if (s_nNowPhase <= s_MaxPhase)
+			{//フェーズ数が最大を超えていなければ
+				CEventManager::Create(DBG_NEW CNowEvent_NextPhase(CUi::Create(CUi::UITYPE::PHASETEXT, CObject2D::POLYGONTYPE::SENTERROLLING, 200.0f, 100.0f, 100, false,
+					D3DXVECTOR3(SCREEN_WIDTH, SCREEN_HEIGHT / 2, 0.0f), D3DXVECTOR3(sinf(D3DX_PI * -0.5f) * 10.0f, cosf(D3DX_PI * -0.5f) * 10.0f, 0.0f),
+					D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f)), s_nNowPhase, 80.0f, 80.0f));
+			}
 
 		}
 		if (CEnemy::GetNumEnemy() <= 0 && s_nNowPhase == s_MaxPhase + 1 && s_bStartFade == false)
@@ -209,6 +212,7 @@ void CPhaseManager::AdvancePhase()
 			if (s_nNowStage == static_cast<int>(CStageManager::WORLDTYPE::MAX))
 			{//配列的にインクリメント後にステージ数になったら終わりなので、リザルトに移行
 				CManager::GetSceneFade()->SetSceneFade(CFade::FADEMODE_IN, CScene::MODE_RESULT);
+				CGame::SetGameClear(true);//ゲームをクリアした！
 			}
 			else
 			{

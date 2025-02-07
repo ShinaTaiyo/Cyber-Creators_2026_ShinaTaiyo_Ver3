@@ -34,8 +34,9 @@ public:
 	void Uninit() override;                                                //終了処理
 	void Update() override;                                                //更新処理
 	static CPlayer* GetPlayer() { return m_pPlayer; }                      //プレイヤーを取得する
+	static void SetGameClear(bool bClear) { s_bGameClear = bClear; }       //ゲームをクリアしたかどうかを設定
+	static const bool& GetGameClear() { return s_bGameClear; }             //ゲームをクリアしたかどうかを取得する
 	static CPhaseManager* GetPhaseManager() { return m_pPhaseManager; }    //フェーズマネージャーを取得する
-	static bool GetUseGamePad() { return s_bUseGamePad; }                    
 	static CStageManager* GetStageManager() { return m_pStageManager; }    //ステージマネージャーを取得する
 	static CTutorial* GetTutorial() { return m_pTutorial; }                //チュートリアル
 private:
@@ -44,7 +45,7 @@ private:
 	static CPhaseManager* m_pPhaseManager;                                 //フェーズマネージャー
 	static CTutorial* m_pTutorial;                                         //チュートリアル
 	static int s_nPhaseNum;                                                //フェーズ番号
-	static bool s_bUseGamePad;                                             //ゲームパッドを使用するかどうか
+	static bool s_bGameClear;                                              //ゲームをクリアしたかどうか
 
 };
 #endif

@@ -12,7 +12,9 @@
 #include "bg.h"
 #include "manager.h"
 #include "input.h"
+#include "ui.h"
 #include "fade.h"
+#include "game.h"
 #include "player.h"
 //=========================================================================================================================
 
@@ -45,6 +47,21 @@ HRESULT CResult::Init()
 	//============================
 	CBg::Create(CBg::BG_RESULT);//リザルト背景を生成	
 	//======================================================
+	CUi* pUi = nullptr;//UIへのポインタ
+	if (CGame::GetGameClear() == true)
+	{
+		pUi = CUi::Create(CUi::UITYPE::GAMECLEAR_000, CObject2D::POLYGONTYPE::SENTERROLLING, 600.0f, 600.0f, 10, false, D3DXVECTOR3(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 0.0f),
+			D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+		pUi->SetUseBlinking(true, 30, 0.0f);
+		pUi->SetUseDeath(true);
+	}
+	else
+	{
+		pUi = CUi::Create(CUi::UITYPE::LOSE_000, CObject2D::POLYGONTYPE::SENTERROLLING, 600.0f, 600.0f, 10, false, D3DXVECTOR3(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 0.0f),
+			D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+		pUi->SetUseBlinking(true, 30, 0.0f);
+		pUi->SetUseDeath(true);
+	}
 	return S_OK;
 }
 //=========================================================================================================================

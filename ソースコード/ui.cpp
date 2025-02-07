@@ -19,7 +19,7 @@
 //====================================================
 //静的メンバ宣言
 //====================================================
-const string CUi::UI_FILENAME[int(CUi::UITYPE::MAX)] =
+const string CUi::UI_FILENAME[static_cast<int>(CUi::UITYPE::MAX)] =
 {
 	"data\\TEXTURE\\UI\\LockOn_001.png",
 	"data\\TEXTURE\\UI\\ActionModeWindow_000.png",
@@ -33,7 +33,9 @@ const string CUi::UI_FILENAME[int(CUi::UITYPE::MAX)] =
 	"data\\TEXTURE\\UI\\CheckMark_000.png",
 	"data\\TEXTURE\\UI\\Title_001.png",
 	"data\\TEXTURE\\UI\\PressEnterOrStart_Logo.png",
-	"data\\TEXTURE\\UI\\DiveGaugeFrame_000.png"
+	"data\\TEXTURE\\UI\\DiveGaugeFrame_000.png",
+	"data\\TEXTURE\\UI\\GameClear_000.png",
+	"data\\TEXTURE\\UI\\Lose_000.png"
 };//テクスチャファイル名
 
 //====================================================
