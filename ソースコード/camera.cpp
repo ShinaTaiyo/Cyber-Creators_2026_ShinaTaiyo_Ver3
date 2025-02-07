@@ -486,16 +486,18 @@ void CCameraState_Normal::Process(CCamera* pCamera)
 				sinf(CManager::GetInputJoypad()->GetRStickAimRot()) * 0.04f, 0.0f));
 		}
 		float fAngle = 0.0f;
-		if (CManager::GetInputMouse()->GetMouseMoveAngle(fAngle))
-		{
-			if (CScene::GetMode() == CScene::MODE::MODE_GAME)
+		float fAddYaw = 0.0f;
+		float fAddPitch = 0.0f;
+		if (CScene::GetMode() == CScene::MODE_GAME || CScene::GetMode() == CScene::MODE_EDIT)
+		{//ゲームモードとエディットモードの時だけマウスを固定
+			if (CManager::GetInputMouse()->GetMouseMoveAngle(fAddYaw, fAddPitch, 0.005f))
 			{
-				CGame::GetTutorial()->SetSuccessCheck(CTutorial::CHECK::CAMERACONTROLL);
-			}
-			if (CScene::GetMode() != CScene::MODE_TITLE)
-			{//タイトルではEnterしか押さないので、タイトルではマウスでカメラを動かさない
-				CManager::GetCamera()->SetRot(pCamera->GetRot() + D3DXVECTOR3(cosf(fAngle) * 0.05f,
-				   sinf(fAngle) * 0.05f, 0.0f));
+				if (CScene::GetMode() == CScene::MODE::MODE_GAME)
+				{
+					CGame::GetTutorial()->SetSuccessCheck(CTutorial::CHECK::CAMERACONTROLL);
+				}
+				CManager::GetCamera()->SetRot(pCamera->GetRot() + D3DXVECTOR3(fAddPitch,
+					fAddYaw, 0.0f));
 			}
 		}
 
@@ -541,13 +543,14 @@ void CCameraState_Normal::Process(CCamera* pCamera)
 		//========================================
 		//後ろを向く
 		//========================================
-		if (CManager::GetInputJoypad()->GetTrigger(CInputJoypad::JOYKEY::Y))
+		if (CScene::GetMode() == CScene::MODE::MODE_GAME)
 		{
-			if (CScene::GetMode() == CScene::MODE::MODE_GAME)
+			if (CManager::GetInputJoypad()->GetTrigger(CInputJoypad::JOYKEY::Y) || CManager::GetInputKeyboard()->GetTrigger(DIK_LCONTROL))
 			{
 				CGame::GetTutorial()->SetSuccessCheck(CTutorial::CHECK::TURNAROUND);
+
+				pCamera->ChengeState(DBG_NEW CCameraState_TurnAround(pCamera->GetRot() + D3DXVECTOR3(0.0f, D3DX_PI, 0.0f), 0.15f));
 			}
-			pCamera->ChengeState(DBG_NEW CCameraState_TurnAround(pCamera->GetRot() + D3DXVECTOR3(0.0f, D3DX_PI, 0.0f), 0.15f));
 		}
 	}
 }

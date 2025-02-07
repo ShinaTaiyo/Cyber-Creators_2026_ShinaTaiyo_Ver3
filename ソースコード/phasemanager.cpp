@@ -142,64 +142,63 @@ void CPhaseManager::PushPhaseInfo(D3DXVECTOR3 Pos, D3DXVECTOR3 Rot, D3DXVECTOR3 
 //===============================================================
 void CPhaseManager::AdvancePhase()
 {
-	if (CEnemy::GetNumEnemy() <= 0 && s_nNowPhase <= s_MaxPhase)
-	{
-
-		CEnemy::ENEMYTYPE EnemyType = {};
-		CEnemy* pEnemy = nullptr;
-		vector<CAIModel*> VecMoveAi = {};//移動AIのvector
-		for (auto it : s_PhaseList)
-		{
-			if (it.nPhaseNum == s_nNowPhase)
-			{
-				EnemyType = static_cast<CEnemy::ENEMYTYPE>(it.nEnemyType);
-
-				//移動AIが設定されていたら
-				if (it.VecMoveAi.size() > 0)
-				{
-					for (const auto it2 : it.VecMoveAi)
-					{
-						CAIModel* pAiModel = CAIModel::Create(CAIModel::AIMODELTYPE::MOVEPOINT, it2.Pos, it2.Rot, it2.Scale, nullptr);
-						pAiModel->GetDrawInfo().SetUseDraw(false);
-						pAiModel->GetDrawInfo().SetUseShadow(false);
-						VecMoveAi.push_back(pAiModel);
-					}
-				}
-
-				//敵の種類によって生成するものを変える
-				switch (EnemyType)
-				{
-				case CEnemy::ENEMYTYPE::SHOTWEAK:
-					pEnemy = CShotWeakEnemy::Create(static_cast<CShotWeakEnemy::SHOTWEAKENEMYTYPE>(it.nTypeNum), it.nLife, it.nPhaseNum, it.Pos, it.Rot, it.Scale);
-					break;
-				case CEnemy::ENEMYTYPE::DIVEWEAK:
-					pEnemy = CDiveWeakEnemy::Create(static_cast<CDiveWeakEnemy::DIVEWEAKENEMYTYPE>(it.nTypeNum), it.nLife, it.nPhaseNum, it.Pos, it.Rot, it.Scale, it.nNumDivision);
-					break;
-				case CEnemy::ENEMYTYPE::IDLE:
-					pEnemy = CIdleEnemy::Create(static_cast<CIdleEnemy::IDLEENEMYTYPE>(it.nTypeNum), it.nLife, it.nPhaseNum, it.Pos, it.Rot, it.Scale);
-					break;
-				default:
-					break;
-				}
-
-				pEnemy->SetNormalSpeed(it.fNormalSpeed);
-				pEnemy->SetSensingRange(it.fSensingRange);
-
-				auto CopyVec = move(VecMoveAi);
-				//移動AIを設定する
-				pEnemy->SetVecMoveAiInfo(CopyVec);
-			}
-
-		}
-		s_nNowPhase++;
-		CEventManager::Create(DBG_NEW CNowEvent_NextPhase(CUi::Create(CUi::UITYPE::PHASETEXT, CObject2D::POLYGONTYPE::SENTERROLLING, 200.0f, 100.0f, 100, false,
-			D3DXVECTOR3(SCREEN_WIDTH, SCREEN_HEIGHT / 2, 0.0f), D3DXVECTOR3(sinf(D3DX_PI * -0.5f) * 10.0f, cosf(D3DX_PI * -0.5f) * 10.0f, 0.0f),
-			D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f)),s_nNowPhase, 80.0f, 80.0f));
-
-	}
-
 	if (s_nNowStage < static_cast<int>(CStageManager::WORLDTYPE::MAX))
 	{
+		if (CEnemy::GetNumEnemy() <= 0 && s_nNowPhase <= s_MaxPhase)
+		{
+
+			CEnemy::ENEMYTYPE EnemyType = {};
+			CEnemy* pEnemy = nullptr;
+			vector<CAIModel*> VecMoveAi = {};//移動AIのvector
+			for (auto it : s_PhaseList)
+			{
+				if (it.nPhaseNum == s_nNowPhase)
+				{
+					EnemyType = static_cast<CEnemy::ENEMYTYPE>(it.nEnemyType);
+
+					//移動AIが設定されていたら
+					if (it.VecMoveAi.size() > 0)
+					{
+						for (const auto it2 : it.VecMoveAi)
+						{
+							CAIModel* pAiModel = CAIModel::Create(CAIModel::AIMODELTYPE::MOVEPOINT, it2.Pos, it2.Rot, it2.Scale, nullptr);
+							pAiModel->GetDrawInfo().SetUseDraw(false);
+							pAiModel->GetDrawInfo().SetUseShadow(false);
+							VecMoveAi.push_back(pAiModel);
+						}
+					}
+
+					//敵の種類によって生成するものを変える
+					switch (EnemyType)
+					{
+					case CEnemy::ENEMYTYPE::SHOTWEAK:
+						pEnemy = CShotWeakEnemy::Create(static_cast<CShotWeakEnemy::SHOTWEAKENEMYTYPE>(it.nTypeNum), it.nLife, it.nPhaseNum, it.Pos, it.Rot, it.Scale);
+						break;
+					case CEnemy::ENEMYTYPE::DIVEWEAK:
+						pEnemy = CDiveWeakEnemy::Create(static_cast<CDiveWeakEnemy::DIVEWEAKENEMYTYPE>(it.nTypeNum), it.nLife, it.nPhaseNum, it.Pos, it.Rot, it.Scale, it.nNumDivision);
+						break;
+					case CEnemy::ENEMYTYPE::IDLE:
+						pEnemy = CIdleEnemy::Create(static_cast<CIdleEnemy::IDLEENEMYTYPE>(it.nTypeNum), it.nLife, it.nPhaseNum, it.Pos, it.Rot, it.Scale);
+						break;
+					default:
+						break;
+					}
+
+					pEnemy->SetNormalSpeed(it.fNormalSpeed);
+					pEnemy->SetSensingRange(it.fSensingRange);
+
+					auto CopyVec = move(VecMoveAi);
+					//移動AIを設定する
+					pEnemy->SetVecMoveAiInfo(CopyVec);
+				}
+
+			}
+			s_nNowPhase++;
+			CEventManager::Create(DBG_NEW CNowEvent_NextPhase(CUi::Create(CUi::UITYPE::PHASETEXT, CObject2D::POLYGONTYPE::SENTERROLLING, 200.0f, 100.0f, 100, false,
+				D3DXVECTOR3(SCREEN_WIDTH, SCREEN_HEIGHT / 2, 0.0f), D3DXVECTOR3(sinf(D3DX_PI * -0.5f) * 10.0f, cosf(D3DX_PI * -0.5f) * 10.0f, 0.0f),
+				D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f)), s_nNowPhase, 80.0f, 80.0f));
+
+		}
 		if (CEnemy::GetNumEnemy() <= 0 && s_nNowPhase == s_MaxPhase + 1 && s_bStartFade == false)
 		{
 			s_PhaseList.clear();//次のステージに行くのでフェーズ情報を初期化

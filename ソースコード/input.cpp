@@ -33,7 +33,7 @@ CInput::CInput() : m_pDevice()
 //=========================
 CInput::~CInput()
 {
-
+	
 }
 
 //=========================
@@ -644,7 +644,6 @@ D3DXVECTOR2 CInputMouse::GetMousePos()
 	memset(&MousePoint, 0, sizeof(POINT));
 	GetCursorPos(&MousePoint);//スクリーン座標を取得
 	HWND hwnd = FindWindow(nullptr, "AcrobaticGuns");//exeのウインドウを取得
-
 	ScreenToClient(hwnd, &MousePoint);//現在のカーソルの位置をウインドウの位置に変換
 	D3DXVECTOR2 CursorPos;
 	CursorPos.x = static_cast<float>(MousePoint.x);//float型にキャストした位置を代入
@@ -678,30 +677,31 @@ D3DXVECTOR2 CInputMouse::GetMousePos()
 //======================================
 //カーソルが動いた角度を取得
 //======================================
-bool CInputMouse::GetMouseMoveAngle(float& fAngle)
+bool CInputMouse::GetMouseMoveAngle(float& fYaw, float& fPitch, float fAdjust)
 {
-	//現在のカーソルの位置を取得
-	D3DXVECTOR2 CursorPos = GetMousePos();
-	CursorPos.x = static_cast<float>(CursorPos.x);
-	CursorPos.y = static_cast<float>(CursorPos.y);
-	
-	bool bSuccess = true;
-	if (m_CursorPosOld == CursorPos)
-	{//位置が1f前と同じなら失敗
-		bSuccess = false;
+	// 画面の中心座標
+	POINT center = { SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 };
+
+	POINT curPos;
+	memset(&curPos, 0, sizeof(POINT));//カーソルの位置を初期化
+	GetCursorPos(&curPos); // 現在のマウス位置を取得
+
+	if (curPos.x == center.x && curPos.y == center.y)
+	{//1f前と同じ位置の場合、マウスを動かしていないと仮定し、falseとする
+		return false;
 	}
 
-	if (m_bCursorSenterWarp == false)
-	{
-		fAngle = atan2f(CursorPos.x - m_CursorPosOld.x, CursorPos.y - m_CursorPosOld.y);
-	}
-	else
-	{//このフレームではカーソルの位置が瞬時に中心に移動しているので、ベクトルの方向を一致させるために逆にする
-		fAngle = atan2f(m_CursorPosOld.x - CursorPos.x,m_CursorPosOld.y - CursorPos.y);
-	}
-	//1f前の位置を更新
-	m_CursorPosOld = CursorPos;
-	return bSuccess;
+	// マウスの移動量を計算
+	float deltaX = (curPos.y - center.y) * fAdjust;
+	float deltaY = (curPos.x - center.x) * fAdjust;
+
+	// カメラの角度に反映（適宜変更）
+	fYaw += deltaY;
+	fPitch += deltaX;
+
+	// マウスを中央にリセット
+	SetCursorPos(static_cast<int>(center.x), static_cast<int>(center.y));
+	return true;
 }
 //================================================================
 

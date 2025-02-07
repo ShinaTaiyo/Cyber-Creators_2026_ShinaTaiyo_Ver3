@@ -138,7 +138,7 @@ public:
 	void Uninit();//終了処理
 	void Update();//更新処理
 	D3DXVECTOR2 GetMousePos();//カーソルの位置を取得
-	bool GetMouseMoveAngle(float & fAngle);//マウスが動いた角度を取得
+	bool GetMouseMoveAngle(float & fYaw,float & fPitch,float fAdjust);//マウスが動いた角度を取得
 	bool GetMouseLeftClickPress();//クリックしたかどうか
 	bool GetMouseLeftClickTrigger();//トリガー
 	bool GetMouseLeftClickRepeat(int nRepeat);//リピート入力

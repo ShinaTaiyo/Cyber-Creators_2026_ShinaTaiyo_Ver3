@@ -423,23 +423,22 @@ void CAttackPlayer::BulletCollisionProcess()
 		{
 			CObjectX::PosInfo& PosInfo = GetPosInfo();//位置情報を取得
 			const D3DXVECTOR3& Pos = PosInfo.GetPos();//位置
-			CUiState_Gauge* pUiState_Gauge = dynamic_cast<CUiState_Gauge*>(CGame::GetPlayer()->GetDiveGaugeFrame()->GetUiState(CUiState::UISTATE::GAUGE));//UIのゲージ情報を取得
-			if (pUiState_Gauge != nullptr)
-			{
-				CGauge* pDiveGauge = pUiState_Gauge->GetGauge();//ダイブゲージを取得する
-				CUiState_Numeric* pUiState_Numeric = dynamic_cast<CUiState_Numeric*>(CGame::GetPlayer()->GetDivePossibleNum()->GetUiState(CUiState::UISTATE::NUMERIC));//ダイブ可能階数のUIの数値（ダイブ可能回数)を取得
-				if (pUiState_Numeric != nullptr)
-				{
-					if (pUiState_Numeric->GetValue() < CPlayer::GetMaxDiveNum())
-					{//最大ダイブ可能回数に達していない場合はダイブ可能回数を＋１する
-						pDiveGauge->SetParam(pDiveGauge->GetParam() + 1);
-					}
-				}
-			}
-
 			//パーティクルを衝突位置に召喚する
 			if (GetCollisionObjType() == CObject::TYPE::ENEMY)
 			{//敵に当たっていたら
+				CUiState_Gauge* pUiState_Gauge = dynamic_cast<CUiState_Gauge*>(CGame::GetPlayer()->GetDiveGaugeFrame()->GetUiState(CUiState::UISTATE::GAUGE));//UIのゲージ情報を取得
+				if (pUiState_Gauge != nullptr)
+				{
+					CGauge* pDiveGauge = pUiState_Gauge->GetGauge();//ダイブゲージを取得する
+					CUiState_Numeric* pUiState_Numeric = dynamic_cast<CUiState_Numeric*>(CGame::GetPlayer()->GetDivePossibleNum()->GetUiState(CUiState::UISTATE::NUMERIC));//ダイブ可能階数のUIの数値（ダイブ可能回数)を取得
+					if (pUiState_Numeric != nullptr)
+					{
+						if (pUiState_Numeric->GetValue() < CPlayer::GetMaxDiveNum())
+						{//最大ダイブ可能回数に達していない場合はダイブ可能回数を＋１する
+							pDiveGauge->SetParam(pDiveGauge->GetParam() + 1);
+						}
+					}
+				}
 				CParticle::SummonParticle(CParticle::TYPE::TYPE00_NORMAL, 20, 30, 30.0f, 30.0f, 100, 10, true, Pos, D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f), true);
 			}
 			else
