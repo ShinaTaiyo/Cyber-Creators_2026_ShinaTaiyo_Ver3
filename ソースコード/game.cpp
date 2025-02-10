@@ -64,7 +64,9 @@ CGame::~CGame()
 //=============================================================
 HRESULT CGame::Init()
 {
+#ifndef _DEBUG
 	ShowCursor(FALSE);//カーソルを非表示に
+#endif // !_DEBUG
 
 	CScene::Init();//シーン初期化処理
 	CObjectX::SetCommonDraw(true);
@@ -96,7 +98,9 @@ HRESULT CGame::Init()
 //=============================================================
 void CGame::Uninit()
 {
+#ifndef _DEBUG
 	ShowCursor(TRUE);//カーソルを非表示に
+#endif
 	//============================================
 	//プレイヤーの破棄
 	//============================================

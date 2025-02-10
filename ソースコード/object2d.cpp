@@ -12,6 +12,7 @@
 #include "main.h"
 #include "renderer.h"
 #include "manager.h"
+#include "debugtext.h"
 #include "calculation.h"
 //================================================================================
 
@@ -394,6 +395,8 @@ void CObject2D::SetAnimInfo(int nMaxAnimationPattern, int nAnimationChange, bool
 //======================================================
 void CObject2D::ScaleProcess()
 {
+	CDebugText* pDebugText = CManager::GetDebugText();//デバッグテキスト情報を取得
+	
 	if (m_bUseAddScale == true)
 	{
 		m_Scale += m_AddScale;//拡大率を加算する

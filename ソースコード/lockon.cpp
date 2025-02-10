@@ -25,11 +25,22 @@
 //==============================================================================================================
 
 //===============================================================
+//静的メンバ宣言
+//===============================================================
+
+//テクスチャファイル名
+const string CLockon::s_LOCKON_FILENAME[static_cast<int>(CLockon::TYPE::MAX)] =
+{
+	"data\\TEXTURE\\LockOn\\Target_000.png",
+	"data\\TEXTURE\\LockOn\\DiveTarget_001.png"
+};
+
+//===============================================================
 //コンストラクタ
 //===============================================================
 CLockon::CLockon(int nPri, bool bUseintPri, CObject::TYPE type, CObject::OBJECTTYPE ObjType) : CObject2D(nPri,bUseintPri,type,ObjType),
 m_LockOnPos(D3DXVECTOR3(0.0f,0.0f,0.0f)),m_NowRay(D3DXVECTOR3(0.0f,0.0f,0.0f)),m_FrontPos(D3DXVECTOR3(0.0f,0.0f,0.0f)),m_EndState(ENDSTATE::NONE),m_NearRayColObjPos(D3DXVECTOR3(0.0f,0.0f,0.0f)),
-m_bRayCollision(false)
+m_bRayCollision(false),m_Type(TYPE::SHOT)
 {
 
 }
@@ -110,7 +121,7 @@ void CLockon::SetDeath()
 //===============================================================
 //生成処理
 //===============================================================
-CLockon* CLockon::Create(D3DXVECTOR3 Pos, CObject2D::POLYGONTYPE PolygonType, float fWidth, float fHeight, D3DXCOLOR col)
+CLockon* CLockon::Create(TYPE Type, D3DXVECTOR3 Pos, CObject2D::POLYGONTYPE PolygonType, float fWidth, float fHeight, D3DXCOLOR col)
 {
 	CTexture* pTexture = CManager::GetTexture();
 	CLockon* pLockOn = DBG_NEW CLockon;
@@ -118,16 +129,17 @@ CLockon* CLockon::Create(D3DXVECTOR3 Pos, CObject2D::POLYGONTYPE PolygonType, fl
 	pLockOn->Init();//初期化処理
 	pLockOn->SetPos(Pos);//位置設定
 	pLockOn->SetSupportPos(Pos);//支点位置設定
-	pLockOn->SetAnimInfo(1, 1,false);//情報設定（必ず）
-	pLockOn->SetPolygonType(PolygonType);
-	pLockOn->SetWidth(fWidth);
-	pLockOn->SetMaxWidth(fWidth);
-	pLockOn->SetHeight(fHeight);
-	pLockOn->SetMaxHeight(fHeight);
+	pLockOn->SetAnimInfo(1, 1,false);//アニメーション情報を設定（必ず）
+	pLockOn->SetPolygonType(PolygonType);//ポリゴンの中心点の種類を設定する
+	pLockOn->SetWidth(fWidth);//横幅を設定
+	pLockOn->SetMaxWidth(fWidth);//最大横幅を設定
+	pLockOn->SetHeight(fHeight);//高さを設定
+	pLockOn->SetMaxHeight(fHeight);//最大高さを設定
+	pLockOn->m_Type = Type;//種類を設定
 
 	//テクスチャ設定
-	pLockOn->SetTextureIndex(pTexture->Regist("data\\TEXTURE\\LockOn\\Target_000.png"));
-	pLockOn->BindTexture(pTexture->GetAddress(pLockOn->GetTextureIndex()));
+	pLockOn->SetTextureIndex(pTexture->Regist(s_LOCKON_FILENAME[static_cast<int>(Type)]));//テクスチャを登録
+	pLockOn->BindTexture(pTexture->GetAddress(pLockOn->GetTextureIndex()));//登録、指定したテクスチャ番号のアドレスを取得
 
 	//体力を使用しない
 	pLockOn->SetUseLife(false, 1, 1);
@@ -137,6 +149,28 @@ CLockon* CLockon::Create(D3DXVECTOR3 Pos, CObject2D::POLYGONTYPE PolygonType, fl
 
 
 	return pLockOn;
+}
+//==============================================================================================================
+
+//===============================================================
+//テクスチャを変える
+//===============================================================
+void CLockon::ChengeTexture(TYPE Type)
+{
+	m_Type = Type;//種類を設定
+
+	CTexture* pTexture = CManager::GetTexture();//テクスチャ管理クラスへのポインタ
+
+	CLockon* pLockOn = CLockon::Create(m_Type, GetPos(), GetPolygonType(), GetWidth(), GetHeight(), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+	pLockOn->SetUseAddScale(D3DXVECTOR2(s_fLOCKONSTAGING_ADDSCALE, s_fLOCKONSTAGING_ADDSCALE), true);//演出用に変えたモードを拡大する
+	pLockOn->SetUseLifeRatioColor(true);         //体力の割合に応じて透明度を薄くする
+	pLockOn->SetUseLife(true, s_nLOCKONSTAGING_LIFE, s_nLOCKONSTAGING_LIFE);//体力を使用する
+	pLockOn->SetUseDeath(true);//死亡フラグを使用する
+
+	//テクスチャ設定
+	SetTextureIndex(pTexture->Regist(s_LOCKON_FILENAME[static_cast<int>(m_Type)]));//テクスチャを登録
+	BindTexture(pTexture->GetAddress(GetTextureIndex()));//登録、指定したテクスチャ番号のアドレスを取得
+
 }
 //==============================================================================================================
 
@@ -181,8 +215,8 @@ void CLockon::CalcRay()
 		CManager::GetCamera()->GetMtxView(), CManager::GetCamera()->GetMtxProjection());//奥
 	//============================================================================================================================
 
-	m_NowRay = FarPos - m_FrontPos;//ベクトルを求めるy
-	D3DXVec3Normalize(&m_NowRay, &m_NowRay);//正規化
+	m_NowRay = FarPos - m_FrontPos;//手前座標と奥座標のベクトルを求める
+	D3DXVec3Normalize(&m_NowRay, &m_NowRay);//ベクトルを正規化する
 }
 //==============================================================================================================
 

@@ -31,6 +31,14 @@ public:
 		DOWNEND,
 		MAX
 	};
+
+	enum class TYPE
+	{//種類
+		SHOT = 0,
+		DIVE,
+		MAX
+	};
+
 	CLockon(int nPri = 0, bool bUseintPri = false, CObject::TYPE type = CObject::TYPE::LOCKON, CObject::OBJECTTYPE ObjType = CObject::OBJECTTYPE::OBJECTTYPE_2D);     //描画順設定用コンストラクタ
 	~CLockon() override;       //デストラクタ
 	HRESULT Init() override;     //初期化処理
@@ -38,8 +46,8 @@ public:
 	void Update() override;      //更新処理
 	void Draw() override;        //描画処理
 	void SetDeath() override;    //死亡フラグ設定処理
-	static CLockon* Create(D3DXVECTOR3 Pos,CObject2D::POLYGONTYPE PolygonType,float fWidth,float fHeight,D3DXCOLOR col);//生成処理
-
+	static CLockon* Create(TYPE Type,D3DXVECTOR3 Pos,CObject2D::POLYGONTYPE PolygonType,float fWidth,float fHeight,D3DXCOLOR col);//生成処理
+	void ChengeTexture(TYPE Type);//テクスチャを変える
 	const D3DXVECTOR3& GetLockOnPos() const { return m_LockOnPos; }//狙っている位置を取得する
 	const D3DXVECTOR3& GetNowRay() const { return m_NowRay; }      //現在のレイを取得する
 	const D3DXVECTOR3& GetFrontPos() const { return m_FrontPos; }  //手前の位置を取得する
@@ -51,6 +59,9 @@ private:
 	//静的メンバ
 	//=======================================
 	static constexpr float m_fNORMAL_LOCKONMOVE = 20.0f;
+	static constexpr float s_fLOCKONSTAGING_ADDSCALE = 0.5f;//ロックオン演出の加算拡大率
+	static constexpr int s_nLOCKONSTAGING_LIFE = 20;        //ロックオン演出の体力
+	static const string s_LOCKON_FILENAME[static_cast<int>(TYPE::MAX)];//テクスチャ名
 	//==========================================================================================================
 
 	//=======================================
@@ -60,6 +71,7 @@ private:
 	D3DXVECTOR3 m_NowRay;   //現在のレイ
 	D3DXVECTOR3 m_FrontPos; //手前の位置
 	ENDSTATE m_EndState;    //どの端にいるか
+	TYPE m_Type;            //種類
 	D3DXVECTOR3 m_NearRayColObjPos;//一番近いオブジェクトのレイが当たっている位置を求める
 	bool m_bRayCollision;//レイが当たっているかどうか
 	//==========================================================================================================

@@ -30,8 +30,10 @@ m_nNumPolygon(2 * (m_nNumDivisionXZ + 1) * (m_nNumDivisionY + 1) + 2 * 2 + 1 * (
 m_nTextureIndex(0),m_pIdxBuff(nullptr),m_pVtxBuff(nullptr),m_pTexture(nullptr),
 m_Pos(Pos),m_Rot(Rot),m_nCheckVtx(0),m_nCheckIdx(0),m_pMtxChild(nullptr),m_bUseDraw(true)
 {
-	m_nNumPolygon = m_nNumIdx - 2;
-	m_pSenterPos = DBG_NEW D3DXVECTOR3[m_nNumDivisionY];
+	m_nNumPolygon = m_nNumIdx - 2;//例：インデックスバッファが（０、１、２、３、４、５）の場合
+	                              //→ポリゴン１（０、１、２）、ポリゴン２（１、２、３）、ポリゴン３（２、３、４）、ポリゴン４（３、４、５）
+	                              //つまり、６　ー　２　＝　４
+	m_pSenterPos = DBG_NEW D3DXVECTOR3[m_nNumDivisionY];//Y方向の分割数分、中心座標を定義する
 }
 //=========================================================================================================================================
 

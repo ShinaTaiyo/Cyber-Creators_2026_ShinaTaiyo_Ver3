@@ -73,7 +73,7 @@ HRESULT CPlayer::Init()
 
     if (CScene::GetMode() == CScene::MODE::MODE_GAME)
     {
-        m_pLockOn = CLockon::Create(D3DXVECTOR3(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 0.0f), CObject2D::POLYGONTYPE::SENTERROLLING, 100.0f, 100.0f, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+        m_pLockOn = CLockon::Create(CLockon::TYPE::SHOT,D3DXVECTOR3(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 0.0f), CObject2D::POLYGONTYPE::SENTERROLLING, 100.0f, 100.0f, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
         m_pLockOn->SetUseDeath(false);
         m_pLockOn->SetPolygonRotSpeed(0.01f);
 
@@ -439,7 +439,7 @@ void CPlayer::ChengeWireShotMode(CPlayerWireShot* pPlayerWireShot)
 //==========================================================================================================
 
 //========================================================
-//アクションモードの初期状態を設定する
+//アクションモードの初期状態に設定する
 //========================================================
 void CPlayer::SetInitialActionMode(ACTIONMODE ActionMode)
 {
@@ -457,19 +457,33 @@ void CPlayer::SetInitialActionMode(ACTIONMODE ActionMode)
     {
     case ACTIONMODE::SHOT://発射モード
         ChengeMoveMode(DBG_NEW CPlayerMove_Normal()); //通常移動モードにする
+
         ChengeAttackMode(DBG_NEW CPlayerAttack_Shot()); //攻撃可能モードにする
+
         ChengeEffectMode(DBG_NEW CPlayerEffect_None()); //エフェクトなしモードにする
+
         ChengeWireShotMode(DBG_NEW CPlayerWireShot_Dont);//ワイヤー発射状態をオフにする
+
         GetMoveInfo().SetUseInteria(true, GetNormalInertia());//慣性を使用する
+
         GetMoveInfo().SetUseGravity(true, GetNormalGravity());//重力を使用する
+
+        m_pLockOn->ChengeTexture(CLockon::TYPE::SHOT);//ターゲットのテクスチャを射撃仕様に変更
+
         m_pModeDisp = CUi::Create(CUi::UITYPE::ACTIONMODE_GUN, CObject2D::POLYGONTYPE::SENTERROLLING, 100.0f, 100.0f, 1, false, D3DXVECTOR3(50.0f, 50.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f),
             D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));//モード表示を「射撃」に変える
         break;
     case ACTIONMODE::DIVE://ダイブモード
         ChengeMoveMode(DBG_NEW CPlayerMove_PrepDive(this));//ダイブ準備モードにする
+
         ChengeAttackMode(DBG_NEW CPlayerAttack_Dont);  //攻撃不能モードにする
+
         ChengeEffectMode(DBG_NEW CPlayerEffect_None()); //エフェクトなしモードにする
+
         ChengeWireShotMode(DBG_NEW CPlayerWireShot_Dont);//ワイヤー発射状態をオフにする
+
+        m_pLockOn->ChengeTexture(CLockon::TYPE::DIVE);//ターゲットのテクスチャをダイブ仕様に変更
+
         m_pModeDisp = CUi::Create(CUi::UITYPE::ACTIONMODE_DIVE, CObject2D::POLYGONTYPE::SENTERROLLING, 100.0f, 100.0f, 1, false, D3DXVECTOR3(50.0f, 50.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f),
             D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));//モード表示を「ダイブ」に変える
         break;

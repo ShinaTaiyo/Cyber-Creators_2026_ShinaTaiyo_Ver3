@@ -485,6 +485,9 @@ void CCameraState_Normal::Process(CCamera* pCamera)
 			CManager::GetCamera()->SetRot(pCamera->GetRot() + D3DXVECTOR3(cosf(CManager::GetInputJoypad()->GetRStickAimRot() + D3DX_PI) * 0.04f,
 				sinf(CManager::GetInputJoypad()->GetRStickAimRot()) * 0.04f, 0.0f));
 		}
+#ifndef _DEBUG
+
+
 		float fAngle = 0.0f;
 		float fAddYaw = 0.0f;
 		float fAddPitch = 0.0f;
@@ -500,6 +503,7 @@ void CCameraState_Normal::Process(CCamera* pCamera)
 					fAddYaw, 0.0f));
 			}
 		}
+#endif
 
 		//===========================
 		//Cƒ{ƒ^ƒ“‚ð‰Ÿ‚µ‚Ä‚¢‚½‚ç

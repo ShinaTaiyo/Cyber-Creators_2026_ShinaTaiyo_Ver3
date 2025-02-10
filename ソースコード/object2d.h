@@ -97,7 +97,7 @@ public:
 	//===============
 	void SetScale(D3DXVECTOR2 Scale) { m_Scale = Scale; }
 	void SetUseScale(bool bUse) { m_bUseScale = bUse; }//Šg‘å—¦‚ðŽg—p‚·‚é‚©‚Ç‚¤‚©
-	void SetUseAddScale(D3DXVECTOR2 AddScale, bool bUse) { m_AddScale = AddScale; m_bUseAddScale = bUse; }
+	void SetUseAddScale(D3DXVECTOR2 AddScale, bool bUse) { m_AddScale = AddScale; m_bUseAddScale = bUse; m_bUseScale = true; }
 	const D3DXVECTOR2& GetAddScale() const { return m_AddScale; }
 	D3DXVECTOR2& GetScale() { return m_Scale; }//Šg‘å—¦
 	//=======================================================================================================
