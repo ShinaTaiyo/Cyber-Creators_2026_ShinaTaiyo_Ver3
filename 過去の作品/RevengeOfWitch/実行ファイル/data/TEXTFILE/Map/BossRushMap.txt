@@ -1,0 +1,19 @@
+#======================================================================================================
+#
+#マップのロードを行うテキストファイル
+#Author:ShinaTaiyo
+#
+#======================================================================================================
+
+#==================================================
+#マップ番号とパス
+#==================================================
+
+FILENAME = data/TEXTFILE/stagemanager/BossRush/BossStage00.txt #0
+FILENAME = data/TEXTFILE/stagemanager/BossRush/BossStage01.txt #1
+FILENAME = data/TEXTFILE/stagemanager/BossRush/BossStage02.txt #2
+FILENAME = data/TEXTFILE/stagemanager/BossRush/BossStage03.txt #3
+FILENAME = data/TEXTFILE/stagemanager/BossRush/BossStage04.txt #4
+
+END_SCRIPT
+
