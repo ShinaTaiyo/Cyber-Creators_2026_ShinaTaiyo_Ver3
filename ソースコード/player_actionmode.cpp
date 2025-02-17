@@ -191,16 +191,6 @@ void CPlayerMove_PrepDive::MoveProcess(CPlayer* pPlayer)
 	CPlayerMove::DodgeProcess(pPlayer);//回避移動
 
 	CPlayerMove::JumpProcess(pPlayer);//ジャンプ移動
-
-	CWire* pWire = pPlayer->GetWire();
-	CWireHead* pWireHead = pPlayer->GetWire()->GetWireHead();
-	CLockon* pLockon = pPlayer->GetLockOn();//ロックオンへのポインタ
-	pWireHead->GetPosInfo().SetPos(pPlayer->GetPosInfo().GetPos());//ダイブ準備中なのでワイヤーヘッドをプレイヤーの位置に固定
-
-	if ((CManager::GetInputJoypad()->GetRT_Trigger() || CManager::GetInputMouse()->GetMouseLeftClickTrigger()) && pLockon->GetSuccessRayCollision())
-	{//ワイヤー発射移動モードにチェンジ
-		CPlayerWireShot::StartWireShotProcess(pPlayer);
-	}
 }
 //======================================================================================================================================================
 
@@ -211,7 +201,6 @@ void CPlayerMove_PrepDive::MoveProcess(CPlayer* pPlayer)
 //=====================================================================================================
 //静的メンバ宣言
 //=====================================================================================================
-const float CPlayerMove_Dive::s_fCOLLISIONDIVEMOVELENGTH = 120.0f;//プレイヤーが発射したワイヤーヘッドと当たる距離
 
 //=====================================================================================================
 //コンストラクタ
@@ -243,31 +232,32 @@ void CPlayerMove_Dive::MoveProcess(CPlayer* pPlayer)
 	{
 		bInput = true;
 	}
-	pPlayer->GetMoveInfo().SetMove(CCalculation::Calculation3DVec(pPlayer->GetPosInfo().GetPos(),pWireHead->GetPosInfo().GetPos(), 40.0f));//目的地に達するまで狙い続ける
+
+	pPlayer->GetMoveInfo().SetMove(CCalculation::Calculation3DVec(pPlayer->GetPosInfo().GetPos(),pWireHead->GetPosInfo().GetPos(),s_fDIVEMOVE));//目的地に達するまで狙い続ける
 
 	if (pPlayer->IsDamaged())
 	{//ダイブ移動中にダメージを受けたら射撃モードの初期状態に戻す（ダイブ攻撃は強力な攻撃なので、ノーリスクで突撃させたくないから）
 		pPlayer->SetInitialActionMode(CPlayer::ACTIONMODE::SHOT);
 	}
 
-	CCamera* pCamera = CManager::GetCamera();
-	if (CCalculation::CalculationLength(pPlayer->GetPosInfo().GetPos(), pWireHead->GetPosInfo().GetPos()) < s_fCOLLISIONDIVEMOVELENGTH)
-	{//ダイブ時に判定したら移動モードと攻撃モードを通常に戻す
-		if(bInput == true && pWireHead->GetCollisionObjType() != CObject::TYPE::ENEMY)
-		{//引っ付き→ダイブ（もしワイヤーヘッドが衝突したオブジェクトが敵の場合、敵には引っ付きたくないので、攻撃に移行する
-			//pPlayer->SetRot(pPlayer->GetRot());
-			CGame::GetTutorial()->SetSuccessCheck(CTutorial::CHECK::STUCKWALL);
-			pPlayer->ChengeMoveMode(DBG_NEW CPlayerMove_Stuck(pPlayer));
-			pPlayer->ChengeAttackMode(DBG_NEW CPlayerAttack_Dont());
-		}
-		else
-		{//攻撃→射撃モード
-			pPlayer->ChengeAttackMode(DBG_NEW CPlayerAttack_Dive());
-			pPlayer->GetWire()->SetUseDraw(false);
-			pPlayer->ChengeMoveMode(DBG_NEW CPlayerMove_PrepDive(pPlayer));
-			pPlayer->GetRotInfo().SetRot(D3DXVECTOR3(0.0f, pCamera->GetRot().y, 0.0f));
-		}
-	}
+	//CCamera* pCamera = CManager::GetCamera();
+	//if (CCalculation::CalculationLength(pPlayer->GetPosInfo().GetPos(), pWireHead->GetPosInfo().GetPos()) < s_fCOLLISIONDIVEMOVELENGTH)
+	//{//ダイブ時に判定したら移動モードと攻撃モードを通常に戻す
+	//	if(bInput == true && pWireHead->GetCollisionObjType() != CObject::TYPE::ENEMY)
+	//	{//引っ付き→ダイブ（もしワイヤーヘッドが衝突したオブジェクトが敵の場合、敵には引っ付きたくないので、攻撃に移行する
+	//		//pPlayer->SetRot(pPlayer->GetRot());
+	//		CGame::GetTutorial()->SetSuccessCheck(CTutorial::CHECK::STUCKWALL);
+	//		pPlayer->ChengeMoveMode(DBG_NEW CPlayerMove_Stuck(pPlayer));
+	//		pPlayer->ChengeAttackMode(DBG_NEW CPlayerAttack_Dont());
+	//	}
+	//	else
+	//	{//攻撃→射撃モード
+	//		pPlayer->ChengeAttackMode(DBG_NEW CPlayerAttack_Dive());
+	//		pPlayer->GetWire()->SetUseDraw(false);
+	//		pPlayer->ChengeMoveMode(DBG_NEW CPlayerMove_PrepDive(pPlayer));
+	//		pPlayer->GetRotInfo().SetRot(D3DXVECTOR3(0.0f, pCamera->GetRot().y, 0.0f));
+	//	}
+	//}
 }
 //======================================================================================================================================================
 
@@ -276,9 +266,9 @@ void CPlayerMove_Dive::MoveProcess(CPlayer* pPlayer)
 //******************************************************************************************************************************************************
 
 //=====================================================================================================
-//コンストラクタ
+//コンストラクタ（ワイヤー発射開始フラグは、デフォルトで発射可能なのでtrueで初期化)
 //=====================================================================================================
-CPlayerMove_Stuck::CPlayerMove_Stuck(CPlayer* pPlayer) : m_NowPos(pPlayer->GetPosInfo().GetPos())
+CPlayerMove_Stuck::CPlayerMove_Stuck(CPlayer* pPlayer) : m_NowPos(pPlayer->GetPosInfo().GetPos()),m_bStartWireShot(true)
 {
 	CCamera* pCamera = CManager::GetCamera();
 	CWireHead* pWireHead = pPlayer->GetWire()->GetWireHead();
@@ -330,12 +320,22 @@ void CPlayerMove_Stuck::MoveProcess(CPlayer* pPlayer)
 	D3DXVECTOR3 WireHeadRot = pWireHead->GetRotInfo().GetRot(); // ワイヤーヘッドの向き（オイラー角）
 	CWire* pWire = pPlayer->GetWire();
 	CLockon* pLockon = pPlayer->GetLockOn();//ロックオンへのポインタ
-
+	CInputJoypad* pInputJoypad = CManager::GetInputJoypad();//ジョイパッド入力情報を取得
+	CInputMouse* pInputMouse = CManager::GetInputMouse();//マウス入力情報を取得
 	pWireHead->GetPosInfo().SetPos(pPlayer->GetPosInfo().GetPos());//ダイブ準備中なのでワイヤーヘッドをプレイヤーの位置に固定
-	//pPlayer->SetRot(D3DXVECTOR3(pCamera->GetRot().x + D3DX_PI,-pCamera->GetRot().y,0.0f));//向きをカメラに合わせる
-	if ((CManager::GetInputJoypad()->GetRT_Trigger() || CManager::GetInputMouse()->GetMouseLeftClickTrigger()) && pLockon->GetSuccessRayCollision() == true)
+
+	if (pInputJoypad->GetTrigger(CInputJoypad::JOYKEY::B) || pInputMouse->GetMouseMiddleClickTrigger())
+	{//引っ付きながら射撃する
+		m_bStartWireShot = m_bStartWireShot ? false : true;//フラグのONOFFを変える
+		if (m_bStartWireShot == false)
+		{//m_bStartWireShotをtrueにしたときにステートが変わらないようにするため、falseの時だけステートを変える
+			pPlayer->ChengeAttackMode(DBG_NEW CPlayerAttack_StackShot(pPlayer));
+		}
+	}
+
+	if ((pInputJoypad->GetRT_Trigger() || pInputMouse->GetMouseLeftClickTrigger()) && pLockon->GetSuccessRayCollision() && m_bStartWireShot)
 	{//ワイヤー発射移動モードにチェンジ
-		CPlayerWireShot::StartWireShotProcess(pPlayer);
+		pPlayer->ChengeAttackMode(DBG_NEW CPlayerAttack_Dont());//強制的に攻撃不可にする（ダイブ発動までの準備をするため）
 	}
 
 }
@@ -485,7 +485,6 @@ CPlayerAttack_Dive::~CPlayerAttack_Dive()
 //=====================================================================================================
 void CPlayerAttack_Dive::AttackProcess(CPlayer* pPlayer)
 {
-
 	CUiState_Gauge* pUiState_Gauge = dynamic_cast<CUiState_Gauge*>(CGame::GetPlayer()->GetDiveGaugeFrame()->GetUiState(CUiState::UISTATE::GAUGE));//UIのゲージ情報を取得
 	if (pUiState_Gauge != nullptr)
 	{
@@ -512,73 +511,8 @@ void CPlayerAttack_Dive::AttackProcess(CPlayer* pPlayer)
 			CManager::GetCamera()->ChengeLengthState(DBG_NEW CCameraLengthState_Gradually(300.0f, 0.1f, 60));
 		}
 		pWireHead->GetDrawInfo().SetUseDraw(false);//ワイヤーの頭の描画をオフにする
-		pPlayer->ChengeMoveMode(DBG_NEW CPlayerMove_PrepDive(pPlayer));
-		pPlayer->ChengeAttackMode(DBG_NEW CPlayerAttack_Dont());
-
-		pPlayer->ChengeEffectMode(DBG_NEW CPlayerEffect_None());
+		pPlayer->ChengeAttackMode(DBG_NEW CPlayerAttack_Dont());//爆発し終わったので、攻撃状態を「なし」に戻す
 	}
-
-}
-//======================================================================================================================================================
-
-//******************************************************************************************************************************************************
-//プレイヤーエフェクトクラス
-//******************************************************************************************************************************************************
-
-//=====================================================================================================
-//コンストラクタ
-//=====================================================================================================
-CPlayerEffect::CPlayerEffect()
-{
-
-}
-//======================================================================================================================================================
-
-//=====================================================================================================
-//デストラクタ
-//=====================================================================================================
-CPlayerEffect::~CPlayerEffect()
-{
-
-}
-//======================================================================================================================================================
-
-//=====================================================================================================
-//エフェクト処理
-//=====================================================================================================
-void CPlayerEffect::EffectProcess(CPlayer* pPlayer)
-{
-
-}
-//======================================================================================================================================================
-
-//******************************************************************************************************************************************************
-//プレイヤーダイブエフェクトクラス
-//******************************************************************************************************************************************************
-
-//=====================================================================================================
-//コンストラクタ
-//=====================================================================================================
-CPlayerEffect_Dive::CPlayerEffect_Dive()
-{
-
-}
-//======================================================================================================================================================
-
-//=====================================================================================================
-//デストラクタ
-//=====================================================================================================
-CPlayerEffect_Dive::~CPlayerEffect_Dive()
-{
-
-}
-//======================================================================================================================================================
-
-//=====================================================================================================
-//エフェクト処理
-//=====================================================================================================
-void CPlayerEffect_Dive::EffectProcess(CPlayer* pPlayer)
-{
 
 }
 //======================================================================================================================================================
@@ -587,204 +521,66 @@ void CPlayerEffect_Dive::EffectProcess(CPlayer* pPlayer)
 //プレイヤーワイヤー発射中クラス
 //******************************************************************************************************************************************************
 
+//******************************************************************************************************************************************************
+//攻撃状態：引っ付き射撃
+//******************************************************************************************************************************************************
+
 //=====================================================================================================
 //コンストラクタ
 //=====================================================================================================
-CPlayerWireShot::CPlayerWireShot()
+CPlayerAttack_StackShot::CPlayerAttack_StackShot(CPlayer* pPlayer) : m_bDelayModeChengeFrame(true)
 {
-
+	//CLockon* pLockon = pPlayer->GetLockOn();//ロックオンターゲットを取得
+	//pLockon->ChengeTexture(CLockon::TYPE::STUCKSHOT);//引っ付き射撃用のターゲットテクスチャに変える
 }
 //======================================================================================================================================================
 
 //=====================================================================================================
 //デストラクタ
 //=====================================================================================================
-CPlayerWireShot::~CPlayerWireShot()
+CPlayerAttack_StackShot::~CPlayerAttack_StackShot()
 {
 
 }
 //======================================================================================================================================================
 
 //=====================================================================================================
-//ワイヤー発射処理
+//攻撃処理
 //=====================================================================================================
-void CPlayerWireShot::WireShotProcess(CPlayer* pPlayer)
+void CPlayerAttack_StackShot::AttackProcess(CPlayer* pPlayer)
 {
-}
-//======================================================================================================================================================
+	//CLockon* pLockon = pPlayer->GetLockOn();
+	//D3DXVECTOR3 ShotPos = pPlayer->GetPosInfo().GetPos() + D3DXVECTOR3(0.0f, pPlayer->GetSizeInfo().GetVtxMax().y, 0.0f);
+	//D3DXVECTOR3 Move = CCalculation::Calculation3DVec(ShotPos, pLockon->GetNearRayColObjPos(),s_fNORMAL_SHOTSPEED);
+	//CAttackPlayer* pAttackPlayer = nullptr;//プレイヤー攻撃へのポインタ
+	//CInputJoypad* pInputJoypad = CManager::GetInputJoypad();//ジョイパッド入力情報へのポインタ
+	//CInputMouse* pInputMouse = CManager::GetInputMouse();   //マウス入力情報へのポインタ
+	//if (pInputJoypad->GetRT_Repeat(s_nSHOT_FREQUENCY) == true ||
+	//	pInputMouse->GetMouseLeftClickRepeat(s_nSHOT_FREQUENCY) == true)
+	//{
+	//	pAttackPlayer = CAttackPlayer::Create(CAttack::ATTACKTYPE::BULLET, CAttack::TARGETTYPE::ENEMY, CAttack::COLLISIONTYPE::SQUARE, true, true, 3, 0, 45, ShotPos, pPlayer->GetRotInfo().GetRot(), Move, D3DXVECTOR3(1.0f, 1.0f, 1.0f));
+	//	pAttackPlayer->GetMoveInfo().SetUseInteria(false, CObjectX::GetNormalInertia());
+	//	pAttackPlayer->GetLifeInfo().SetAutoSubLife(true);
+	//	pAttackPlayer->SetHitOtherThanLibing(true);
 
-//=====================================================================================================
-//ワイヤーの発射を開始させる処理
-//=====================================================================================================
-void CPlayerWireShot::StartWireShotProcess(CPlayer* pPlayer)
-{
-	D3DXVECTOR3 Move = CCalculation::Calculation3DVec(pPlayer->GetPosInfo().GetPos(), pPlayer->GetLockOn()->GetNearRayColObjPos(), 60.0f);
-	D3DXVECTOR3 Rot = pPlayer->GetLockOn()->GetNearRayColObjPos() - pPlayer->GetPosInfo().GetPos();
-	D3DXVec3Normalize(&Rot, &Rot);
-	float fYaw = atan2f(Rot.x, Rot.z);
-	float fPitch = atan2f(Rot.y, sqrtf(powf(Rot.x, 2) + powf(Rot.z, 2)));
-	fPitch *= -1.0f;
-	CWire* pWire = pPlayer->GetWire();//ワイヤーを取得する
-	CWireHead* pWireHead = pWire->GetWireHead();//ワイヤーの頭を取得する
+	//	CManager::GetSound()->PlaySoundB(CSound::SOUND_LABEL::SE_SHOT_001);//射撃効果音を出す
+	//	CGame::GetTutorial()->SetSuccessCheck(CTutorial::CHECK::SHOT);
+	//}
+	//if (pInputJoypad->GetRT_Press() || pInputMouse->GetMouseLeftClickPress())
+	//{
+	//	pPlayer->SetNextMotion(2);//攻撃ボタンを押している限り、次のモーションは攻撃モーションになる
+	//}
 
-	////ワイヤーの頭
-	pWireHead->GetMoveInfo().SetMove(Move);//ワイヤーの頭の移動量を設定する
-	pWireHead->ResetCoolTime();//ワイヤーの頭が当たるまでのクールタイムをリセット
-	pWireHead->GetMoveInfo().SetUseInteria(false, CObjectX::GetNormalInertia());//ワイヤーの頭の慣性をオフにする
-	pWireHead->GetMoveInfo().SetUseGravity(false, 1.0f);//ワイヤーの頭の重力をオフにする
-	pWireHead->GetRotInfo().SetRot(D3DXVECTOR3(D3DX_PI * 0.5f + fPitch, fYaw, 0.0f));//前を基準にpitchを調整
-	pWireHead->GetDrawInfo().SetUseDraw(true);//ワイヤーの頭の描画を復活させる
+	//if ((pInputJoypad->GetTrigger(CInputJoypad::JOYKEY::B) || pInputMouse->GetMouseMiddleClickTrigger()) && m_bDelayModeChengeFrame == false)
+	//{//スタック移動モードでこの攻撃モードにJOYKEY_Bボタンで変えているので、この処理に最初に移行したときにJOYKEY_Bボタンが発動してしまうので、1フレーム遅らせる
+	//	pPlayer->ChengeAttackMode(DBG_NEW CPlayerAttack_Dont());//攻撃しないモードに再び変える
+	//	pLockon->ChengeTexture(CLockon::TYPE::DIVE);//ダイブ用のターゲットテクスチャに戻す
+	//}
 
-	//ワイヤー
-	pWire->SetUseDraw(true);//ワイヤーの描画を復活させる
-	pWire->SetUseUpdate(true);//ワイヤーの更新を復活させる
-
-	//プレイヤー
-	pPlayer->ChengeMoveMode(DBG_NEW CPlayerMove_Dont());//移動モード「なし」
-	pPlayer->ChengeAttackMode(DBG_NEW CPlayerAttack_Dont());//攻撃モード「なし」
-	pPlayer->ChengeWireShotMode(DBG_NEW CPlayerWireShot_Do());//ワイヤーショットモード「する」
-	pPlayer->GetMoveInfo().SetUseInteria(false, CObjectX::GetNormalInertia());//慣性を使用しない
-	pPlayer->GetMoveInfo().SetUseGravity(false, CObjectX::GetNormalGravity());//重力を使用しない
-	pPlayer->GetMoveInfo().SetMove(Move);//プレイヤーの移動量を設定する
-}
-//======================================================================================================================================================
-
-//******************************************************************************************************************************************************
-//プレイヤーワイヤー発射するクラス
-//******************************************************************************************************************************************************
-
-//=====================================================================================================
-//コンストラクタ
-//=====================================================================================================
-CPlayerWireShot_Do::CPlayerWireShot_Do()
-{
-
-}
-//======================================================================================================================================================
-
-//=====================================================================================================
-//デストラクタ
-//=====================================================================================================
-CPlayerWireShot_Do::~CPlayerWireShot_Do()
-{
-
-}
-//======================================================================================================================================================
-
-//=====================================================================================================
-//ワイヤー発射処理
-//=====================================================================================================
-void CPlayerWireShot_Do::WireShotProcess(CPlayer* pPlayer)
-{
-	//*変数宣言
-	CWire* pWire = pPlayer->GetWire();
-	CWireHead* pWireHead = pWire->GetWireHead();
-
-	FrightenedEnemy(pPlayer);//この処理の途中で狙った敵は怯える
-
-	pPlayer->GetMoveInfo().SetMove(D3DXVECTOR3(0.0f, 0.0f, 0.0f));//ワイヤー発射中は動きを止める
-	if (pWireHead->GetSuccessCollision())
-	{//ワイヤーがどれかのオブジェクトに当たったら
-		pPlayer->ChengeWireShotMode(DBG_NEW CPlayerWireShot_Dont());//ワイヤー発射モード「なし」
-		pPlayer->ChengeEffectMode(DBG_NEW CPlayerEffect_Dive());    //エフェクトモード「ダイブ」
-		
-		DecisionCameraRot(pPlayer);//カメラの向きを決める
-
-		pWireHead->GetMoveInfo().SetMove(D3DXVECTOR3(0.0f, 0.0f, 0.0f));//ワイヤーヘッドの移動を止める
-		D3DXVECTOR3 Move = CCalculation::Calculation3DVec(pPlayer->GetPosInfo().GetPos(), pWireHead->GetPosInfo().GetPos(),40.0f);
-		CPlayerMove_Dive * pPlayerMove_Dive = DBG_NEW CPlayerMove_Dive();//ダイブを開始する
-		pPlayerMove_Dive->SetDiveMove(Move);
-        pPlayer->ChengeMoveMode(pPlayerMove_Dive);
-		pPlayer->GetMoveInfo().SetMove(Move);
-        //pPlayerMove_Dive->SetDiveMove(Move);//ダイブの移動量を設定する
-        pPlayer->SetSuccessCollision(false);//判定状態を確定解除   
-	}
-}
-//======================================================================================================================================================
-
-//=====================================================================================================
-//敵を怯えさせる処理
-//=====================================================================================================
-void CPlayerWireShot_Do::FrightenedEnemy(CPlayer* pPlayer)
-{
-	CObject* pObj = CObject::GetTopObject(static_cast<int>(CObject::TYPE::ENEMY));
-
- 	const D3DXVECTOR3 & FrontPos = pPlayer->GetLockOn()->GetFrontPos();
-	const D3DXVECTOR3& Ray = pPlayer->GetLockOn()->GetNowRay();
-	D3DXVECTOR3 CollisionPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-	while (pObj != nullptr)
-	{
-		CObject* pNext = pObj->GetNextObject();
-
-		CEnemy* pEnemy = static_cast<CEnemy*>(pObj);
-		if (pEnemy->GetEnemyType() == CEnemy::ENEMYTYPE::DIVEWEAK)
-		{//ダイブに弱い敵だけ処理をする。怯え状態じゃないときに怯え状態にする
-			if (pEnemy->GetState() != CEnemy::STATE::FRIGHTENDED && CCollision::RayIntersectsAABBCollisionPos(FrontPos, Ray, pEnemy->GetPosInfo().GetPos() + pEnemy->GetSizeInfo().GetVtxMin(), pEnemy->GetPosInfo().GetPos() + pEnemy->GetSizeInfo().GetVtxMax(), CollisionPos))
-			{
-				pEnemy->ChengeMove(DBG_NEW CEnemyMove_Frightened(pEnemy, pEnemy->GetPosInfo().GetPos(),90));//1秒間怯え状態にする
-			}
-		}
-		pObj = pNext;//リストを次に進める
-	}
-}
-//======================================================================================================================================================
-
-//=====================================================================================================
-//カメラの向きを決める処理
-//=====================================================================================================
-void CPlayerWireShot_Do::DecisionCameraRot(CPlayer* pPlayer)
-{
-	CWire* pWire = pPlayer->GetWire();
-	CWireHead* pWireHead = pWire->GetWireHead();
-	CCamera* pCamera = CManager::GetCamera();
-
-	//==========================
-    //カメラの向きを求める
-    //==========================
-	D3DXVECTOR3 ComRot = pWireHead->GetPosInfo().GetPos() - pPlayer->GetPosInfo().GetPos();
-	D3DXVec3Normalize(&ComRot, &ComRot);
-	float fYaw = atan2f(ComRot.x, ComRot.z);
-	float fPitch = atan2f(ComRot.y, sqrtf(powf(ComRot.x, 2) + powf(ComRot.z, 2)));
-	D3DXVECTOR3 ResultRot = D3DXVECTOR3(-fPitch - D3DX_PI * 0.5f, fYaw, 0.0f);//カメラの向きを調整する（前方向を基準にする）
-
-	if (pCamera->GetRot().x > ResultRot.x - 0.5f && pCamera->GetRot().x < ResultRot.x + 0.5f &&
-		pCamera->GetRot().y > ResultRot.y - 0.5f && pCamera->GetRot().y < ResultRot.y + 0.5f)
-	{//現在のカメラの向きが目的の向きに近かったらダイブ先に合わせる
-		//CParticle::SummonParticle(CParticle::TYPE::TYPE00_NORMAL, 10, 60, 30.0f, 30.0f, 100, 10, false, pPlayer->GetSenterPos(), D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f), true);
-		pCamera->ChengeState(DBG_NEW CCameraState_TurnAround(D3DXVECTOR3(-fPitch - D3DX_PI * 0.5f, fYaw, 0.0f), 0.1f));
-	}
-	//==============================================================================================
-
-}
-//======================================================================================================================================================
-
-//******************************************************************************************************************************************************
-//プレイヤーワイヤー発射しないクラス
-//******************************************************************************************************************************************************
-
-//=====================================================================================================
-//コンストラクタ
-//=====================================================================================================
-CPlayerWireShot_Dont::CPlayerWireShot_Dont()
-{
-
-}
-//======================================================================================================================================================
-
-//=====================================================================================================
-//デストラクタ
-//=====================================================================================================
-CPlayerWireShot_Dont::~CPlayerWireShot_Dont()
-{
-
-}
-//======================================================================================================================================================
-
-//=====================================================================================================
-//ワイヤー発射処理
-//=====================================================================================================
-void CPlayerWireShot_Dont::WireShotProcess(CPlayer* pPlayer)
-{
+	//if (m_bDelayModeChengeFrame == true)
+	//{//1フレーム上のモードチェンジの入力を遅らせたので役目は終了。falseに戻す
+	//	m_bDelayModeChengeFrame = false;
+	//}
 
 }
 //======================================================================================================================================================

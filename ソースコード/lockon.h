@@ -36,6 +36,7 @@ public:
 	{//Ží—Þ
 		SHOT = 0,
 		DIVE,
+		STUCKSHOT,
 		MAX
 	};
 

@@ -186,6 +186,7 @@
     <ClCompile Include="phasemanager.cpp" />
     <ClCompile Include="player.cpp" />
     <ClCompile Include="player_actionmode.cpp" />
+    <ClCompile Include="player_actionmode_mainstate.cpp" />
     <ClCompile Include="renderer.cpp" />
     <ClCompile Include="result.cpp" />
     <ClCompile Include="scene.cpp" />
@@ -241,6 +242,7 @@
     <ClInclude Include="phasemanager.h" />
     <ClInclude Include="player.h" />
     <ClInclude Include="player_actionmode.h" />
+    <ClInclude Include="player_actionmode_mainstate.h" />
     <ClInclude Include="renderer.h" />
     <ClInclude Include="result.h" />
     <ClInclude Include="scene.h" />

@@ -14,9 +14,9 @@
 #include "main.h"
 #include "character.h"
 #include "lockon.h"
-#include "meshorbit.h"
 #include "ui.h"
 #include "player_actionmode.h"
+#include "player_actionmode_mainstate.h"
 #include "wire.h"
 #include "gauge.h"
 //==========================================
@@ -44,7 +44,7 @@ public:
 	};
 	//===============================================================================================
 
-	CPlayer(CPlayerMove* pPlayerMove, CPlayerAttack* pPlayerAttack, CPlayerEffect* pPlayerEffect, CPlayerWireShot* pPlayer,
+	CPlayer(CPlayerMove* pPlayerMove, CPlayerAttack* pPlayerAttack,
 		int nPri = 0, bool bUseintPri = false, CObject::TYPE type = CObject::TYPE::PLAYER, CObject::OBJECTTYPE ObjType = CObject::OBJECTTYPE::OBJECTTYPE_X);                  //コンストラクタ
 	~CPlayer();                 //デストラクタ
 	HRESULT Init() override;    //初期化処理
@@ -60,6 +60,13 @@ public:
 	//================================================
 	void SetSuccessCollision(bool bSuccess) { m_bCollision = bSuccess; }//当たり判定が成功したかどうかを設定
 	const bool& GetCollisionSuccess() const { return m_bCollision; }//当たり判定が成功したかどうかを取得
+	//===============================================================================================
+
+	//================================================
+	//モードディスプ
+	//================================================
+	void SetModeDisp(CUi* pModeDisp);//モード表示を設定
+	CUi* GetModeDisp() { return m_pModeDisp; }//モード表示を取得
 	//===============================================================================================
 
 	//================================================
@@ -80,9 +87,7 @@ public:
 	//================================================
 	void ChengeMoveMode(CPlayerMove* pPlayerMove);//移動モードを変える
 	void ChengeAttackMode(CPlayerAttack* pPlayerAttack);//攻撃モードを変える
-	void ChengeEffectMode(CPlayerEffect* pPlayerEffect);//エフェクトモードを変える
-	void ChengeWireShotMode(CPlayerWireShot* pPlayerWireShot);//ワイヤー発射モードを変える
-	CPlayerWireShot* GetWireShotState() { return m_pWireShot; }//ワイヤー発射状態を取得
+	void ChengeActionMode(CPlayerActionMode* pPlayerActionMode);//プレイヤーのアクションモードを変更する
 	void SetInitialActionMode(ACTIONMODE ActionMode);          //アクションモードを設定する
 	//===============================================================================================
 
@@ -132,8 +137,7 @@ private:
 	//行動状態
 	CPlayerMove* m_pMove;               //移動処理
 	CPlayerAttack* m_pAttack;           //攻撃処理
-	CPlayerEffect* m_pEffect;           //エフェクト処理
-	CPlayerWireShot* m_pWireShot;       //ワイヤーショット状態
+	CPlayerActionMode* m_pPlayerActionMode;//プレイヤーアクションモード(メインのステートクラス)
 
 	//状態異常ステート
 	CPlayerAbnormalState* m_pAbnormalState;   //状態異常

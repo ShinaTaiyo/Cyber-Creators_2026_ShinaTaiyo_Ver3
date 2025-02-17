@@ -31,6 +31,7 @@
 //====================================================================
 const float CCamera::m_BESIDECAMERALENGTH = 570.0f;//ビサイドビューのカメラの距離
 const float CCamera::s_fINITIAL_LENGTH = 200.0f;   //カメラとの最初の距離
+bool CCamera::s_bCAMERACONTROLLMOUSE = false; //デバッグ時にカメラをマウスで動かすかどうか
 //====================================================================================================
 
 //====================================================================
@@ -41,6 +42,19 @@ m_PosR(D3DXVECTOR3(0.0f,0.0f,0.0f)),m_VecU(D3DXVECTOR3(0.0f,0.0f,0.0f)),m_Rot(D3
 m_ZoomSpeed(D3DXVECTOR3(0.0f,0.0f,0.0f)),m_nShakeFrame(0),m_ModeTime(0),m_fShakePower(0.0f),m_fAddLength(0.0f),m_AddPosR(D3DXVECTOR3(0.0f,0.0f,0.0f)),m_AddPosV(D3DXVECTOR3(0.0f,0.0f,0.0f))
 ,m_bCustom(false),m_State(CAMERASTATE::NORMAL),m_pCameraState(DBG_NEW CCameraState_Normal()),m_pCameraLengthState(DBG_NEW CCameraLengthState())
 {
+#ifdef _DEBUG
+	if (s_bDEBUGCAMERACONTROLLMOUSE)
+	{//デバッグ時はカメラをマウスで操作するかどうかを決めることができいる
+		s_bCAMERACONTROLLMOUSE = true;
+	}
+	else
+	{
+		s_bCAMERACONTROLLMOUSE = false;
+	}
+#else
+	//必ずカメラをマウスで操作できるようにする
+	s_bCAMERACONTROLLMOUSE = true;
+#endif // _DEBUG
 
 }
 //====================================================================================================
@@ -485,26 +499,25 @@ void CCameraState_Normal::Process(CCamera* pCamera)
 			CManager::GetCamera()->SetRot(pCamera->GetRot() + D3DXVECTOR3(cosf(CManager::GetInputJoypad()->GetRStickAimRot() + D3DX_PI) * 0.04f,
 				sinf(CManager::GetInputJoypad()->GetRStickAimRot()) * 0.04f, 0.0f));
 		}
-#ifndef _DEBUG
 
-
-		float fAngle = 0.0f;
-		float fAddYaw = 0.0f;
-		float fAddPitch = 0.0f;
-		if (CScene::GetMode() == CScene::MODE_GAME || CScene::GetMode() == CScene::MODE_EDIT)
-		{//ゲームモードとエディットモードの時だけマウスを固定
-			if (CManager::GetInputMouse()->GetMouseMoveAngle(fAddYaw, fAddPitch, 0.005f))
-			{
-				if (CScene::GetMode() == CScene::MODE::MODE_GAME)
+		if (CCamera::GetUseCameraControllMouse())
+		{
+			float fAngle = 0.0f;
+			float fAddYaw = 0.0f;
+			float fAddPitch = 0.0f;
+			if (CScene::GetMode() == CScene::MODE_GAME || CScene::GetMode() == CScene::MODE_EDIT)
+			{//ゲームモードとエディットモードの時だけマウスを固定
+				if (CManager::GetInputMouse()->GetMouseMoveAngle(fAddYaw, fAddPitch, 0.005f))
 				{
-					CGame::GetTutorial()->SetSuccessCheck(CTutorial::CHECK::CAMERACONTROLL);
+					if (CScene::GetMode() == CScene::MODE::MODE_GAME)
+					{
+						CGame::GetTutorial()->SetSuccessCheck(CTutorial::CHECK::CAMERACONTROLL);
+					}
+					CManager::GetCamera()->SetRot(pCamera->GetRot() + D3DXVECTOR3(fAddPitch,
+						fAddYaw, 0.0f));
 				}
-				CManager::GetCamera()->SetRot(pCamera->GetRot() + D3DXVECTOR3(fAddPitch,
-					fAddYaw, 0.0f));
 			}
 		}
-#endif
-
 		//===========================
 		//Cボタンを押していたら
 		//===========================

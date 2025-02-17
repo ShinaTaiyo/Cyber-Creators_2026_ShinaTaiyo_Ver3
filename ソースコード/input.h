@@ -143,13 +143,34 @@ public:
 	bool GetMouseLeftClickTrigger();//トリガー
 	bool GetMouseLeftClickRepeat(int nRepeat);//リピート入力
 
-	bool GetMouseRightClickTrigger();//右クリックトリガー入力
+	bool GetMouseRightClickPress();  //右クリックプレス情報取得
+	bool GetMouseRightClickTrigger();//右クリックトリガー情報取得
+	bool GetMouseRightClickRepeat(int nRepeat); //右クリックリピート情報取得
+
+	bool GetMouseMiddleClickPress();//ミドルクリックプレス情報取得
+	bool GetMouseMiddleClickTrigger();//ミドルクリックトリガー情報取得
+	bool GetMouseMiddleClickRepeat(int nRepeat);//ミドルクリックのリピート情報取得
 private:
 	D3DXVECTOR2 m_CursorPosOld;//1f前のカーソルの位置
+
+	//左クリック
 	bool m_bLeftClickTriggerFlag;//左クリックのトリガーフラグ
 	int m_nLeftClickRepeatCnt;   //左クリックのリピートカウント
+	bool m_bPrevLeftClick;       //左クリックをしたかどうか
+	void GetStateLeftClick();//左クリックの情報を取得する
 
+	//右クリック
 	bool m_bRightClickTriggerFlag;//右クリックトリガーフラグ
+	int m_nRightClickRepeatCnt;   //右クリックのリピートカウント
+	bool m_bPrevRightClick;       //右クリックをしたかどうか
+	void GetStateRightClick();//右クリックの情報を取得する
+
+	//ミドルクリック
+	bool m_bMiddleClickTriggerFlag;//ミドルクリックのトリガーフラグ
+	int m_nMiddleClickRepeatCnt;   //ミドルクリックのリピートカウント
+	bool m_bPrevMiddleClick;       //ミドルクリックをしたかどうか
+	void GetStateMiddleClick();//ミドルクリックの情報を取得する
+
 	bool m_bCursorSenterWarp;     //カーソルが中心にワープしたかどうか
 };
 #endif

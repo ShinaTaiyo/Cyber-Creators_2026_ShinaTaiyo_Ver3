@@ -96,7 +96,12 @@ public:
 
 	const float& GetPosRToPosVLength() const { return m_fLength; }//中止点と視点の距離を取得する
 
+	//======================================
+	//静的メンバ取得関係
+	//======================================
 	static const float & GetInitialLength() { return s_fINITIAL_LENGTH; }//最初の距離を取得する
+	static const bool& GetUseCameraControllMouse() { return s_bCAMERACONTROLLMOUSE; }//デバッグにカメラをマウスで操作するかどうかを取得する
+	//==========================================================================================================================================
 
 	//======================================
 	//マトリックス系
@@ -110,6 +115,8 @@ private:
     //======================================
 	static const float m_BESIDECAMERALENGTH;      //ビサイドモードのカメラの距離
 	static const float s_fINITIAL_LENGTH;         //最初の距離
+	static bool s_bCAMERACONTROLLMOUSE;//カメラをマウスで操作するかどうか（Debugでは使わないかもしれないが、Releaseでは必ず使う)
+	static constexpr bool s_bDEBUGCAMERACONTROLLMOUSE = false;//デバッグ時にもカメラをマウスで操作するかどうか（カメラを使用するとカーソルが固定されてしまうので、使用するかを決める)
 	//==========================================================================================================================================
 
 	//======================================

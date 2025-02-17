@@ -593,7 +593,8 @@ bool CInputJoypad::GetRT_Trigger()
 //コンストラクタ
 //======================================
 CInputMouse::CInputMouse() : m_CursorPosOld(D3DXVECTOR2(0.0f,0.0f)), m_bLeftClickTriggerFlag(false),m_nLeftClickRepeatCnt(0),m_bRightClickTriggerFlag(false),
-m_bCursorSenterWarp(false)
+m_bCursorSenterWarp(false),m_bPrevRightClick(false),m_bPrevLeftClick(false), m_nRightClickRepeatCnt(0),m_bPrevMiddleClick(false),m_nMiddleClickRepeatCnt(0),
+m_bMiddleClickTriggerFlag(false)
 {
 
 }
@@ -631,7 +632,9 @@ void CInputMouse::Uninit()
 //======================================
 void CInputMouse::Update()
 {
-
+	GetStateRightClick();//右クリック状態を取得
+	GetStateLeftClick(); //左クリック状態を取得
+	GetStateMiddleClick();//ミドルクリック状態を取得
 }
 //================================================================
 
@@ -710,11 +713,7 @@ bool CInputMouse::GetMouseMoveAngle(float& fYaw, float& fPitch, float fAdjust)
 //======================================
 bool CInputMouse::GetMouseLeftClickPress()
 {
-	if (GetAsyncKeyState(VK_LBUTTON) & 0x8000)
-	{
-		return true;
-	}
-	return false;
+	return m_bPrevLeftClick;//そのままの状態を返す
 }
 //================================================================
 
@@ -723,34 +722,19 @@ bool CInputMouse::GetMouseLeftClickPress()
 //======================================
 bool CInputMouse::GetMouseLeftClickTrigger()
 {
-	//トリガーフラグがtrueなら発動。次ボタンを話すまではtrueにならない！
-	if (GetAsyncKeyState(VK_LBUTTON) & 0x8000)
-	{
-		if (m_bLeftClickTriggerFlag == true)
-		{
-		    m_bLeftClickTriggerFlag = false;
-			return true;
-		}
-		m_bLeftClickTriggerFlag = false;
-	}
-	else
-	{
-		m_bLeftClickTriggerFlag = true;
-	}
-	return false;
+	return m_bLeftClickTriggerFlag;
 }
+//================================================================
 
 //======================================
 //クリックしたかどうかを取得(Repeat)
 //======================================
 bool CInputMouse::GetMouseLeftClickRepeat(int nRepeat)
 {
-	if (GetAsyncKeyState(VK_LBUTTON) & 0x8000)
-	{
-		m_nLeftClickRepeatCnt++;
-		if (m_nLeftClickRepeatCnt == nRepeat)
-		{
-			m_nLeftClickRepeatCnt = 0;
+	if (m_bPrevLeftClick)
+	{//左クリックしていたら
+		if (m_nLeftClickRepeatCnt % nRepeat == 0)
+		{//リピートカウントと剰余算して一致したら
 			return true;
 		}
 	}
@@ -759,24 +743,132 @@ bool CInputMouse::GetMouseLeftClickRepeat(int nRepeat)
 //================================================================
 
 //======================================
-//右クリックしたかどうかを取得
+//右クリックのプレス情報を取得
+//======================================
+bool CInputMouse::GetMouseRightClickPress()
+{
+	return m_bPrevLeftClick;
+}
+//================================================================
+
+//======================================
+//右クリックのトリガー情報を取得
 //======================================
 bool CInputMouse::GetMouseRightClickTrigger()
 {
-	//トリガーフラグがtrueなら発動。次ボタンを話すまではtrueにならない！
-	if (GetAsyncKeyState(VK_RBUTTON) & 0x8000)
-	{
-		if (m_bRightClickTriggerFlag == true)
-		{
-			m_bRightClickTriggerFlag = false;
+	return m_bRightClickTriggerFlag;
+}
+//================================================================
+
+//======================================
+//右クリックのリピート情報を取得
+//======================================
+bool CInputMouse::GetMouseRightClickRepeat(int nRepeat)
+{
+	if (m_bPrevRightClick)
+	{//右クリックしていたら
+		if (m_nRightClickRepeatCnt % nRepeat == 0)
+		{//リピートカウントと剰余算して一致したら
 			return true;
 		}
-		m_bRightClickTriggerFlag = false;
-	}
-	else
-	{
-		m_bRightClickTriggerFlag = true;
 	}
 	return false;
+}
+
+//======================================
+//ミドルクリックのプレス情報を取得
+//======================================
+bool CInputMouse::GetMouseMiddleClickPress()
+{
+	return m_bPrevMiddleClick;
+}
+//================================================================
+
+//======================================
+//ミドルクリックのトリガー情報を取得
+//======================================
+bool CInputMouse::GetMouseMiddleClickTrigger()
+{
+	return m_bMiddleClickTriggerFlag;
+}
+//================================================================
+
+//======================================
+//ミドルクリックのリピート情報を取得
+//======================================
+bool CInputMouse::GetMouseMiddleClickRepeat(int nRepeat)
+{
+	if (m_bPrevMiddleClick)
+	{//右クリックしていたら
+		if (m_nMiddleClickRepeatCnt % nRepeat == 0)
+		{//リピートカウントと剰余算して一致したら
+			return true;
+		}
+	}
+	return false;
+}
+//================================================================
+
+//======================================
+//右クリックの状態を取得する
+//======================================
+void CInputMouse::GetStateRightClick()
+{
+    //キーが押されていたらtrue(0x8000)、&算は、お互いのビット同士が全て同じだったらtrueを返す
+	bool isRightClick = (GetAsyncKeyState(VK_RBUTTON) & 0x8000);
+
+	// 右クリックが「押された瞬間」を検出（「&&」の意味：どちらもtrueだったらtrue、それ以外はfalseを返す）
+	m_bRightClickTriggerFlag = (isRightClick && !m_bPrevRightClick);
+
+	//状態を更新
+	m_bPrevRightClick = isRightClick;
+
+	if (m_bPrevRightClick)
+	{//リピートカウントをインクリメント
+		m_nRightClickRepeatCnt++;
+	}
+}
+//================================================================
+
+//======================================
+//ミドルクリックの状態を取得する
+//======================================
+void CInputMouse::GetStateMiddleClick()
+{
+	//キーが押されていたらtrue(0x8000)、&算は、お互いのビット同士が全て同じだったらtrueを返す
+	bool isMiddleClick = (GetAsyncKeyState(VK_MBUTTON) & 0x8000);
+
+	// ミドルクリックが「押された瞬間」を検出（「&&」の意味：どちらもtrueだったらtrue、それ以外はfalseを返す）
+	m_bMiddleClickTriggerFlag = (isMiddleClick && !m_bPrevMiddleClick);
+
+	//状態を更新
+	m_bPrevMiddleClick = isMiddleClick;
+
+	if (m_bPrevMiddleClick)
+	{//リピートカウントをインクリメント
+		m_nMiddleClickRepeatCnt++;
+	}
+
+}
+//================================================================
+
+//======================================
+//左クリックの状態を取得する
+//======================================
+void CInputMouse::GetStateLeftClick()
+{
+	//キーが押されていたらtrue(0x8000)、&算は、お互いのビット同士が全て同じだったらtrueを返す
+	bool isLeftClick = (GetAsyncKeyState(VK_LBUTTON) & 0x8000);
+
+	// 左クリックが「押された瞬間」を検出（「&&」の意味：どちらもtrueだったらtrue、それ以外はfalseを返す）
+	m_bLeftClickTriggerFlag = (isLeftClick && !m_bPrevLeftClick);
+
+	//状態を更新
+	m_bPrevLeftClick = isLeftClick;
+
+	if (m_bPrevLeftClick)
+	{//左クリックしている間、リピートカウントをインクリメント
+		m_nLeftClickRepeatCnt++;
+	}
 }
 //================================================================

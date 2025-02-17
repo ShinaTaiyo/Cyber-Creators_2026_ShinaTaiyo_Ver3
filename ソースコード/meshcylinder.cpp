@@ -26,7 +26,6 @@ m_fRadius(fRadius),m_fHeight(fHeight),//半径、高さ
 m_nNumDivisionXZ(nNumDivisionXZ),m_nNumDivisionY(nNumDivisionY),//XZ方向分割数、Y方向分割数
 m_nNumVtx((m_nNumDivisionXZ + 1) * m_nNumDivisionY + 2),//頂点数（上面の中心点　＋　下面の中心点　＋　（ (X方向頂点数 + 1)　＊　Y方向頂点数 ）※X方向の+1はUV対策
 m_nNumIdx((m_nNumDivisionXZ + 1) * 2 * (m_nNumDivisionY + 1) + 2 * m_nNumDivisionY),//インデックス数(１面は、XZ方向頂点数　＊　２)　＊　（Y方向頂点数 + 1) + 2 * (縮退計算数)
-m_nNumPolygon(2 * (m_nNumDivisionXZ + 1) * (m_nNumDivisionY + 1) + 2 * 2 + 1 * (m_nNumDivisionY - 1)),//ポリゴン数（底面と上面をつなぐ縮退ポリゴンは二つ）（側面と側面をつなぐ縮退ポリゴンは一つ）
 m_nTextureIndex(0),m_pIdxBuff(nullptr),m_pVtxBuff(nullptr),m_pTexture(nullptr),
 m_Pos(Pos),m_Rot(Rot),m_nCheckVtx(0),m_nCheckIdx(0),m_pMtxChild(nullptr),m_bUseDraw(true)
 {

@@ -32,7 +32,8 @@
 const string CLockon::s_LOCKON_FILENAME[static_cast<int>(CLockon::TYPE::MAX)] =
 {
 	"data\\TEXTURE\\LockOn\\Target_000.png",
-	"data\\TEXTURE\\LockOn\\DiveTarget_001.png"
+	"data\\TEXTURE\\LockOn\\DiveTarget_001.png",
+	"data\\TEXTURE\\LockOn\\StuckShotTarget_000.png"
 };
 
 //===============================================================

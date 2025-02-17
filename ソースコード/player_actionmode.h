@@ -65,7 +65,7 @@ public:
 	void MoveProcess(CPlayer* pPlayer) override;//移動処理
 	void SetDiveMove(D3DXVECTOR3 Move) { m_DiveMove = Move; }//ダイブ時の移動量を設定
 private:
-	static const float s_fCOLLISIONDIVEMOVELENGTH;//ダイブ移動がワイヤーヘッドと当たる距離
+	static constexpr float s_fDIVEMOVE = 60.0f;//ダイブ移動がワイヤーヘッドと当たる距離
 	D3DXVECTOR3 m_DiveMove;//ダイブの移動量
 };
 
@@ -87,6 +87,7 @@ public:
 	void MoveProcess(CPlayer* pPlayer) override; //移動処理
 private:
 	D3DXVECTOR3 m_NowPos;//カメラの位置のモーションに使う
+	bool m_bStartWireShot;//ワイヤーの発射を開始するかどうか
 };
 
 //移動できないクラス
@@ -126,12 +127,25 @@ private:
 	static const float s_fNORMAL_SHOTSPEED;//通常の射撃速度
 };
 
+//引っ付き射撃クラス
+class CPlayerAttack_StackShot : public CPlayerAttack
+{
+public:
+	CPlayerAttack_StackShot(CPlayer * pPlayer);//コンストラクタ
+	~CPlayerAttack_StackShot() override;//デストラクタ
+	void AttackProcess(CPlayer* pPlayer) override;//攻撃処理
+private:
+	static constexpr float s_fNORMAL_SHOTSPEED = 70.0f;//引っ付きながらなので射撃性能UP
+	static constexpr int s_nSHOT_FREQUENCY = 3;//攻撃頻度
+	bool m_bDelayModeChengeFrame;              //攻撃モードのチェンジを遅らせるフラグ
+};
+
 //ダイブクラス
 class CPlayerAttack_Dive : public CPlayerAttack
 {
 public:
 	CPlayerAttack_Dive();//コンストラクタ
-	~CPlayerAttack_Dive();//デストラクタ
+	~CPlayerAttack_Dive() override;//デストラクタ
 	void AttackProcess(CPlayer* pPlayer) override;//攻撃処理
 };
 
@@ -144,70 +158,4 @@ public:
 	void AttackProcess(CPlayer* pPlayer) override;//攻撃処理
 };
 //======================================================================================
-
-//==============================================
-//エフェクトクラス
-//==============================================
-
-//スーパークラス
-class CPlayerEffect
-{
-public:
-	CPlayerEffect();//コンストラクタ
-	virtual ~CPlayerEffect();//デストラクタ
-	virtual void EffectProcess(CPlayer * pPlayer);//エフェクト処理
-};
-
-//ダイブエフェクトクラス
-class CPlayerEffect_Dive : public CPlayerEffect
-{
-public:
-	CPlayerEffect_Dive();//コンストラクタ
-	~CPlayerEffect_Dive() override;//デストラクタ
-	void EffectProcess(CPlayer* pPlayer) override;//エフェクト処理
-};
-
-//エフェクトなしクラス
-class CPlayerEffect_None : public CPlayerEffect
-{
-public:
-	CPlayerEffect_None() {}; //コンストラクタ
-	~CPlayerEffect_None() {}; //デストラクタ
-	void EffectProcess(CPlayer* pPlayer) override {};//エフェクト処理
-};
-
-//==============================================
-//ワイヤー発射中判定クラス
-//==============================================
-
-//スーパークラス
-class CPlayerWireShot
-{
-public:
-	CPlayerWireShot();//コンストラクタ
-	virtual ~CPlayerWireShot();//デストラクタ
-	virtual void WireShotProcess(CPlayer * pPlayer);//ワイヤー発射処理
-	static void StartWireShotProcess(CPlayer* pPlayer);//ワイヤーの発射を開始する
-};
-
-//発射するクラス
-class CPlayerWireShot_Do : public CPlayerWireShot
-{
-public:
-	CPlayerWireShot_Do();//コンストラクタ
-	~CPlayerWireShot_Do() override;//デストラクタ
-	void WireShotProcess(CPlayer* pPlayer) override;//ワイヤー発射処理
-private:
-	void FrightenedEnemy(CPlayer* pPlayer);//敵を怯えさせる処理
-	void DecisionCameraRot(CPlayer* pPlayer);//カメラの向きを決める処理
-};
-
-//発射しないクラス
-class CPlayerWireShot_Dont : public CPlayerWireShot
-{
-public:
-	CPlayerWireShot_Dont();//コンストラクタ
-	~CPlayerWireShot_Dont() override;//デストラクタ
-	void WireShotProcess(CPlayer* pPlayer) override;//ワイヤー発射処理
-};
 #endif

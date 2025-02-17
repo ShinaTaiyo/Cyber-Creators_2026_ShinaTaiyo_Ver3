@@ -194,11 +194,12 @@ void CMeshOrbit::Update()
 
 	for (int nCntZ = 0; nCntZ < m_nNUMBLOCK_Z; nCntZ++)
 	{
-		pVtx[0 + m_nNUMVERTEX_X * nCntZ].pos = m_Pos2 - D3DXVECTOR3(0.0f,fDivisionPosY * nCntZ,0.0f);  //オフセットの位置を反映
-		pVtx[m_nNUMVERTEX_X + m_nNUMVERTEX_X * nCntZ].pos = m_Pos2 - D3DXVECTOR3(0.0f, fDivisionPosY * (nCntZ + 1), 0.0f);        //原点の位置を代入
+		//3×3の場合、１週目：0.4、２週目：4,8、3週目：8,12・・・
+		pVtx[0 + m_nNUMVERTEX_X * nCntZ].pos = m_Pos2 - D3DXVECTOR3(0.0f,fDivisionPosY * nCntZ,0.0f);                             //端のブロックの上側の更新する頂点を決める
+		pVtx[m_nNUMVERTEX_X + m_nNUMVERTEX_X * nCntZ].pos = m_Pos2 - D3DXVECTOR3(0.0f, fDivisionPosY * (nCntZ + 1), 0.0f);        //端のブロックの下側の更新する頂点を決める
 
-		nCol1 = m_nNUMBLOCK_X + (nCntZ * m_nNUMVERTEX_X);
-		nCol2 = m_nNUMBLOCK_X + (nCntZ * m_nNUMVERTEX_X) + m_nNUMVERTEX_X;
+		nCol1 = m_nNUMBLOCK_X + (nCntZ * m_nNUMVERTEX_X);//上で更新するブロックの上側の列の一番右端の頂点番号を決める
+		nCol2 = m_nNUMBLOCK_X + (nCntZ * m_nNUMVERTEX_X) + m_nNUMVERTEX_X;//上で更新するブロックの下側の列の一番右端の頂点番号を決める
 		for (int nCntX = 0; nCntX < m_nNUMBLOCK_X; nCntX++)
 		{
 			fRatioVtx = float(nCntX) / float(m_nNUMBLOCK_X);
@@ -220,7 +221,7 @@ void CMeshOrbit::Update()
 
 			}
 			else
-			{//２週目以降なので、上のブロックにつながる頂点の位置を設定
+			{//２週目以降なので、上のブロックにつながる頂点の位置を設定(nCol1)はもう使わない
 				pVtx[nCol2].pos = pVtx[nCol2 - 1].pos;  //原点行 〇１：（５　＝　４）、〇２：（４　＝　３）
 				pVtx[nCol2].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, fRatioVtx);  //オフセット行　〇１：（２　＝　１）、〇２：（１　＝　０）
 				if (nCol1 >= m_nTOTAL_VERTEX || nCol2 >= m_nTOTAL_VERTEX || 
@@ -253,11 +254,6 @@ void CMeshOrbit::Draw()
 
 	//ワールドマトリックスの初期化
 	D3DXMatrixIdentity(&m_mtxWorld);
-
-
-	//向きを反映
-	//D3DXMatrixRotationYawPitchRoll(&mtxRot,m_Rot.y,m_Rot.x,m_Rot.z);
-	//D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxRot);
 
 	//位置を反映
 	D3DXMatrixTranslation(&mtxTrans,0.0f, 0.0f, 0.0f);

@@ -58,9 +58,10 @@ private:
 																			                  
 	static const int m_nTOTAL_VERTEX = m_nNUMVERTEX_X * m_nNUMVERTEX_Z;                       //合計頂点数
 
-	static const int m_nTOTAL_POLYGON = m_nTOTAL_BLOCK * 2 + 4 * (m_nNUMBLOCK_Z - 1);         //合計ポリゴン数（合計ブロック数×２＋４×縮退計算数）
+	static const int m_nTOTAL_INDEX = (m_nNUMVERTEX_X * 2) * m_nNUMBLOCK_Z + 2 * (m_nNUMBLOCK_Z - 1);//合計インデックス数（横の頂点数×２×縦のブロック宇数 + 縮退計算数
+	                                                                                                 //(2×縦のブロック数 - 1)
+	static const int m_nTOTAL_POLYGON = m_nTOTAL_INDEX - 2;         //インデックス３つ目からポリゴンができるので、インデックス数 - 2
 
-	static const int m_nTOTAL_INDEX = m_nTOTAL_POLYGON + 2;                                      //合計インデックス数
 
 	PDIRECT3DVERTEXBUFFER9 m_pVtxBuff;   //頂点バッファへのポインタ
 	LPDIRECT3DINDEXBUFFER9 m_pIdxBuff;   //インデックスバッファへのポインタ
