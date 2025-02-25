@@ -29,7 +29,7 @@ bool CObject::m_bActivationReleaseAll = false;            //ReleaseAllを発動する
 //=====================================================
 //コンストラクタ（描画順設定用）
 //=====================================================
-CObject::CObject(int nPriority,bool bUseintPriority, TYPE Type, OBJECTTYPE ObjType) : m_type(Type), m_bUseInitialSound(true) ,m_ObjectType(ObjType),
+CObject::CObject(int nPriority,bool bUseintPriority, TYPE Type, OBJECTTYPE ObjType) : m_type(Type),m_ObjectType(ObjType),
 m_bDeath(false), m_bUseDeath(false),m_pPrev(nullptr),m_pNext(nullptr),
 m_nPriority(nPriority),m_bCreateSuccess(false),m_nCntFrame(0),m_ManagerObjectType(MANAGEROBJECTTYPE::NONE)
 {

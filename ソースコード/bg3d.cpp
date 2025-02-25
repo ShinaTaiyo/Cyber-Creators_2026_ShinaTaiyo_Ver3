@@ -19,7 +19,7 @@
 //静的メンバ宣言
 //==============================================================
 const string CBg3D::s_BG3D_FILENAME[static_cast<int>(CBg3D::BG3DTYPE::MAX)] =
-{
+{//モデルのパス
 	"data\\MODEL\\Bg3D\\Sky_000.x"
 };
 //================================================================================================================
@@ -27,7 +27,7 @@ const string CBg3D::s_BG3D_FILENAME[static_cast<int>(CBg3D::BG3DTYPE::MAX)] =
 //==============================================================
 //コンストラクタ
 //==============================================================
-CBg3D::CBg3D(int nPri, bool bUseintPri, CObject::TYPE type, CObject::OBJECTTYPE ObjType) : CObjectX(nPri,bUseintPri,type,ObjType)
+CBg3D::CBg3D(int nPri, bool bUseintPri, CObject::TYPE type, CObject::OBJECTTYPE ObjType) : CObjectX(nPri,bUseintPri,type,ObjType),m_Type(BG3DTYPE::SKY)
 {
 
 }
@@ -57,7 +57,7 @@ HRESULT CBg3D::Init()
 //==============================================================
 void CBg3D::Uninit()
 {
-	CObjectX::Uninit();
+	CObjectX::Uninit();//オブジェクトX終了処理
 }
 //================================================================================================================
 
@@ -66,20 +66,20 @@ void CBg3D::Uninit()
 //==============================================================
 void CBg3D::Update()
 {
-	D3DXVECTOR3& Rot = GetRotInfo().GetRot();
+	D3DXVECTOR3& Rot = GetRotInfo().GetRot();//向きを取得する
 
-	GetRotInfo().SetRot(Rot + D3DXVECTOR3(0.0f, 0.001f, 0.0f));
+	GetRotInfo().SetRot(Rot + D3DXVECTOR3(0.0f, 0.001f, 0.0f));//向きを設定する（少しずつ背景を回す)
 
-	CObjectX::Update();
+	CObjectX::Update();//オブジェクトXの更新処理
 }
 //================================================================================================================
 
 //==============================================================
-//描画処理
+//描画処理（背景はライトの影響を受けない)
 //==============================================================
 void CBg3D::Draw()
 {
-	LPDIRECT3DDEVICE9 pDevice = CManager::GetRenderer()->GetDevice();
+	LPDIRECT3DDEVICE9 pDevice = CManager::GetRenderer()->GetDevice();//デバイスの取得
 
 	//ライトを無効にする
 	pDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
@@ -87,7 +87,7 @@ void CBg3D::Draw()
 	//両面を描画する
 	pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
-	CObjectX::Draw();
+	CObjectX::Draw();//オブジェクトXの描画処理
 
 	//ライトを有効にする
 	pDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
@@ -102,7 +102,7 @@ void CBg3D::Draw()
 //==============================================================
 void CBg3D::SetDeath()
 {
-	CObject::SetDeath();
+	CObjectX::SetDeath();//オブジェクトXの死亡フラグ設定処理
 }
 //================================================================================================================
 
@@ -111,19 +111,21 @@ void CBg3D::SetDeath()
 //==============================================================
 CBg3D* CBg3D::Create(BG3DTYPE type, D3DXVECTOR3 Pos, D3DXVECTOR3 Rot, D3DXVECTOR3 Scale)
 {
-	CTexture* pTexture = CManager::GetTexture();
-	CBg3D* pBg3D = DBG_NEW CBg3D();
+	CTexture* pTexture = CManager::GetTexture();  //テクスチャ情報を取得する
+	CBg3D* pBg3D = DBG_NEW CBg3D();               //3D背景の生成
 
-	pBg3D->Init();
-	pBg3D->SetBg3DType(type);
-	pBg3D->GetPosInfo().SetPos(Pos);
-	pBg3D->GetRotInfo().SetRot(Rot);
-	pBg3D->GetSizeInfo().SetScale(Scale);
-	pBg3D->SetUseDeath(true);
-	pBg3D->GetDrawInfo().SetUseShadow(false);
+	pBg3D->Init();                                //初期化処理
+	pBg3D->SetBg3DType(type);                     //3D背景の種類を設定する
+	pBg3D->GetPosInfo().SetPos(Pos);              //位置を設定する
+	pBg3D->GetRotInfo().SetRot(Rot);              //向きを設定する
+	pBg3D->GetSizeInfo().SetScale(Scale);         //拡大率を設定する
+	pBg3D->SetUseDeath(true);                     //死亡フラグを使用するかどうかを設定する
+	pBg3D->GetDrawInfo().SetUseShadow(false);     //影を使用しない
+
 	//モデル情報設定
-	int nIdx = CManager::GetObjectXInfo()->Regist(s_BG3D_FILENAME[static_cast<int>(type)]);
-	//モデル情報を割り当てる
+	int nIdx = CManager::GetObjectXInfo()->Regist(s_BG3D_FILENAME[static_cast<int>(type)]);//テクスチャ番号の設定、取得
+
+	//モデル情報を設定
 	pBg3D->BindObjectXInfo(CManager::GetObjectXInfo()->GetMesh(nIdx),
 		CManager::GetObjectXInfo()->GetBuffMat(nIdx),
 		CManager::GetObjectXInfo()->GetdwNumMat(nIdx),

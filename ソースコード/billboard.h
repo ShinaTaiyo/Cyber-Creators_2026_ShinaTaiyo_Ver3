@@ -66,20 +66,20 @@ public:
 	//=======================================================================================================
 
 
-	void SetColor(D3DXCOLOR col);                                               //色合いを設定する
-	D3DXCOLOR GetColor() { return m_Col; }                                      //色を取得する
-	void SetTextureIndex(int nIdx) { m_nTextureIndex = nIdx; }//テクスチャ番号をセットする
-	int GetTextureIndex() { return m_nTextureIndex; }         //テクスチャ番号を取得する
+	void SetColor(D3DXCOLOR col);                                                             //色合いを設定する
+	D3DXCOLOR GetColor() { return m_Col; }                                                    //色を取得する
+	void SetTextureIndex(int nIdx) { m_nTextureIndex = nIdx; }                                //テクスチャ番号をセットする
+	int GetTextureIndex() { return m_nTextureIndex; }                                         //テクスチャ番号を取得する
 	void SetAnimInfo(int nMaxAnimationPattern, int nAnimationChange,D3DXCOLOR col,bool bAnim);//アニメーション関係の設定
-	void SetAnim(int nAnim) { m_nAnimaionPattern = nAnim; }   //アニメーション番号を設定
-	D3DXMATRIX& GetMtxWorld() { return m_mtxWorld; }          //ワールドマトリックスを取得する
-	LPDIRECT3DVERTEXBUFFER9& GetVtxBuff() { return m_pVtxBuff; }//頂点バッファを取得する
-	LPDIRECT3DTEXTURE9& GetTexture() { return m_pTexture; }     //テクスチャを取得する
+	void SetAnim(int nAnim) { m_nAnimaionPattern = nAnim; }                                   //アニメーション番号を設定
+	D3DXMATRIX& GetMtxWorld() { return m_mtxWorld; }                                          //ワールドマトリックスを取得する
+	LPDIRECT3DVERTEXBUFFER9& GetVtxBuff() { return m_pVtxBuff; }                              //頂点バッファを取得する
+	LPDIRECT3DTEXTURE9& GetTexture() { return m_pTexture; }                                   //テクスチャを取得する
 
-	void SetUseGravity(float fGravity); //重力を設定
-	void SetAddGravity(float fAddGravity) { m_fAddGravity = fAddGravity; };//加算する重力を設定
-	void SetUseHorming(float fSpeed);   //ホーミングを設定
-	void SetUseAddSpeed(bool bUseAddSpeed, bool bMultiplication, float fAddSpeed);//加速を設定
+	void SetUseGravity(float fGravity);                                                       //重力を設定
+	void SetAddGravity(float fAddGravity) { m_fAddGravity = fAddGravity; };                   //加算する重力を設定
+	void SetUseHorming(float fSpeed);                                                         //ホーミングするかどうかを設定
+	void SetUseAddSpeed(bool bUseAddSpeed, bool bMultiplication, float fAddSpeed);            //加速するかどうかを設定
 
 	//====================================================
 	//カーブ関係
@@ -97,9 +97,9 @@ public:
 	//点滅関係
 	//==============================
 	void SetUseBlinking(bool bUse, int nMaxBlinkingFrame, float fLimitBlinkingRatio) {
-		m_bUseBlinking = bUse;//点滅を使用するかどうか
-		m_nMaxBlinkingFrame = nMaxBlinkingFrame;//点滅最大フレーム
-		m_fLimitBlinkingRatio = fLimitBlinkingRatio;//点滅させる濃さのリミット
+		m_bUseBlinking = bUse;                                   //点滅を使用するかどうか
+		m_nMaxBlinkingFrame = nMaxBlinkingFrame;                 //点滅最大フレーム
+		m_fLimitBlinkingRatio = fLimitBlinkingRatio;             //点滅させる濃さのリミット
 	}
 	//==============================================================================================================================================================
 
@@ -194,12 +194,12 @@ private:
 	//====================================================
 	//点滅関係
 	//====================================================
-	int m_nCntBlinkingFrame;   //点滅用のカウント!
-	int m_nMaxBlinkingFrame;   //点滅用の最大カウント数!
-	bool m_bBlinkingAim;       //カウントを増やすか減らすかを決める!
-	bool m_bUseBlinking;       //点滅させるかどうか!
+	int m_nCntBlinkingFrame;     //点滅用のカウント!
+	int m_nMaxBlinkingFrame;     //点滅用の最大カウント数!
+	bool m_bBlinkingAim;         //カウントを増やすか減らすかを決める!
+	bool m_bUseBlinking;         //点滅させるかどうか!
 	float m_fLimitBlinkingRatio; //点滅させる色の濃さのリミット!
-	void BlinkingProcess();//点滅させる処理
+	void BlinkingProcess();      //点滅させる処理
 	//====================================================================================================================
 
 	//===============================
@@ -223,7 +223,7 @@ private:
 	//===============================
 	bool m_bUseAddSpeed;     //加速を使用するかどうか!
 	float m_fAddSpeed;       //加速度!
-	bool m_bMultiplication;    //速度を乗算させるかどうか!
+	bool m_bMultiplication;  //速度を乗算させるかどうか!
 	//================================================================================
 
 };

@@ -87,21 +87,22 @@ HRESULT CMeshCylinder::Init()
 		fRatioY = (1.0f / (m_nNumDivisionY - 1)) * nCntVtxY;
 		for (int nCntVtxXZ = 0; nCntVtxXZ < m_nNumDivisionXZ + 1; nCntVtxXZ++)
 		{//X方向のUVは重なる頂点があるので、+ 1
-			fRatioXZ = (1.0f / (m_nNumDivisionXZ)) * nCntVtxXZ;
+			fRatioXZ = (1.0f / (m_nNumDivisionXZ)) * nCntVtxXZ;//XZ方向の割合を求める
 			if (nCntVtxY == 0 && nCntVtxXZ == 0)
 			{//最初の周なので上面の中心点を設定する
-			    pVtx[nCntArray].pos = m_Pos + D3DXVECTOR3(0.0f, m_fHeight, 0.0f);//0
-				pVtx[nCntArray].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
-				MeasureNor = pVtx[nCntArray].pos - m_Pos;
-				D3DXVec3Normalize(&MeasureNor, &MeasureNor);
-				pVtx[nCntArray].nor = MeasureNor;
-				pVtx[nCntArray].tex = D3DXVECTOR2(0.0f, fRatioY);
+			    pVtx[nCntArray].pos = m_Pos + D3DXVECTOR3(0.0f, m_fHeight, 0.0f);//位置の設定
+				pVtx[nCntArray].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);         //色合い
+				MeasureNor = pVtx[nCntArray].pos - m_Pos;                        //法線
+				D3DXVec3Normalize(&MeasureNor, &MeasureNor);                     //法線を正規化
+				pVtx[nCntArray].nor = MeasureNor;                                //法線を設定
+				pVtx[nCntArray].tex = D3DXVECTOR2(0.0f, fRatioY);                //テクスチャを設定
 				nCntArray++;
 			}
-			SetVertexInfo(&pVtx[nCntArray], fRatioXZ, fRatioY, nCntVtxXZ, nCntVtxY);
+
+			SetVertexInfo(&pVtx[nCntArray], fRatioXZ, fRatioY, nCntVtxXZ, nCntVtxY);//頂点情報を設定する
 
 			if (nCntArray >= m_nNumVtx || nCntArray < 0)
-			{
+			{//配列外チェック
 				assert("配列外アクセス！");
 			}
 
@@ -111,11 +112,11 @@ HRESULT CMeshCylinder::Init()
 			if (nCntVtxY == m_nNumDivisionY - 1 && nCntVtxXZ == m_nNumDivisionXZ)
 			{//最後
 				pVtx[nCntArray].pos = m_Pos;//底面の中心に位置を設定
-				pVtx[nCntArray].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
-				MeasureNor = pVtx[nCntArray].pos - m_Pos;
-				D3DXVec3Normalize(&MeasureNor, &MeasureNor);
-				pVtx[nCntArray].nor = MeasureNor;
-				pVtx[nCntArray].tex = D3DXVECTOR2(0.0f, fRatioY);
+				pVtx[nCntArray].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);//色合いを設定
+				MeasureNor = pVtx[nCntArray].pos - m_Pos;//法線を計算
+				D3DXVec3Normalize(&MeasureNor, &MeasureNor);//正規化する
+				pVtx[nCntArray].nor = MeasureNor;//設定
+				pVtx[nCntArray].tex = D3DXVECTOR2(0.0f, fRatioY);//テクスチャ座標を設定
 			}
 		}
 	}
@@ -318,7 +319,7 @@ void CMeshCylinder::Draw()
 //==================================================================================================================
 void CMeshCylinder::SetDeath()
 {
-	CObject::SetDeath();
+	CObject::SetDeath();//死亡フラグ設定処理
 }
 //=========================================================================================================================================
 
@@ -327,7 +328,7 @@ void CMeshCylinder::SetDeath()
 //==================================================================================================================
 void CMeshCylinder::BindTexture(LPDIRECT3DTEXTURE9 pTexture)
 {
-	m_pTexture = pTexture;
+	m_pTexture = pTexture;//テクスチャアドレスを格納
 }
 //=========================================================================================================================================
 
@@ -367,6 +368,7 @@ void CMeshCylinder::ChengeNumPolygon()
 		m_nNumPolygon--;
 	}
 
+	//デバッグ表示
 	CManager::GetDebugText()->PrintDebugText("ポリゴン数：%d\n", m_nNumPolygon);
 	CManager::GetDebugText()->PrintDebugText("頂点数：%d\n", m_nNumVtx);
 	CManager::GetDebugText()->PrintDebugText("インデックス数：%d\n", m_nNumIdx);
@@ -396,23 +398,21 @@ void CMeshCylinder::CheckMeshInfo()
 	}
 
 	if (m_nCheckVtx >= m_nNumVtx)
-	{
+	{//配列サイズを超えるので０に戻す
 		m_nCheckVtx = 0;
 	}
 	else if (m_nCheckVtx < 0)
-	{
+	{//配列がーになるので最大にする
 		m_nCheckVtx = m_nNumVtx - 1;
 	}
 
 	if (m_nCheckVtx >= m_nNumVtx || m_nCheckVtx < 0)
-	{
+	{//配列買いアクセスチェック
 		assert("配列外アクセス！");
 	}
 	//デバッグ表示
 	CManager::GetDebugText()->PrintDebugText("確認している頂点番号：%d、頂点の位置：%f %f %f\n",
 		m_nCheckVtx, pVtx[m_nCheckVtx].pos.x, pVtx[m_nCheckVtx].pos.y, pVtx[m_nCheckVtx].pos.z);
-
-	//CParticle::SummonParticle(CParticle::TYPE00_NORMAL, 1, 60, 40.0f, 40.0f, 100, 10, true, pVtx[m_nCheckVtx].pos, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), true);
 
 	//==============================
 	//インデックス情報の設定
@@ -433,29 +433,33 @@ void CMeshCylinder::CheckMeshInfo()
 	}
 
 	if (m_nCheckIdx >= m_nNumIdx)
-	{
+	{//配列サイズを超えるので０に戻す
 		m_nCheckIdx = 0;
 	}
 	else if (m_nCheckIdx < 0)
-	{
+	{//配列がーになるので最大にする
 
 		m_nCheckIdx = m_nNumIdx - 1;
 	}
 
 	if (m_nCheckIdx >= m_nNumIdx || m_nCheckIdx < 0)
-	{
+	{//配列外アクセスチェック
 		assert("配列外アクセス！");
 	}
 
 	int nCheck = pIdx[m_nCheckIdx];
+
+	//デバッグ表示
 	CManager::GetDebugText()->PrintDebugText("確認しているインデックス番号：%d、頂点の位置：%f %f %f\n", m_nCheckIdx, pVtx[nCheck].pos.x, pVtx[nCheck].pos.y, pVtx[nCheck].pos.z);
 
+	//インデックスバッファをアンロック
 	m_pIdxBuff->Unlock();
 
 	//頂点バッファをアンロックする 
 	m_pVtxBuff->Unlock();
 	//==================================================================================================================
 
+	//ポリゴン数を変える
 	ChengeNumPolygon();
 }
 //=========================================================================================================================================

@@ -25,7 +25,7 @@ const string CAIModel::m_aAIMODEL_FILENAME[static_cast<int>(CAIModel::AIMODELTYP
 //===========================================================
 //コンストラクタ
 //===========================================================
-CAIModel::CAIModel(int nPri, bool bUseintPri, CObject::TYPE type, CObject::OBJECTTYPE ObjType) :CObjectX(nPri,bUseintPri,type,ObjType)
+CAIModel::CAIModel(int nPri, bool bUseintPri, CObject::TYPE type, CObject::OBJECTTYPE ObjType) :CObjectX(nPri,bUseintPri,type,ObjType),m_Type(CAIModel::AIMODELTYPE::MOVEPOINT)
 {
 
 }
@@ -44,7 +44,7 @@ CAIModel::~CAIModel()
 //===========================================================
 HRESULT CAIModel::Init()
 {
-	CObjectX::Init();
+	CObjectX::Init();//初期化処理
 	return S_OK;
 }
 //====================================================================================================================
@@ -54,7 +54,7 @@ HRESULT CAIModel::Init()
 //===========================================================	
 void CAIModel::Uninit()
 {
-	CObjectX::Uninit();
+	CObjectX::Uninit();//終了処理
 }
 //====================================================================================================================
 
@@ -63,12 +63,12 @@ void CAIModel::Uninit()
 //===========================================================	
 void CAIModel::Update()
 {
-	CObjectX::Update();
+	CObjectX::Update();//更新処理
 }
 //====================================================================================================================
 
 //===========================================================
-//描画処理
+//描画処理（オブジェクトのDrawで呼ばないために処理はなし)
 //===========================================================	
 void CAIModel::Draw()
 {
@@ -81,7 +81,7 @@ void CAIModel::Draw()
 //===========================================================	
 void CAIModel::ExtraDraw()
 {
-	CObjectX::Draw();
+	CObjectX::Draw();//描画処理
 }
 //====================================================================================================================
 
@@ -90,7 +90,7 @@ void CAIModel::ExtraDraw()
 //===========================================================	
 void CAIModel::SetDeath()
 {
-	CObject::SetDeath();
+	CObject::SetDeath();//死亡フラグ設定処理
 }
 //====================================================================================================================
 
@@ -102,20 +102,22 @@ CAIModel* CAIModel::Create(AIMODELTYPE type, D3DXVECTOR3 pos, D3DXVECTOR3 rot, D
 	pAiModel->Init();                                                               //初期化処理
 	pAiModel->SetUseDeath(false);                                                   //死亡フラグを発動するかどうかを設定する
 	pAiModel->m_Type = type;                                                        //敵の種類
-	pAiModel->GetPosInfo().SetPos(pos);                                                //オブジェクト２Ｄの位置を設定
-	pAiModel->GetPosInfo().SetPosOld(pos);                                                       //1f前の位置を設定
-	pAiModel->GetDrawInfo().SetUseDraw(true);
-	pAiModel->GetDrawInfo().SetUseShadow(true);
-	pAiModel->GetPosInfo().SetSupportPos(pos);                                                   //設置位置
-	pAiModel->GetSizeInfo().SetScale(Scale);                                            //オブジェクトの拡大率
-	pAiModel->GetSizeInfo().SetFormarScale(Scale);                                                //元の拡大率を設定する
-	pAiModel->GetDrawInfo().SetMtxParent(mtxWorld);                                               //親マトリックスを設定する
+	pAiModel->GetPosInfo().SetPos(pos);                                             //オブジェクト２Ｄの位置を設定
+	pAiModel->GetPosInfo().SetPosOld(pos);                                          //1f前の位置を設定
+	pAiModel->GetDrawInfo().SetUseDraw(true);                                       //描画をする
+	pAiModel->GetDrawInfo().SetUseShadow(true);                                     //影を描画する
+	pAiModel->GetPosInfo().SetSupportPos(pos);                                      //設置位置
+	pAiModel->GetSizeInfo().SetScale(Scale);                                        //オブジェクトの拡大率
+	pAiModel->GetSizeInfo().SetFormarScale(Scale);                                  //元の拡大率を設定する
+	pAiModel->GetDrawInfo().SetMtxParent(mtxWorld);                                 //親マトリックスを設定する
+
+	//モデル情報を割り当て、情報を取得する
 	nIdx = CManager::GetObjectXInfo()->Regist(m_aAIMODEL_FILENAME[static_cast<int>(type)]);
 	pAiModel->CObjectX::BindObjectXInfo(CManager::GetObjectXInfo()->GetMesh(nIdx),
 		CManager::GetObjectXInfo()->GetBuffMat(nIdx),
 		CManager::GetObjectXInfo()->GetdwNumMat(nIdx),
 		CManager::GetObjectXInfo()->GetTexture(nIdx),
-		CManager::GetObjectXInfo()->GetColorValue(nIdx));                           //モデル情報を割り当てる
+		CManager::GetObjectXInfo()->GetColorValue(nIdx));                           
 
 	pAiModel->SetSize();                                                            //Xオブジェクトのサイズを設定する
 	return pAiModel;

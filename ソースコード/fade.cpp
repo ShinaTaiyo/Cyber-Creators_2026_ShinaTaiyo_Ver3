@@ -48,16 +48,7 @@ HRESULT CFade::Init()
 //======================================================
 void CFade::Uninit()
 {
-	CObject2D::Uninit();
-}
-//========================================================================================================
-
-//======================================================
-//別枠の終了処理
-//======================================================
-void CFade::ExtraUninit()
-{
-	//Release();
+	CObject2D::Uninit();//オブジェクト2D終了処理
 }
 //========================================================================================================
 
@@ -66,40 +57,38 @@ void CFade::ExtraUninit()
 //======================================================
 void CFade::Update()
 {
-	float fRatio = 0.0f;//フェードの進行度の割合
-	bool bModeChenge = false;//モードが変わったかどうかのフラグ
+	float fRatio = 0.0f;            //フェードの進行度の割合
+	bool bModeChenge = false;       //モードが変わったかどうかのフラグ
 	switch (m_FadeMode)
 	{
-	case FADEMODE_IN:
-		m_nFadeCnt++;
+	case FADEMODE_IN://フェードイン
+		m_nFadeCnt++;//フェードカウントをインクリメント
 		if (m_nFadeCnt >= m_nMaxFadeCnt)
-		{
+		{//最大に達したら最大値に固定
 			m_nFadeCnt = m_nMaxFadeCnt;
 		}
-		fRatio = (float)(m_nFadeCnt) / (float)(m_nMaxFadeCnt);
-		SetColor(D3DXCOLOR(0.0f, 0.0f, 0.0f, fRatio), true, fRatio);
+		fRatio = (float)(m_nFadeCnt) / (float)(m_nMaxFadeCnt);//割合を求める
+		SetColor(D3DXCOLOR(0.0f, 0.0f, 0.0f, fRatio), true, fRatio);//透明度を設定
 		break;
 	case FADEMODE_OUT:
-		m_nFadeCnt--;
+		m_nFadeCnt--;//フェードカウントをデクリメント
 		if (m_nFadeCnt <= 0)
-		{
-			m_nFadeCnt = 0;
-			m_bStartFade = false;
+		{//フェードカウントが０になったら
+			m_nFadeCnt = 0;//０に固定
+			m_bStartFade = false;//フェード開始をfalseにする
 		}
 
-		fRatio = (float)(m_nFadeCnt) / (float)(m_nMaxFadeCnt);
-		SetColor(D3DXCOLOR(0.0f, 0.0f, 0.0f, fRatio), true, fRatio);
+		fRatio = (float)(m_nFadeCnt) / (float)(m_nMaxFadeCnt);//割合を求める
+		SetColor(D3DXCOLOR(0.0f, 0.0f, 0.0f, fRatio), true, fRatio);//透明度を設定
 		break;
 	default:
 		break;
 	}
 
+	//デバッグ表示
 	CManager::GetDebugText()->PrintDebugText("フェードを開始するかどうか：%d\n", m_bStartFade);
 
-	if (bModeChenge == false)
-	{
-		CObject2D::Update();//オブジェクト2D更新処理
-	}
+	CObject2D::Update();//オブジェクト2D更新処理
 }
 //========================================================================================================
 
@@ -108,9 +97,9 @@ void CFade::Update()
 //======================================================
 void CFade::Draw()
 {
-	D3DXCOLOR col = GetColor();
+	D3DXCOLOR col = GetColor();//色合いを取得
 	if (col.a > 0.0f)
-	{
+	{//透明度が０より小さくなったら
 		CObject2D::Draw();//オブジェクト2D描画処理
 	}
 }
@@ -121,7 +110,7 @@ void CFade::Draw()
 //======================================================
 void CFade::SetDeath()
 {
-	CObject2D::SetDeath();
+	CObject2D::SetDeath();//オブジェクト2D死亡フラグ設定処理
 }
 //========================================================================================================
 
@@ -133,10 +122,10 @@ void CFade::SetFade(FADEMODE FadeMode)
 	m_FadeMode = FadeMode;//フェードモードの設定
 	switch (FadeMode)
 	{
-	case FADEMODE_IN:
+	case FADEMODE_IN://フェードイン
 		m_nFadeCnt = 0;
 		break;
-	case FADEMODE_OUT:
+	case FADEMODE_OUT://フェードアウト
 		m_nFadeCnt = m_nMaxFadeCnt;
 		break;
 	default:
@@ -150,13 +139,13 @@ void CFade::SetFade(FADEMODE FadeMode)
 //======================================================
 CFade* CFade::Create()
 {
-	CFade* pFade = DBG_NEW CFade;                             //フェードを生成
-    pFade->Init();                                                                                                        //初期化処理
+	CFade* pFade = DBG_NEW CFade;                                                //フェードを生成
+    pFade->Init();                                                               //初期化処理
     pFade->SetUseDeath(false);                                                   //死亡フラグを発動するかどうかを設定する
-    pFade->CObject2D::SetAnimInfo(1, 1, true);//ポリゴンとテクスチャ情報を設定
-    pFade->SetPos(D3DXVECTOR3(SCREEN_WIDTH / 2,SCREEN_HEIGHT / 2,0.0f));                                                                                        //中心に位置を設定
-    pFade->m_nMaxFadeCnt = 45;                                                                                           //フェードカウント最大値
-    pFade->CObject::SetType(CObject::TYPE::FADE);                                                                          //オブジェクトの種類を決める
+    pFade->CObject2D::SetAnimInfo(1, 1, true);                                   //ポリゴンとテクスチャ情報を設定
+    pFade->SetPos(D3DXVECTOR3(SCREEN_WIDTH / 2,SCREEN_HEIGHT / 2,0.0f));         //中心に位置を設定
+    pFade->m_nMaxFadeCnt = 45;                                                   //フェードカウント最大値
+    pFade->CObject::SetType(CObject::TYPE::FADE);                                //オブジェクトの種類を決める
 
 	return pFade;
 }
@@ -187,7 +176,7 @@ CSceneFade::~CSceneFade()
 //======================================================
 HRESULT CSceneFade::Init()
 {
-	CFade::Init();
+	CFade::Init();//フェードの初期化処理
 	return S_OK;
 }
 //========================================================================================================
@@ -197,7 +186,7 @@ HRESULT CSceneFade::Init()
 //======================================================
 void CSceneFade::Uninit()
 {
-	CFade::Uninit();
+	CFade::Uninit();//フェードの終了処理
 }
 //========================================================================================================
 
@@ -206,17 +195,18 @@ void CSceneFade::Uninit()
 //======================================================
 void CSceneFade::Update()
 {
-	int& nFadeCnt = GetFadeCnt();
-	int& nMaxFadeCnt = GetMaxFadeCnt();
+	int& nFadeCnt = GetFadeCnt();//フェードカウントを取得
+	int& nMaxFadeCnt = GetMaxFadeCnt();//最大フェードカウントを取得する
 
-	CFade::Update();
+	CFade::Update();//フェードの更新処理
 	if (nFadeCnt >= nMaxFadeCnt)
 	{
-		SetFadeMode(FADEMODE_OUT);
-		CManager::SetMode(m_NextMode);
+		SetFadeMode(FADEMODE_OUT);//フェードアウト状態にする
+		CManager::SetMode(m_NextMode);//次のモードを設定
 	}
+
 	if (nFadeCnt <= 0)
-	{
+	{//フェードカウントが０になったらフェードモードをなしにする
 		SetFadeMode(FADEMODE_NONE);
 	}
 
@@ -229,7 +219,7 @@ void CSceneFade::Update()
 //======================================================
 void CSceneFade::Draw()
 {
-	CFade::Draw();
+	CFade::Draw();//フェードの描画処理
 }
 //========================================================================================================
 
@@ -238,7 +228,7 @@ void CSceneFade::Draw()
 //======================================================
 void CSceneFade::SetDeath()
 {
-	CFade::SetDeath();
+	CFade::SetDeath();//フェードの死亡フラグ設定処理
 }
 //========================================================================================================
 
@@ -247,32 +237,19 @@ void CSceneFade::SetDeath()
 //======================================================
 CSceneFade* CSceneFade::Create()
 {
-	CSceneFade* pSceneFade = DBG_NEW CSceneFade;                             //フェードを生成
-	bool bSuccess = pSceneFade->CObject::GetCreateSuccess();       //生成が成功したかどうかを取得する
-	if (bSuccess == true)
-	{//生成が成功したら
-		if (pSceneFade != nullptr)
-		{
-			pSceneFade->Init();                                                                                                        //初期化処理
-			pSceneFade->SetUseDeath(false);                                                   //死亡フラグを発動するかどうかを設定する
-			pSceneFade->SetPos(D3DXVECTOR3(SCREEN_WIDTH / 2,SCREEN_HEIGHT / 2,0.0f));                                                                                        //中心に位置を設定
-			pSceneFade->SetMaxFadeCnt(45);                                                                                           //フェードカウント最大値
-			pSceneFade->CObject::SetType(CObject::TYPE::FADE);                                                                          //オブジェクトの種類を決める
-			pSceneFade->SetAnimInfo(1,1,  false);//ポリゴン情報を設定
-			pSceneFade->SetWidth(SCREEN_WIDTH / 2);
-			pSceneFade->SetMaxWidth(SCREEN_WIDTH / 2);
-			pSceneFade->SetHeight(SCREEN_WIDTH / 2);
-			pSceneFade->SetColor(D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f), false, 1.0f);
-			pSceneFade->SetMaxHeight(SCREEN_WIDTH / 2);
-			pSceneFade->SetPolygonType(CObject2D::POLYGONTYPE::NORMAL);
-		}
-	}
-	else
-	{//オブジェクトに空きがなかったので破棄する
-		delete pSceneFade;
-		pSceneFade = nullptr;
-	}
-
+	CSceneFade* pSceneFade = DBG_NEW CSceneFade;                                      //フェードを生成
+	pSceneFade->Init();                                                               //初期化処理
+	pSceneFade->SetUseDeath(false);                                                   //死亡フラグを発動するかどうかを設定する
+	pSceneFade->SetPos(D3DXVECTOR3(SCREEN_WIDTH / 2,SCREEN_HEIGHT / 2,0.0f));         //中心に位置を設定
+	pSceneFade->SetMaxFadeCnt(45);                                                    //フェードカウント最大値
+	pSceneFade->CObject::SetType(CObject::TYPE::FADE);                                //オブジェクトの種類を決める
+	pSceneFade->SetAnimInfo(1,1,  false);                                             //ポリゴン情報を設定
+	pSceneFade->SetWidth(SCREEN_WIDTH / 2);                                           //横幅を設定
+	pSceneFade->SetMaxWidth(SCREEN_WIDTH / 2);                                        //最大横幅を設定
+	pSceneFade->SetHeight(SCREEN_WIDTH / 2);                                          //高さを設定
+	pSceneFade->SetMaxHeight(SCREEN_WIDTH / 2);                                       //最大高さを設定
+	pSceneFade->SetColor(D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f), false, 1.0f);             //色合いを設定
+	pSceneFade->SetPolygonType(CObject2D::POLYGONTYPE::NORMAL);                       //ポリゴンの種類を設定
 	return pSceneFade;
 }
 //========================================================================================================
@@ -291,114 +268,14 @@ void CSceneFade::SetSceneFade(FADEMODE FadeMode, CScene::MODE mode)
 		switch (FadeMode)
 		{
 		case FADEMODE_IN:
-			SetFadeCnt(0);
+			SetFadeCnt(0);//フェードカウントを０に設定
 			break;
 		case FADEMODE_OUT:
-			SetFadeCnt(GetMaxFadeCnt());
+			SetFadeCnt(GetMaxFadeCnt());//フェードカウントを最大に設定
 			break;
 		default:
 			break;
 		}
 	}
-}
-//========================================================================================================
-
-//=========================================<<<<<<<<<<<演出フェードクラス>>>>>>>>>>>======================================================================
-
-//======================================================
-//コンストラクタ
-//======================================================
-CDirectionFade::CDirectionFade() : CFade(5)
-{
-
-}
-//========================================================================================================
-
-//======================================================
-//デストラクタ
-//======================================================
-CDirectionFade::~CDirectionFade()
-{
-
-}
-//========================================================================================================
-
-//======================================================
-//初期化処理
-//======================================================
-HRESULT CDirectionFade::Init()
-{
-	CFade::Init();
-	return S_OK;
-}
-//========================================================================================================
-
-//======================================================
-//終了処理
-//======================================================
-void CDirectionFade::Uninit()
-{
-	CFade::Uninit();
-}
-//========================================================================================================
-
-//======================================================
-//更新処理
-//======================================================
-void CDirectionFade::Update()
-{
-	CFade::Update();
-}
-//========================================================================================================
-
-//======================================================
-//描画処理
-//======================================================
-void CDirectionFade::Draw()
-{
-	CFade::Draw();
-}
-//========================================================================================================
-
-//======================================================
-//死亡フラグ設定処理
-//======================================================
-void CDirectionFade::SetDeath()
-{
-	CFade::SetDeath();
-}
-//========================================================================================================
-
-//======================================================
-//生成処理
-//======================================================
-CDirectionFade* CDirectionFade::Create()
-{
-	CDirectionFade* pDirectionFade = DBG_NEW CDirectionFade;                             //フェードを生成
-	bool bSuccess = pDirectionFade->CObject::GetCreateSuccess();       //生成が成功したかどうかを取得する
-	if (bSuccess == true)
-	{//生成が成功したら
-		if (pDirectionFade != nullptr)
-		{
-			pDirectionFade->Init();                                                                                                        //初期化処理
-			pDirectionFade->SetUseDeath(false);                                                   //死亡フラグを発動するかどうかを設定する
-			pDirectionFade->SetAnimInfo(1, 1, false);//ポリゴン情報を設定
-			pDirectionFade->SetWidth(SCREEN_WIDTH / 2);
-			pDirectionFade->SetMaxWidth(SCREEN_WIDTH / 2);
-			pDirectionFade->SetHeight(SCREEN_WIDTH / 2);
-			pDirectionFade->SetMaxHeight(SCREEN_WIDTH / 2);
-			pDirectionFade->SetPolygonType(CObject2D::POLYGONTYPE::NORMAL);
-			pDirectionFade->SetPos(D3DXVECTOR3(SCREEN_WIDTH / 2,SCREEN_HEIGHT / 2,0.0f));                                                                                        //中心に位置を設定
-			pDirectionFade->SetMaxFadeCnt(45);                                                                                           //フェードカウント最大値
-			pDirectionFade->CObject::SetType(CObject::TYPE::FADE);                                                                          //オブジェクトの種類を決める
-		}
-	}
-	else
-	{//オブジェクトに空きがなかったので破棄する
-		delete pDirectionFade;
-		pDirectionFade = nullptr;
-	}
-
-	return pDirectionFade;
 }
 //========================================================================================================

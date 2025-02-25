@@ -25,16 +25,10 @@ class CWire : public CMeshCylinder
 {
 public:
 	enum class WIRETYPE
-	{
+	{//ワイヤーの種類
 		NORMAL = 0,
 		ROPE,
 		MAX
-	};
-
-	struct CirclePosInfo
-	{
-		D3DXVECTOR3 Pos;     //位置
-		D3DXMATRIX WorldMtx; //ワールドマトリックス
 	};
 
 	CWire(WIRETYPE WireType,float fRadius,float fHeight,int nNumDivsionXZ,D3DXVECTOR3 Pos,D3DXVECTOR3 Rot,int nNumDivisionY,int nPri = 0, bool bUseintPri = false, CObject::TYPE type = CObject::TYPE::WIRE, CObject::OBJECTTYPE ObjType = CObject::OBJECTTYPE::OBJECTTYPE_3D);//コンストラクタ
@@ -60,7 +54,6 @@ private:
 	WIRETYPE m_Type;//ワイヤーの種類
 	CPlayer* m_pPlayer;//プレイヤーのポインタのインスタンス
 	CWireHead* m_pWireHead;//ワイヤーの頭
-	vector<CirclePosInfo>m_VecMtxCircle;//円状に配置する点のワールドマトリックス
 	bool m_bUseUpdate;//更新するかどうか
 };
 #endif // !_WIRE_H_

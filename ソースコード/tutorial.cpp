@@ -16,19 +16,21 @@
 //======================================================
 CTutorial::CTutorial(int nPri, bool bUseintPri, CObject::TYPE type, CObject::OBJECTTYPE ObjType) : CObject(nPri,bUseintPri,type,ObjType)
 {
-	m_bSuccess = false;
+	m_bSuccess = false;//チュートリアルが成功したか同区吾
+
+	//チュートリアル用のテクスチャ生成
 	m_pTutorialTex = CUi::Create(CUi::UITYPE::TUTORIAL_TEX, CObject2D::POLYGONTYPE::SENTERROLLING, 300.0f, 300.0f, 1, false, D3DXVECTOR3(SCREEN_WIDTH - 150.0f, SCREEN_HEIGHT - 150.0f, 0.0f),
 		D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
-	m_pTutorialTex->SetUseDeath(false);
+	m_pTutorialTex->SetUseDeath(false);//死亡フラグを使用しない
 
 	for (int nCnt = 0; nCnt < static_cast<int>(CHECK::MAX); nCnt++)
-	{
+	{//それぞれのチュートリアルクリア状況のチェックマークのUIを生成
 		m_pCheckPoint[nCnt] = CUi::Create(CUi::UITYPE::CHECKMARK_000, CObject2D::POLYGONTYPE::SENTERROLLING, 30.0f, 30.0f, 1, false, 
 			D3DXVECTOR3(SCREEN_WIDTH - 20.0f, SCREEN_HEIGHT -225.0f + 27.0f * (nCnt), 0.0f),D3DXVECTOR3(0.0f, 0.0f, 0.0f), 
 			D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 
-		m_pCheckPoint[nCnt]->SetUseDraw(false);
-		m_pCheckPoint[nCnt]->SetUseDeath(false);
+		m_pCheckPoint[nCnt]->SetUseDraw(false); //描画しない
+		m_pCheckPoint[nCnt]->SetUseDeath(false);//死亡フラグを使用しない
 	}
 }
 //===================================================================================================
@@ -47,7 +49,7 @@ CTutorial::~CTutorial()
 //======================================================
 HRESULT CTutorial::Init()
 {
-	CObject::Init();
+	CObject::Init();//オブジェクトの初期化処理
 	return S_OK;
 }
 //===================================================================================================
@@ -57,7 +59,7 @@ HRESULT CTutorial::Init()
 //======================================================
 void CTutorial::Uninit()
 {
-	CObject::Uninit();
+	CObject::Uninit();//オブジェクトの終了処理
 }
 //===================================================================================================
 
@@ -66,21 +68,21 @@ void CTutorial::Uninit()
 //======================================================
 void CTutorial::Update()
 {
-	CObject::Update();
+	CObject::Update();//オブジェクトの更新処理
 
-	int nDrawSuccess = 0;
+	int nDrawSuccess = 0;//チェックマークの描画（各チュートリアル項目クリア）した数をカウント
 	for (int nCnt = 0; nCnt < static_cast<int>(CHECK::MAX); nCnt++)
 	{
 		if (m_pCheckPoint[nCnt]->GetUseDraw() == true && m_bSuccess == false)
-		{
+		{//描画されていたらカウント
 			nDrawSuccess++;
 		}
 	}
 
 	if (nDrawSuccess == static_cast<int>(CHECK::MAX) && m_bSuccess == false)
-	{
-		m_pTutorialTex->SetUseDraw(false);
-		SetDrawReset();
+	{//クリアしたチュートリアルが最大数に達したら
+		m_pTutorialTex->SetUseDraw(false);//チュートリアル表示テクスチャの描画をオフにする
+		SetDrawReset();//チェックマークの描画を全てオフ
 	}
 }
 //===================================================================================================
@@ -90,7 +92,7 @@ void CTutorial::Update()
 //======================================================
 void CTutorial::Draw()
 {
-	CObject::Draw();
+	CObject::Draw();//オブジェクトの描画処理
 }
 //===================================================================================================
 
@@ -100,24 +102,24 @@ void CTutorial::Draw()
 void CTutorial::SetDeath()
 {
 	if (GetUseDeath() == true)
-	{
+	{//死亡フラグを使用するなら
 		for (int nCnt = 0; nCnt < static_cast<int>(CHECK::MAX); nCnt++)
 		{
 			if (m_pCheckPoint[nCnt] != nullptr)
-			{
-				m_pCheckPoint[nCnt]->SetUseDeath(true);
-				m_pCheckPoint[nCnt]->SetDeath();
-				m_pCheckPoint[nCnt] = nullptr;
+			{//チェックマークを破棄
+				m_pCheckPoint[nCnt]->SetUseDeath(true);//死亡フラグを使用する
+				m_pCheckPoint[nCnt]->SetDeath();       //死亡フラグを設定する
+				m_pCheckPoint[nCnt] = nullptr;         //ポインタを初期化
 			}
 		}
 
 		if (m_pTutorialTex != nullptr)
-		{
-			m_pTutorialTex->SetUseDeath(true);
-			m_pTutorialTex->SetDeath();
-			m_pTutorialTex = nullptr;
+		{//チュートリアル表示テクスチャを破棄
+			m_pTutorialTex->SetUseDeath(true);//死亡フラグを使用する
+			m_pTutorialTex->SetDeath();       //死亡フラグを設定する
+			m_pTutorialTex = nullptr;         //ポインタを初期化
 		}
-		CObject::SetDeath();
+		CObject::SetDeath();//オブジェクト死亡フラグ設定処理
 	}
 }
 //===================================================================================================
@@ -127,9 +129,9 @@ void CTutorial::SetDeath()
 //======================================================
 CTutorial* CTutorial::Create()
 {
-	CTutorial* pTutorial = DBG_NEW CTutorial();
+	CTutorial* pTutorial = DBG_NEW CTutorial();//チュートリアルを生成
 
-	pTutorial->Init();
+	pTutorial->Init();                         //初期化処理
 
 	return pTutorial;
 }
@@ -141,12 +143,12 @@ CTutorial* CTutorial::Create()
 void CTutorial::SetDrawReset()
 {
 	if (m_bSuccess == false)
-	{
+	{//チュートリアルが成功していなかったら
 		for (int nCnt = 0; nCnt < static_cast<int>(CHECK::MAX); nCnt++)
-		{
-			m_pCheckPoint[nCnt]->SetUseDraw(false);
+		{//全ての各チュートリアルクリアチェックマークの描画をオフにし、完全にチュートリアルを終了する
+			m_pCheckPoint[nCnt]->SetUseDraw(false);//描画をしない
 		}
-		m_bSuccess = true;
+		m_bSuccess = true;//チュートリアルを成功
 	}
 }
 //===================================================================================================

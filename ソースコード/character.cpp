@@ -45,7 +45,7 @@ CCharacter::~CCharacter()
 //=============================================================
 HRESULT CCharacter::Init()
 {
-    CObjectX::Init();
+    CObjectX::Init();//オブジェクトXの初期化処理
 	return S_OK;
 }
 //===================================================================================================================
@@ -55,7 +55,7 @@ HRESULT CCharacter::Init()
 //=============================================================
 void CCharacter::Uninit()
 {
-    CObjectX::Uninit();
+    CObjectX::Uninit();//オブジェクトXの終了処理
 }
 //===================================================================================================================
 
@@ -64,8 +64,9 @@ void CCharacter::Uninit()
 //=============================================================
 void CCharacter::Update()
 {
-    CObjectX::Update();
+    CObjectX::Update();//オブジェクトXの更新処理
 
+    //デバッグ表示
     CManager::GetDebugText()->PrintDebugText("重力を使用するかどうか：%d\n", GetMoveInfo().GetUseGravity());
 
     for (auto it : m_VecModelParts)
@@ -80,11 +81,11 @@ void CCharacter::Update()
 //=============================================================
 void CCharacter::Draw()
 {
-    CObjectX::Draw();
+    CObjectX::Draw();//オブジェクトXの描画処理
 
     for (auto it : m_VecModelParts)
     {
-        it->ExtraDraw();//それぞれのモデルパーツの描画処理を呼ぶ
+        it->ExtraDraw();//それぞれのモデルパーツの描画処理を呼ぶ（ExtraDrawは、オブジェクトのDrawallからは呼ばれないようにするため)
     }
 }
 //===================================================================================================================
@@ -94,11 +95,11 @@ void CCharacter::Draw()
 //=============================================================
 void CCharacter::SetDeath()
 {
-    CObjectX::SetDeath();
+    CObjectX::SetDeath();//オブジェクトXの死亡フラグ設定処理
 
     for (auto it : m_VecModelParts)
     {
-        it->SetUseDeath(true);//死亡フラグをアクティブにする
+        it->SetUseDeath(true);//死亡フラグを使用する
         it->SetDeath();       //死亡フラグを設定する
     }
 
@@ -129,7 +130,7 @@ void CCharacter::SetDamage(int nDamage, int nHitStopTime)
         ModelPartsIt->SetColor(D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f), nHitStopTime, false, false, true);//全てのモデルパーツの色合いを変える
     }
 
-    CObjectX::SetDamage(nDamage, nHitStopTime);
+    CObjectX::SetDamage(nDamage, nHitStopTime);//オブジェクトXのダメージ処理
 }
 //===================================================================================================================
 
@@ -138,11 +139,11 @@ void CCharacter::SetDamage(int nDamage, int nHitStopTime)
 //=============================================================
 int CCharacter::RegistMotion(string String, CCharacter* pCharacter)
 {
-	int nIdx = 0;
+	int nIdx = 0;//モーション番号
 	for (auto it = s_VecMotionInfo.begin(); it != s_VecMotionInfo.end(); it++)
 	{
 		if (it->FileName == String)
-		{
+		{//指定したファイルパスがモーション情報の動的配列に存在したら
             LoadModelParts(String, pCharacter);//既に存在するファイルなので、モデルパーツ情報だけ読み込む
             pCharacter->m_nIdxCharacter = nIdx;//キャラクター番号を設定
 			return nIdx;
@@ -231,8 +232,8 @@ void CCharacter::SetSize()
 //=============================================================
 void CCharacter::MotionProcess()
 {
-    m_NowMotionInfo.nMotionOld = m_NowMotionInfo.nNowMotion;//1f前のモーションを設定する
-    m_NowMotionInfo.nNowMotion = m_NowMotionInfo.nNextMotion;//現在のモーションを更新する
+    m_NowMotionInfo.nMotionOld = m_NowMotionInfo.nNowMotion;    //1f前のモーションを設定する
+    m_NowMotionInfo.nNowMotion = m_NowMotionInfo.nNextMotion;   //現在のモーションを更新する
 
     if (m_NowMotionInfo.nNowMotion != m_NowMotionInfo.nMotionOld)
     {//1f前のモーションと異なる場合、フレーム数とキーカウントをリセットし、ブレンド開始
@@ -251,9 +252,9 @@ void CCharacter::MotionProcess()
     float fRatioFrame = static_cast<float>(nNowFrame) / static_cast<float>(nMaxFrame);                //現在のフレームの最大フレームに対しての割合を格納
 
 
-    int nSize = m_VecModelParts.size();//配列の大きさを格納
-    int nBrendCheck = 0;//モーションブレンドが発動している場合、モーションブレンドが完了したモデルパーツの数をカウントする
-    bool bOverArray = false;//配列外アクセスをしたかどうか
+    int nSize = m_VecModelParts.size();        //配列の大きさを格納
+    int nBrendCheck = 0;                       //モーションブレンドが発動している場合、モーションブレンドが完了したモデルパーツの数をカウントする
+    bool bOverArray = false;                   //配列外アクセスをしたかどうか
     for (int nCntParts = 0; nCntParts < nSize; nCntParts++)
     {
         D3DXVECTOR3 NowPos = { 0.0f,0.0f,0.0f };//現在のキーの位置
@@ -295,20 +296,24 @@ void CCharacter::MotionProcess()
         //モーションブレンドをするかしないかによって参照する位置や向きが変わる
         if (m_NowMotionInfo.bNowBrending == false)
         {//モーションブレンド状態じゃなければ
-            NowPos = s_VecMotionInfo[m_nIdxCharacter].VecMotion[nNowMotion].VecKeySet[nNowKey].VecKey[nCntParts].Pos;
-            NextPos = s_VecMotionInfo[m_nIdxCharacter].VecMotion[nNowMotion].VecKeySet[nNextKey].VecKey[nCntParts].Pos;
+            NowPos = s_VecMotionInfo[m_nIdxCharacter].VecMotion[nNowMotion].VecKeySet[nNowKey].VecKey[nCntParts].Pos;   //現在のモーションのキーセットのキー情報の位置
+            NextPos = s_VecMotionInfo[m_nIdxCharacter].VecMotion[nNowMotion].VecKeySet[nNextKey].VecKey[nCntParts].Pos; //次のモーションのキーセットのキー情報の位置
 
-            NowRot = s_VecMotionInfo[m_nIdxCharacter].VecMotion[nNowMotion].VecKeySet[nNowKey].VecKey[nCntParts].Rot;
-            NextRot = s_VecMotionInfo[m_nIdxCharacter].VecMotion[nNowMotion].VecKeySet[nNextKey].VecKey[nCntParts].Rot;
+            NowRot = s_VecMotionInfo[m_nIdxCharacter].VecMotion[nNowMotion].VecKeySet[nNowKey].VecKey[nCntParts].Rot;   //現在のモーションのキーセットのキー情報の向き
+            NextRot = s_VecMotionInfo[m_nIdxCharacter].VecMotion[nNowMotion].VecKeySet[nNextKey].VecKey[nCntParts].Rot; //次のモーションのキーセットのキー情報の向き
         }
         else
         {//モーションブレンド状態ならば
-            NowPos = m_VecModelParts[nCntParts]->GetPosInfo().GetPos();//モデルパーツの現在の位置から徐々にブレンドするモーションのキーの位置に近づけていく
+
+            //モデルパーツの現在の位置から徐々にブレンドするモーションのキーの位置に近づけていく
+            NowPos = m_VecModelParts[nCntParts]->GetPosInfo().GetPos();
             NextPos = s_VecMotionInfo[m_nIdxCharacter].VecMotion[nNowMotion].VecKeySet[0].VecKey[nCntParts].Pos + m_VecModelParts[nCntParts]->GetPosInfo().GetSupportPos();
 
-            NowRot = m_VecModelParts[nCntParts]->GetRotInfo().GetRot();//モデルパーツの現在の向きから徐々にブレンドするモーションのキーの向きに近づけていく
+            //モデルパーツの現在の向きから徐々にブレンドするモーションのキーの向きに近づけていく
+            NowRot = m_VecModelParts[nCntParts]->GetRotInfo().GetRot();
             NextRot = s_VecMotionInfo[m_nIdxCharacter].VecMotion[nNowMotion].VecKeySet[0].VecKey[nCntParts].Rot;
         }
+
         D3DXVECTOR3 DifferencePos = NextPos - NowPos;//次の位置と現在の位置の差分を求める
         D3DXVECTOR3 DifferenceRot = NextRot - NowRot;//次の向きと現在の向きの差分を求める
 
@@ -320,12 +325,12 @@ void CCharacter::MotionProcess()
                 DifferenceRot.x < s_fMotionBrend_CheckDefference && 
                 DifferenceRot.y < s_fMotionBrend_CheckDefference && 
                 DifferenceRot.z < s_fMotionBrend_CheckDefference)
-            {
+            {//全ての軸の向きの差分が指定した値以下になったらブレンドを完了する
                 nBrendCheck++;
             }
         }
 
-        //向きの補正を行う（向きの境界の突破）
+        //ジンバルロックを回避
         CCalculation::CorrectionRot(DifferenceRot.x);
         CCalculation::CorrectionRot(DifferenceRot.y);
         CCalculation::CorrectionRot(DifferenceRot.z);
@@ -336,14 +341,15 @@ void CCharacter::MotionProcess()
 
         if (m_NowMotionInfo.bNowBrending == false)
         {//現在のキーの値と次のキーの値に向けて動かす
-            DecisionPos = (DifferencePos * fRatioFrame) + m_VecModelParts[nCntParts]->GetPosInfo().GetSupportPos() + NowPos;
-            DecisionRot = (DifferenceRot * fRatioFrame) + NowRot;
+            DecisionPos = (DifferencePos * fRatioFrame) + m_VecModelParts[nCntParts]->GetPosInfo().GetSupportPos() + NowPos;//各パーツの初期位置を基準に位置を決定
+            DecisionRot = (DifferenceRot * fRatioFrame) + NowRot;//各パーツの最初の向きがRot0.0fなので、位置みたいな補正はいらない
         }
         else
         {//ブレンド処理
             DecisionPos = (DifferencePos * s_fMotionBrend_Speed) + NowPos;
             DecisionRot = (DifferenceRot * s_fMotionBrend_Speed) + NowRot;
         }
+
         //位置と向きを設定
         m_VecModelParts[nCntParts]->GetPosInfo().SetPos(DecisionPos);
         m_VecModelParts[nCntParts]->GetRotInfo().SetRot(DecisionRot);
@@ -369,21 +375,12 @@ void CCharacter::MotionProcess()
         }
     }
     else
-    {
+    {//モーションブレンド中なら
         if (nBrendCheck == nSize)
         {//全てのパーツのモーションブレンドが完了した場合、モーションブレンドを終了する
             m_NowMotionInfo.bNowBrending = false;
         }
     }
-}
-//===================================================================================================================
-
-//=============================================================
-//モーション情報を更新する処理
-//=============================================================
-void CCharacter::MotionInfoChengeProcess()
-{
-
 }
 //===================================================================================================================
 

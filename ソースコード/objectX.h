@@ -39,13 +39,6 @@ public:
 
 	typedef enum
 	{
-		ORIGINPOSTYPE_SENTER = 0,
-		ORIGINPOSTYPE_DOWN,
-	    ORIGINPOSTYPE_MAX
-	}ORIGINPOSTYPE;
-
-	typedef enum
-	{
 		COLORTYPE_RED = 0,
 		COLORTYPE_GREEN,
 		COLORTYPE_BRUE,
@@ -409,17 +402,17 @@ public:
 	void SetDeath() override;                                             //死亡フラグ設定処理
 	void BindObjectXInfo(LPD3DXMESH pMesh, LPD3DXBUFFER pBuffMat, DWORD dwNumMat, LPDIRECT3DTEXTURE9* pTexture,D3DCOLORVALUE * pDiffuse);//モデル情報を割り当てる
 
-	void UpdatePos();
+	void UpdatePos();                                                     //位置の更新処理
 	//==========================================================
 	//静的メンバ宣言
 	//==========================================================
-	static void SetCommonDraw(bool bDraw) { s_bCOMMON_DRAWSHADOW = bDraw; }
+	static void SetCommonDraw(bool bDraw) { s_bCOMMON_DRAWSHADOW = bDraw; }    //影を描画するかどうか
 	
 	//クォータニオン
-	void SetAxis(float fAxis) { m_fAxis = fAxis; }//回転角を設定
-	const float& GetAxis() const { return m_fAxis; }//回転角を取得 
-	void SetVecAxis(D3DXVECTOR3 VecAxis) { m_VecAxis = VecAxis; }//回転軸を設定
-	const D3DXVECTOR3& GetVecAxis() const { return m_VecAxis; }  //回転軸を取得
+	void SetAxis(float fAxis) { m_fAxis = fAxis; }                             //回転角を設定
+	const float& GetAxis() const { return m_fAxis; }                           //回転角を取得 
+	void SetVecAxis(D3DXVECTOR3 VecAxis) { m_VecAxis = VecAxis; }              //回転軸を設定
+	const D3DXVECTOR3& GetVecAxis() const { return m_VecAxis; }                //回転軸を取得
 
 	//============================================================================================================
 
@@ -431,14 +424,14 @@ public:
 	//==========================================================
 	//体力関係
 	//==========================================================
-	virtual void SetDamage(int nDamage, int nHitStopTime);          //ダメージを与える
+	virtual void SetDamage(int nDamage, int nHitStopTime);                                   //ダメージを与える
 	//============================================================================================================
 
 	//==========================================================
 	//サイズ
 	//==========================================================
 	void CalculateSenterPos();
-	virtual void SetSize();                                                                         //サイズを設定する 
+	virtual void SetSize();                                                                  //サイズを設定する 
 	//============================================================================================================
 
 	//==========================================================
@@ -456,7 +449,7 @@ public:
 	//情報表示処理＆操作
 	void ManagerChooseControlInfo() override;                                               //ステージマネージャーが情報を操作する
 
-	void SaveInfoTxt(fstream& WritingFile) override;//テキストファイルに情報を保存するための関数
+	void SaveInfoTxt(fstream& WritingFile) override;                                        //テキストファイルに情報を保存するための関数
 
 	//================================================================================================================================================
 
@@ -532,8 +525,8 @@ public:
     //==========================================================
 	//静的メンバ取得
 	//==========================================================
-	static const float GetNormalGravity() { return m_fNORMAL_GRAVITY; }
-	static const float GetNormalInertia() { return m_fNORMAL_INERTIA; }
+	static const float GetNormalGravity() { return m_fNORMAL_GRAVITY; }//通常重力を取得する
+	static const float GetNormalInertia() { return m_fNORMAL_INERTIA; }//慣性を取得
 	//=================================================================================================================
 private:
 	//===============================================
@@ -566,11 +559,6 @@ private:
 	void SetOnlyColor(D3DXCOLOR Col);          //色だけを設定する
 	void SetOnlyFormarColor();                 //データは変えずにアルファ値だけ設定する
 	//=================================================================================================================
-
-	//===================================
-	//位置更新関係
-	//===================================
-	//==================================================================================================================
 
 	//===================================
 	//モデルインデックス
@@ -612,13 +600,13 @@ private:
 	int m_nTypeNum;                                 //モデルごとのタイプ番号!
 	OBJECTXTYPE m_nObjXType;                        //オブジェクトXの分類!
 
-	void ChengeEditScale();             //拡大率を変更する
-	void ChengeEditScaleX();
-	void ChengeEditScaleY();
-	void ChengeEditScaleZ();
-	void ChengeEditPos();               //位置を移動する
-	void EditLife();//体力を変更する
-	void ChengeEditSwapVtxXZ();         //最大頂点と最小頂点を変えるかどうか
+	void ChengeEditScale();                         //拡大率を変更する
+	void ChengeEditScaleX();                        //拡大率Xを変更する
+	void ChengeEditScaleY();                        //拡大率Yを変更する
+	void ChengeEditScaleZ();                        //拡大率Zを変更する
+	void ChengeEditPos();                           //位置を変更する
+	void EditLife();                                //体力を変更する
+	void ChengeEditSwapVtxXZ();                     //最大頂点と最小頂点を変えるかどうか
 	//=================================================================================================================
 
 };

@@ -95,9 +95,9 @@ public:
 
 	CInputJoypad();                                                       //コンストラクタ
 	~CInputJoypad();                                                      //デストラクタ
-	HRESULT Init(HINSTANCE hInstance, HWND hWnd);                //初期化処理
-	void Uninit();                                               //終了処理
-	void Update();                                               //更新処理
+	HRESULT Init(HINSTANCE hInstance, HWND hWnd);                         //初期化処理
+	void Uninit();                                                        //終了処理
+	void Update();                                                        //更新処理
  	bool GetPress(JOYKEY key);                                            //プレス状態獲得
 	bool GetTrigger(JOYKEY key);                                          //トリガー状態獲得
 	bool GetRT_Trigger();                                                 //Rトリガーボタンのトリガー情報
@@ -137,7 +137,6 @@ public:
 	HRESULT Init(HINSTANCE hInstance, HWND hWnd);//初期化処理
 	void Uninit();//終了処理
 	void Update();//更新処理
-	D3DXVECTOR2 GetMousePos();//カーソルの位置を取得
 	bool GetMouseMoveAngle(float & fYaw,float & fPitch,float fAdjust);//マウスが動いた角度を取得
 	bool GetMouseLeftClickPress();//クリックしたかどうか
 	bool GetMouseLeftClickTrigger();//トリガー

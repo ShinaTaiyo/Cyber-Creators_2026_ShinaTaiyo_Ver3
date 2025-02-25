@@ -36,9 +36,10 @@ bool CObjectX::s_bCOMMON_DRAWSHADOW = true;
 //================================================
 CObjectX::CObjectX(int nPri, bool bUseintPri, CObject::TYPE type, CObject::OBJECTTYPE ObjType) : CObject(nPri, bUseintPri, type, ObjType)
 , m_ObjectXInfo(), m_nIndexObjectX(0), m_nManagerType(0), m_nObjXType(OBJECTXTYPE_BLOCK), m_fAxis(0.0f), m_VecAxis(D3DXVECTOR3(0.0f, 1.0f, 0.0f)),
-m_nTypeNum(0), m_PosInfo({}), m_DrawInfo({}), m_RotInfo({}), m_SizeInfo({}), m_MoveInfo({}), m_LifeInfo({}), m_CollisionInfo({})
+m_nTypeNum(0), m_PosInfo({}), m_DrawInfo({}), m_RotInfo({}), m_SizeInfo({}), m_MoveInfo({}), m_LifeInfo({}), m_CollisionInfo({}),
+m_bExtrusionCollisionSquareX(false),m_bExtrusionCollisionSquareY(false),m_bExtrusionCollisionSquareZ(false),m_bIsLanding(false)
 {
-	SetObjectType(CObject::OBJECTTYPE::OBJECTTYPE_X);
+	SetObjectType(CObject::OBJECTTYPE::OBJECTTYPE_X);//オブジェクトタイプ設定
 }
 //================================================================================================================================================
 
@@ -56,7 +57,7 @@ CObjectX::~CObjectX()
 //================================================
 HRESULT CObjectX::Init()
 {
-	CObject::Init();
+	CObject::Init();//オブジェクトの初期化処理
 
 	return S_OK;
 }
@@ -86,16 +87,16 @@ void CObjectX::Uninit()
 	}
 
 	if (m_ObjectXInfo.pMesh != nullptr)
-	{//メッシュへのポインタをnullptrに
+	{//メッシュへのポインタを初期化
 		m_ObjectXInfo.pMesh = nullptr;
 	}
 
 	if (m_ObjectXInfo.pBuffMat != nullptr)
-	{//マテリアルへのポインタをnullptrに
+	{//マテリアルへのポインタを初期化
 		m_ObjectXInfo.pBuffMat = nullptr;
 	}
 
-	CObject::Uninit();
+	CObject::Uninit();//オブジェクトの終了処理
 }
 //================================================================================================================================================
 
@@ -104,16 +105,13 @@ void CObjectX::Uninit()
 //================================================
 void CObjectX::Update()
 {
-	//==============================================
-	//中心点を求める
-	//==============================================
-	CalculateSenterPos();
-
-	m_SizeInfo.AddScaleProcess();//拡大率加算処理
-	m_SizeInfo.MultiScaleProcess();//拡大率乗算処理
-	m_SizeInfo.DecideVtxMaxMinProcess();//頂点の最大最小を決める処理
-
-	m_DrawInfo.ChengeColorProcess(this);//色を変える処理
+	CalculateSenterPos();                        //モデルの中心点を求める
+										         
+	m_SizeInfo.AddScaleProcess();                //拡大率加算処理
+	m_SizeInfo.MultiScaleProcess();              //拡大率乗算処理
+	m_SizeInfo.DecideVtxMaxMinProcess();         //頂点の最大最小を決める処理
+										         
+	m_DrawInfo.ChengeColorProcess(this);         //色を変える処理
 	if (m_RotInfo.bUseAddRot == true)
 	{//向きの加算処理
 		m_RotInfo.Rot += m_RotInfo.AddRot;
@@ -128,9 +126,9 @@ void CObjectX::Update()
 	m_MoveInfo.AddSpeedProcess();                //加速処理
 	m_MoveInfo.GravityProcess();                 //重力処理
 
-	UpdatePos();//位置の更新を行う
+	UpdatePos();                                 //位置の更新を行う
 
-	CObject::Update();
+	CObject::Update();                           //オブジェクト更新処理
 }
 //================================================================================================================================================
 
@@ -147,7 +145,7 @@ void CObjectX::Draw()
 	D3DXMATERIAL* pMat;                                               //マテリアルデータへのポインタ
 
 	if (m_DrawInfo.bUseShadow == true && s_bCOMMON_DRAWSHADOW == true)
-	{
+	{//影を描画するなら
 		DrawShadow();
 	}
 	//現在のマテリアルを取得
@@ -206,9 +204,9 @@ void CObjectX::Draw()
 	//================================================================================================================
 
 	if (m_DrawInfo.bUseDraw == true)
-	{
+	{//描画をするなら
 		if (m_ObjectXInfo.pBuffMat != nullptr && m_ObjectXInfo.pMesh != nullptr)
-		{
+		{//マテリアルとメッシュが存在していたら
 			//マテリアルへのポインタを取得
 			pMat = (D3DXMATERIAL*)m_ObjectXInfo.pBuffMat->GetBufferPointer();
 
@@ -252,7 +250,7 @@ void CObjectX::Draw()
 	//保存していたマテリアルを戻す
 	pDevice->SetMaterial(&matDef);
 
-	CObject::Draw();
+	CObject::Draw();//オブジェクトの描画処理
 
 }
 //================================================================================================================================================
@@ -262,7 +260,7 @@ void CObjectX::Draw()
 //================================================
 void CObjectX::SetDeath()
 {
-	CObject::SetDeath();
+	CObject::SetDeath();//オブジェクトの死亡フラグ設定処理
 }
 //================================================================================================================================================
 
@@ -271,14 +269,14 @@ void CObjectX::SetDeath()
 //================================================
 void CObjectX::BindObjectXInfo(LPD3DXMESH pMesh, LPD3DXBUFFER pBuffMat, DWORD dwNumMat, LPDIRECT3DTEXTURE9* pTexture, D3DCOLORVALUE* pDiffuse)
 {
-	m_ObjectXInfo.pMesh = pMesh;
-	m_ObjectXInfo.pBuffMat = pBuffMat;
-	m_ObjectXInfo.dwNumMat = dwNumMat;
-	m_ObjectXInfo.pTexture = DBG_NEW LPDIRECT3DTEXTURE9[int(dwNumMat)];
-	m_ObjectXInfo.Diffuse = DBG_NEW D3DCOLORVALUE[int(dwNumMat)];
-	m_ObjectXInfo.FormarDiffuse = DBG_NEW D3DCOLORVALUE[int(dwNumMat)];
+	m_ObjectXInfo.pMesh = pMesh;                                       //頂点情報の設定
+	m_ObjectXInfo.pBuffMat = pBuffMat;                                 //マテリアルの設定
+	m_ObjectXInfo.dwNumMat = dwNumMat;                                 //マテリアルの数を設定
+	m_ObjectXInfo.pTexture = DBG_NEW LPDIRECT3DTEXTURE9[int(dwNumMat)];//マテリアルの動的メモリを確保
+	m_ObjectXInfo.Diffuse = DBG_NEW D3DCOLORVALUE[int(dwNumMat)];      //マテリアルの動的メモリを確保
+	m_ObjectXInfo.FormarDiffuse = DBG_NEW D3DCOLORVALUE[int(dwNumMat)];//元のマテリアルの動的メモリを確保
 	for (int nCnt = 0; nCnt < (int)(dwNumMat); nCnt++)
-	{
+	{//マテリアルの数分それぞれの関連情報を設定
 		m_ObjectXInfo.pTexture[nCnt] = pTexture[nCnt];
 		m_ObjectXInfo.Diffuse[nCnt] = pDiffuse[nCnt];
 		m_ObjectXInfo.FormarDiffuse[nCnt] = pDiffuse[nCnt];
@@ -291,14 +289,14 @@ void CObjectX::BindObjectXInfo(LPD3DXMESH pMesh, LPD3DXBUFFER pBuffMat, DWORD dw
 //================================================
 void CObjectX::SetColor(D3DXCOLOR col, int nColChengeTime, bool bChoose, bool bSetAlpha, bool bBlinking)
 {
-	m_DrawInfo.bColorChenge = true;//色を変えるかどうか
-	m_DrawInfo.nChengeColorTime = nColChengeTime;//色を変える時間
-	m_DrawInfo.Color = col; //色
-	m_DrawInfo.bBlinkingColor = bBlinking;//点滅
+	m_DrawInfo.bColorChenge = true;               //色を変えるかどうか
+	m_DrawInfo.nChengeColorTime = nColChengeTime; //色を変える時間
+	m_DrawInfo.Color = col;                       //色
+	m_DrawInfo.bBlinkingColor = bBlinking;        //点滅
 	if (bChoose == true)
 	{//透明度だけを使用するかを選ぶ
 		if (bSetAlpha == false)
-		{
+		{//透明度以外を設定
 			for (int nCnt = 0; nCnt < (int)(m_ObjectXInfo.dwNumMat); nCnt++)
 			{
 				m_ObjectXInfo.Diffuse[nCnt].r = col.r;
@@ -309,7 +307,7 @@ void CObjectX::SetColor(D3DXCOLOR col, int nColChengeTime, bool bChoose, bool bS
 		else
 		{
 			for (int nCnt = 0; nCnt < (int)(m_ObjectXInfo.dwNumMat); nCnt++)
-			{
+			{//透明度だけを設定
 
 				m_ObjectXInfo.Diffuse[nCnt].a = col.a;
 			}
@@ -318,7 +316,7 @@ void CObjectX::SetColor(D3DXCOLOR col, int nColChengeTime, bool bChoose, bool bS
 	else
 	{//普通に色を設定する
 		for (int nCnt = 0; nCnt < (int)(m_ObjectXInfo.dwNumMat); nCnt++)
-		{
+		{//色合いを設定する
 			m_ObjectXInfo.Diffuse[nCnt] = col;
 		}
 	}
@@ -334,13 +332,8 @@ void CObjectX::SetDamage(int nDamage, int nHitStopTime)
 	{//ヒットストップ状態じゃなければ
 		m_LifeInfo.bHitStop = true;              //ヒットストップ状態にする
 		m_LifeInfo.nHitStopTime = nHitStopTime;  //ヒットストップ時間
-		CDamage::Create(nDamage, GetPosInfo().GetSenterPos(), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), 30.0f + nDamage * 1.0f, 30.0f + nDamage * 1.0f, true);
-		for (int nCnt = 0; nCnt < 3; nCnt++)
-		{
-			D3DXVECTOR3 Pos = CObjectX::GetPosInfo().GetPos();//位置を取得
-		}
-
-		m_LifeInfo.nLife -= nDamage;
+		CDamage::Create(nDamage, GetPosInfo().GetSenterPos(), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), 30.0f + nDamage * 1.0f, 30.0f + nDamage * 1.0f);//ダメージの生成
+		m_LifeInfo.nLife -= nDamage;//体力を減らす
 	}
 }
 //================================================================================================================================================
@@ -350,8 +343,8 @@ void CObjectX::SetDamage(int nDamage, int nHitStopTime)
 //================================================
 void CObjectX::CalculateSenterPos()
 {
-	m_PosInfo.SenterPos = m_PosInfo.Pos;
-	m_PosInfo.SenterPos.y += (m_SizeInfo.VtxMax.y + m_SizeInfo.VtxMin.y) / 2;
+	m_PosInfo.SenterPos = m_PosInfo.Pos;//中心点を求める
+	m_PosInfo.SenterPos.y += (m_SizeInfo.VtxMax.y + m_SizeInfo.VtxMin.y) / 2;//最大頂点と最小頂点の距離を求め、その半分を足す
 }
 //================================================================================================================================================
 
@@ -360,16 +353,16 @@ void CObjectX::CalculateSenterPos()
 //================================================
 void CObjectX::SetFormarColor()
 {
-	m_DrawInfo.Color = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+	m_DrawInfo.Color = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);//色合いを1にする
 	for (int nCnt = 0; nCnt < (int)(m_ObjectXInfo.dwNumMat); nCnt++)
-	{
+	{//最初に保存した色合いに現在の色合いを設定
 		m_ObjectXInfo.Diffuse[nCnt] = m_ObjectXInfo.FormarDiffuse[nCnt];
 	}
 }
 //================================================================================================================================================
 
 //================================================
-//色合い「だけ」を設定する
+//色合い「だけ」を設定する（SetColorにある機能を使わない)
 //================================================
 void CObjectX::SetOnlyColor(D3DXCOLOR Col)
 {
@@ -381,7 +374,7 @@ void CObjectX::SetOnlyColor(D3DXCOLOR Col)
 //================================================================================================================================================
 
 //================================================
-//元の色合いに「だけ」設定する
+//元の色合いに「だけ」設定する（SetColorにある機能を使わない)
 //================================================
 void CObjectX::SetOnlyFormarColor()
 {
@@ -398,7 +391,7 @@ void CObjectX::SetOnlyFormarColor()
 void CObjectX::UpdatePos()
 {
 	if (m_MoveInfo.bUseUpdatePos == true)
-	{
+	{//位置の更新をするなら
 		const D3DXVECTOR3& Pos = GetPosInfo().GetPos();
 
 		//1f前の位置を設定
@@ -410,6 +403,7 @@ void CObjectX::UpdatePos()
 			m_MoveInfo.Move.x += (0.0f - m_MoveInfo.Move.x) * m_MoveInfo.fInertia;
 			m_MoveInfo.Move.z += (0.0f - m_MoveInfo.Move.z) * m_MoveInfo.fInertia;
 		}
+
 		//位置の設定
 		GetPosInfo().SetPos(Pos + m_MoveInfo.Move);
 
@@ -503,12 +497,13 @@ void CObjectX::ChengeEditScale()
 {
 	D3DXVECTOR3& Scale = m_SizeInfo.GetScale();//拡大率
 
-	ChengeEditScaleX();
+	ChengeEditScaleX();//拡大率X
 
-	ChengeEditScaleY();
+	ChengeEditScaleY();//拡大率Y
 
-	ChengeEditScaleZ();
+	ChengeEditScaleZ();//拡大率Z
 
+	//デバッグ表示
 	CManager::GetDebugText()->PrintDebugText("拡大率(RTYキー) %f %f %f\n", Scale.x,Scale.y,Scale.z);
 }
 //================================================================================================================================================
@@ -518,10 +513,10 @@ void CObjectX::ChengeEditScale()
 //===================================================================================================================
 void CObjectX::ChengeEditScaleX()
 {
-	D3DXVECTOR3& Scale = m_SizeInfo.GetScale();                                //拡大率
+	D3DXVECTOR3& Scale = m_SizeInfo.GetScale();                                  //拡大率
 
 	if (CManager::GetInputKeyboard()->GetPress(DIK_LCONTROL) == true)
-	{//Lコントロールキーを押しながら
+	{//Lコントロールキーを押しながら（値を大きく変動させる)
 		if (CManager::GetInputKeyboard()->GetPress(DIK_LSHIFT) == true)
 		{//シフトキーを押しながら・・・
 			if (CManager::GetInputKeyboard()->GetTrigger(DIK_R) == true)
@@ -535,7 +530,7 @@ void CObjectX::ChengeEditScaleX()
 		}
 	}
 	else
-	{//Lコントロールキーを押していない
+	{//Lコントロールキーを押していない（値を小さく変動させる)
 		if (CManager::GetInputKeyboard()->GetPress(DIK_LSHIFT) == true)
 		{//シフトキーを押しながら・・・
 			if (CManager::GetInputKeyboard()->GetTrigger(DIK_R) == true)
@@ -560,7 +555,7 @@ void CObjectX::ChengeEditScaleY()
 	D3DXVECTOR3& Scale = m_SizeInfo.GetScale();                                //拡大率
 
 	if (CManager::GetInputKeyboard()->GetPress(DIK_LCONTROL) == true)
-	{//Lコントロールキーを押しながら
+	{//Lコントロールキーを押しながら（値を大きく変動させる)
 		if (CManager::GetInputKeyboard()->GetPress(DIK_LSHIFT) == true)
 		{//シフトキーを押しながら・・・
 			if (CManager::GetInputKeyboard()->GetTrigger(DIK_T) == true)
@@ -574,7 +569,7 @@ void CObjectX::ChengeEditScaleY()
 		}
 	}
 	else
-	{//Lコントロールキーを押していない
+	{//Lコントロールキーを押していない（値を小さく変動させる)
 		if (CManager::GetInputKeyboard()->GetPress(DIK_LSHIFT) == true)
 		{//シフトキーを押しながら・・・
 			if (CManager::GetInputKeyboard()->GetTrigger(DIK_T) == true)
@@ -597,7 +592,7 @@ void CObjectX::ChengeEditScaleZ()
 {
 	D3DXVECTOR3& Scale = m_SizeInfo.GetScale();                                //拡大率
 	if (CManager::GetInputKeyboard()->GetPress(DIK_LCONTROL) == true)
-	{//Lコントロールキーを押しながら
+	{//Lコントロールキーを押しながら（値を大きく変動させる)
 		if (CManager::GetInputKeyboard()->GetPress(DIK_LSHIFT) == true)
 		{//シフトキーを押しながら・・・
 			if (CManager::GetInputKeyboard()->GetTrigger(DIK_Y) == true)
@@ -611,7 +606,7 @@ void CObjectX::ChengeEditScaleZ()
 		}
 	}
 	else
-	{//Lコントロールキーを押していない
+	{//Lコントロールキーを押していない（値を小さく変動させる)
 		if (CManager::GetInputKeyboard()->GetPress(DIK_LSHIFT) == true)
 		{//シフトキーを押しながら・・・
 			if (CManager::GetInputKeyboard()->GetTrigger(DIK_Y) == true)
@@ -646,7 +641,7 @@ void CObjectX::ChengeEditPos()
 	//位置を変更
 	//===========================
 	if (pInput->GetPress(DIK_LSHIFT) == true)
-	{
+	{//Y軸移動
 		if (pInput->GetPress(DIK_LCONTROL))
 		{
 			if (pInput->GetTrigger(DIK_W) == true)
@@ -671,15 +666,18 @@ void CObjectX::ChengeEditPos()
 		}
 	}
 	else
-	{
+	{//XZ平面移動
 		CCalculation::CaluclationMove(false, Move, 5.0f, CCalculation::MOVEAIM_XZ, m_RotInfo.Rot.y);
 	}
+
 	//支点も一緒に移動
 	m_PosInfo.Pos += Move;
 	m_PosInfo.SupportPos = m_PosInfo.Pos;
+
+	//デバッグ表示
 	CManager::GetDebugText()->PrintDebugText("支点位置(矢印キー) %f %f %f\n", m_PosInfo.SupportPos.x,m_PosInfo.SupportPos.y, m_PosInfo.SupportPos.z);
 	CManager::GetDebugText()->PrintDebugText("向きZ(FGキー) %f\n", m_RotInfo.Rot.z);
-	CManager::GetCamera()->SetPosR(m_PosInfo.Pos);
+	CManager::GetCamera()->SetPosR(m_PosInfo.Pos);//注視点を現在操作しているモデルに固定
 	//================================================================================================================================================
 
 }
@@ -691,7 +689,7 @@ void CObjectX::ChengeEditPos()
 void CObjectX::EditLife()
 {
 	if (CManager::GetInputKeyboard()->GetPress(DIK_LCONTROL) == true)
-	{//Lコントロールキーを押しながら
+	{//Lコントロールキーを押しながら（体力を早く増やす)
 		if (CManager::GetInputKeyboard()->GetPress(DIK_LSHIFT) == true)
 		{//シフトキーを押しながら・・・
 			if (CManager::GetInputKeyboard()->GetPress(DIK_3) == true)
@@ -705,7 +703,7 @@ void CObjectX::EditLife()
 		}
 	}
 	else
-	{//Lコントロールキーを押していない
+	{//Lコントロールキーを押していない（体力を少しずつ増やす)
 		if (CManager::GetInputKeyboard()->GetPress(DIK_LSHIFT) == true)
 		{//シフトキーを押しながら・・・
 			if (CManager::GetInputKeyboard()->GetTrigger(DIK_3) == true)
@@ -719,6 +717,7 @@ void CObjectX::EditLife()
 		}
 	}
 
+	//デバッグ表示
 	CManager::GetDebugText()->PrintDebugText("最大体力(3)：%d\n", m_LifeInfo.nMaxLife);
 }
 //================================================================================================================================================
@@ -728,13 +727,14 @@ void CObjectX::EditLife()
 //============================================================================
 void CObjectX::ChengeEditSwapVtxXZ()
 {
-	CInputKeyboard* pInputKeyBoard = CManager::GetInputKeyboard();
+	CInputKeyboard* pInputKeyBoard = CManager::GetInputKeyboard();//キー入力情報を取得
 
 	if (pInputKeyBoard->GetTrigger(DIK_7))
-	{
+	{//XZの頂点を変更
 		m_SizeInfo.bSwapVtxXZ = m_SizeInfo.bSwapVtxXZ ? false : true;
 	}
 
+	//デバッグ表示
 	CManager::GetDebugText()->PrintDebugText("頂点のXZを入れ替えるかどうか（７）：%d\n", m_SizeInfo.bSwapVtxXZ);
 }
 //================================================================================================================================================
@@ -744,13 +744,13 @@ void CObjectX::ChengeEditSwapVtxXZ()
 //============================================================================
 void CObjectX::ManagerChooseControlInfo()
 {
-	ChengeEditPos();//位置を変える
-
-	ChengeEditScale();//拡大率を変える
-
-	ChengeEditSwapVtxXZ();//
-
-	EditLife();//体力を変更する
+	ChengeEditPos();                              //位置を変える
+						                          
+	ChengeEditScale();                            //拡大率を変える
+						                          
+	ChengeEditSwapVtxXZ();                        //XZの頂点を変える
+						                          
+	EditLife();                                   //体力を変更する
 
 	CManager::GetCamera()->SetPosR(m_PosInfo.Pos);//カメラの注視点を現在の位置に設定
 }
@@ -763,19 +763,19 @@ void CObjectX::SaveInfoTxt(fstream & WritingFile)
 {
 	WritingFile << "POS = " << fixed << setprecision(3)<< m_PosInfo.Pos.x << " " <<
 		fixed << setprecision(3) << m_PosInfo.Pos.y << " " << 
-		fixed << setprecision(3) << m_PosInfo.Pos.z << " " << endl;//位置
+		fixed << setprecision(3) << m_PosInfo.Pos.z << " " << endl;//位置（小数点３）まで
 	WritingFile << "ROT = " << fixed << setprecision(3) << m_RotInfo.Rot.x << " " <<
 		fixed << setprecision(3) << m_RotInfo.Rot.y << " " <<
-		fixed << setprecision(3) << m_RotInfo.Rot.z << " " << endl;//向き
+		fixed << setprecision(3) << m_RotInfo.Rot.z << " " << endl;//向き（小数点３）まで
 	WritingFile << "SCALE = " << fixed << setprecision(3) << m_SizeInfo.Scale.x << " " <<
 		fixed << setprecision(3) << m_SizeInfo.Scale.y << " " <<
-		fixed << setprecision(3) << m_SizeInfo.Scale.z << " " << endl;//拡大率
+		fixed << setprecision(3) << m_SizeInfo.Scale.z << " " << endl;//拡大率（小数点３）まで
 
 	WritingFile << "MOVE = " << (m_MoveInfo.Move.x) << " " << m_MoveInfo.Move.y << " " << m_MoveInfo.Move.z << endl;//移動量
 
 	WritingFile << "LIFE = " << m_LifeInfo.nMaxLife << endl;//体力を設定
 
-	WritingFile << "SWAPVTXXZ = " << m_SizeInfo.bSwapVtxXZ << endl;
+	WritingFile << "SWAPVTXXZ = " << m_SizeInfo.bSwapVtxXZ << endl;//頂点のXZを変更するかどうか
 }
 //================================================================================================================================================
 
@@ -784,7 +784,7 @@ void CObjectX::SaveInfoTxt(fstream & WritingFile)
 //============================================================================
 void CObjectX::SetLockOnMatBindTexture(int nNumMat, LPDIRECT3DTEXTURE9 pTexture)
 {
-	m_ObjectXInfo.pTexture[nNumMat] = pTexture;
+	m_ObjectXInfo.pTexture[nNumMat] = pTexture;//指定した配列番号のテクスチャを変える
 }
 //================================================================================================================================================
 
@@ -793,16 +793,16 @@ void CObjectX::SetLockOnMatBindTexture(int nNumMat, LPDIRECT3DTEXTURE9 pTexture)
 //============================================================================
 void CObjectX::DrawShadow()
 {
-	D3DXMATRIX mtxShadow,mtxScale,mtxRot,mtxTrans;                  //計算用マトリックス
-	D3DXPLANE plane;                       //プレーン
-	D3DXVECTOR4 vecLight;                  //ライト逆方向
-	D3DXVECTOR3 ShadowPos, ShadowNor;      //平面上の一転と
+	D3DXMATRIX mtxShadow,mtxScale,mtxRot,mtxTrans;                    //計算用マトリックス
+	D3DXPLANE plane;                                                  //プレーン
+	D3DXVECTOR4 vecLight;                                             //ライト逆方向
+	D3DXVECTOR3 ShadowPos, ShadowNor;                                 //影の位置と法線
 	D3DXMATERIAL* pMat;                                               //マテリアルデータへのポインタ
 	LPDIRECT3DDEVICE9 pDevice = CManager::GetRenderer()->GetDevice(); //デバイスへのポインタと取得
 	D3DMATERIAL9 matDef;                                              //現在のマテリアル保存用
 
-	D3DXVECTOR3 RayCollisionPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-	D3DXVECTOR3 CalcRayCollisionPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	D3DXVECTOR3 RayCollisionPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);      //レイが当たった位置格納用
+	D3DXVECTOR3 CalcRayCollisionPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);  //レイが当たった一番近い位置格納用
 	float fResultNearLength = 0.0f;
 
 	//現在のマテリアルを取得
@@ -837,24 +837,24 @@ void CObjectX::DrawShadow()
 	//==================================================================================
 	int nCntColRay = 0;//レイが当たった回数をカウントする
 	for (int nCntPri = 0; nCntPri < CObject::m_nMAXPRIORITY; nCntPri++)
-	{
-		CObject* pObj = CObject::GetTopObject(nCntPri);
+	{//オブジェクトリストを検索する
+		CObject* pObj = CObject::GetTopObject(nCntPri);//リストの先頭オブジェクトを取得する
 
 		while (pObj != nullptr)
 		{
-			CObject* pNext = pObj->GetNextObject();
+			CObject* pNext = pObj->GetNextObject();//次のオブジェクトを取得する
 
 			if (pObj->GetType() == CObject::TYPE::BLOCK || pObj->GetType() == CObject::TYPE::BGMODEL)
-			{
-				CObjectX* pObjX = static_cast<CObjectX*>(pObj);
+			{//オブジェクトタイプが「ブロック」又は「背景モデル」だったら
+				CObjectX* pObjX = static_cast<CObjectX*>(pObj);//オブジェクトXにキャスト
 				if (CCollision::RayIntersectsAABBCollisionPos(m_PosInfo.WorldPos + D3DXVECTOR3(0.0f,0.1f,0.0f), D3DXVECTOR3(0.0f, -1.0f, 0.0f),
 					pObjX->GetPosInfo().GetPos() + pObjX->m_SizeInfo.GetVtxMin(),pObjX->GetPosInfo().GetPos() + pObjX->m_SizeInfo.GetVtxMax(), CalcRayCollisionPos))
-				{
+				{//レイが当たっていたら
 					float fLength = sqrtf(powf(CalcRayCollisionPos.y - m_PosInfo.WorldPos.y,2));//レイが当たった位置のY軸の距離を取る
-					nCntColRay++;
+					nCntColRay++;                                                               //レイが当たったオブジェクト総数をインクリメント
 					if (nCntColRay == 1)
 					{//最初の当たったオブジェクトなので、無条件で距離とレイが当たった位置を記録する
-						fResultNearLength = fLength;
+						fResultNearLength = fLength;          
 						RayCollisionPos = CalcRayCollisionPos;
 					}
 					else
@@ -941,8 +941,8 @@ void CObjectX::DrawShadow()
 //============================================================================
 void CObjectX::SizeInfo::SetUseAddScale(D3DXVECTOR3 CopyAddScale, bool bUse)
 {
-	bUseAddScaling = bUse;
-	AddScale = CopyAddScale;
+	bUseAddScaling = bUse;       //拡大率の加算をするかどうか
+	AddScale = CopyAddScale;     //拡大率の加算を行う
 }
 //================================================================================================================================================
 
@@ -952,7 +952,7 @@ void CObjectX::SizeInfo::SetUseAddScale(D3DXVECTOR3 CopyAddScale, bool bUse)
 void CObjectX::SizeInfo::AddScaleProcess()
 {
 	if (bUseAddScaling == true)
-	{
+	{//拡大率の加算を行うなら
 		Scale += AddScale;
 	}
 }
@@ -964,7 +964,7 @@ void CObjectX::SizeInfo::AddScaleProcess()
 void CObjectX::SizeInfo::MultiScaleProcess()
 {
 	if (bUseMultiScale == true)
-	{
+	{//拡大率の乗算を行うなら
 		Scale.x *= MultiScale.x;
 		Scale.y *= MultiScale.y;
 		Scale.z *= MultiScale.z;
@@ -1008,7 +1008,7 @@ void CObjectX::SizeInfo::DecideVtxMaxMinProcess()
 void CObjectX::MoveInfo::GravityProcess()
 {
 	if (bUseGravity == true)
-	{
+	{//重力を使用するなら
 		const D3DXVECTOR3& Move = GetMove();
 		SetMove(Move + D3DXVECTOR3(0.0f, -fGravityPower, 0.0f));
 	}
@@ -1020,7 +1020,7 @@ void CObjectX::MoveInfo::GravityProcess()
 void CObjectX::MoveInfo::MultiSpeedProcess()
 {
 	if (bUseMultiSpeed == true)
-	{
+	{//速度の乗算を行うなら
 		Move.x *= MultiSpeed.x;
 		Move.y *= MultiSpeed.y;
 		Move.z *= MultiSpeed.z;
@@ -1033,7 +1033,7 @@ void CObjectX::MoveInfo::MultiSpeedProcess()
 void CObjectX::MoveInfo::AddSpeedProcess()
 {
 	if (bUseAddSpeed == true)
-	{
+	{//速度の加算を行うなら
 		Move += AddSpeed;
 	}
 }
@@ -1065,7 +1065,7 @@ void CObjectX::LifeInfo::HitStopProcess()
 void CObjectX::LifeInfo::AutoSubLifeProcess()
 {
 	if (bAutoSubLife == true)
-	{
+	{//自動的に体力を減らすかどうか
 		nLife--;
 	}
 }
@@ -1077,7 +1077,7 @@ void CObjectX::LifeInfo::AutoSubLifeProcess()
 void CObjectX::LifeInfo::RatioLifeAlphaColorProcess(CObjectX* pObjX)
 {
 	if (bUseRatioLifeAlpha == true)
-	{
+	{//体力の割合で色合いの透明度を変えるかどうか
 		float fRatio;
 		fRatio = float(nLife) / float(nMaxLife);
 		pObjX->SetColor(D3DXCOLOR(0.0f, 0.0f, 0.0f, fRatio), 3, true, true,false);
@@ -1092,19 +1092,19 @@ void CObjectX::LifeInfo::RatioLifeAlphaColorProcess(CObjectX* pObjX)
 void CObjectX::LifeInfo::AutoDeathProcess(CObjectX* pObjX)
 {
 	if (nLife < 1 && bAutoDeath == true && pObjX->GetUseDeath() == true)
-	{
+	{//体力がなくなったら自動的に死亡フラグを設定するかどうか
 		pObjX->SetDeath();
 	}
 }
 //================================================================================================================================================
 
 //==============================================
-//自動的に死亡フラグを発動する処理
+//色合いの変更を行うかどうか
 //==============================================
 void CObjectX::DrawInfo::ChengeColorProcess(CObjectX* pObjX)
 {
 	if (bColorChenge == true)
-	{
+	{//色合いの変更
 		nChengeColorTime--;
 
 		if (bBlinkingColor == true)
@@ -1122,10 +1122,10 @@ void CObjectX::DrawInfo::ChengeColorProcess(CObjectX* pObjX)
 	}
 
 	if (nChengeColorTime <= 0 && bColorChenge == true)
-	{
-		nChengeColorTime = 0;
+	{//色合いを変える時間がなくなったら元の色合いに戻す
+		nChengeColorTime = 0;//色合いを変えるフレームのリセット
 		pObjX->SetFormarColor();//元の色合いに戻す
-		bColorChenge = false;
+		bColorChenge = false;//色合いを変えない
 	}
 }
 //================================================================================================================================================

@@ -25,8 +25,7 @@
 //=========================
 //コンストラクタ
 //=========================
-CNumber3D::CNumber3D(int nPri, bool bUseintPri, CObject::TYPE type, CObject::OBJECTTYPE ObjType) : CBillboard(nPri,bUseintPri,type,ObjType),
-m_bExaggeration(false)
+CNumber3D::CNumber3D(int nPri, bool bUseintPri, CObject::TYPE type, CObject::OBJECTTYPE ObjType) : CBillboard(nPri,bUseintPri,type,ObjType)
 {
 
 }
@@ -69,13 +68,6 @@ void CNumber3D::Uninit()
 //=========================
 void CNumber3D::Update()
 {
-	if (m_bExaggeration == true)
-	{
-		CNumber3D* pNumber3D = CNumber3D::Create(GetWidth(), GetHeight(), GetPos(), GetMove(), D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f));
-		pNumber3D->SetUseAddScale(true, D3DXVECTOR3(0.3f, 0.3f, 0.3f));
-		m_bExaggeration = false;
-	}
-
 	//========================================
 	//ビルボードの更新処理
 	//========================================
@@ -116,32 +108,19 @@ void CNumber3D::SetDeath()
 //=========================
 CNumber3D* CNumber3D::Create(float fWidth, float fHeight, D3DXVECTOR3 pos, D3DXVECTOR3 move, D3DXCOLOR col)
 {
-	CNumber3D* pNumber3D = DBG_NEW CNumber3D();                             //弾を生成
-	CTexture* pTextureClass = CManager::GetTexture();           //テクスチャクラスを取得
-	bool bSuccess = pNumber3D->CObject::GetCreateSuccess();       //生成が成功したかどうかを取得する
-	if (bSuccess == true)
-	{//生成が成功したら
-		if (pNumber3D != nullptr)
-		{
-			pNumber3D->Init();  //初期化処理
-			pNumber3D->SetUseDeath(false);                                                                     //死亡フラグを発動するかどうかを設定する
-			pNumber3D->SetTextureIndex(pTextureClass->Regist("data\\TEXTURE\\Number_000.png"));
-			pNumber3D->CBillboard::bindTexture(pTextureClass->GetAddress(pNumber3D->GetTextureIndex()));//テクスチャをセットする　
-			pNumber3D->CBillboard::SetPos(pos);                                                         //オブジェクト２Ｄの位置を設定
-			pNumber3D->SetSupportPos(pos);                                                                 //召喚位置を設定
-			pNumber3D->CBillboard::SetSize(fWidth, fHeight);                                            //ポリゴンのサイズを設定
-			pNumber3D->CObject::SetType(CObject::TYPE::NUMBER3D);                                        //オブジェクトの種類を決める
-			pNumber3D->CBillboard::SetFormarSize(fWidth, fHeight);                                        //ポリゴンの元のサイズを設定
-			pNumber3D->SetAnimInfo(10, 1,col, false);                                           //アニメーション情報を設定
-			pNumber3D->SetMove(move);
-		}
-	}
-	else
-	{//オブジェクトに空きがなかったので破棄する
-		delete pNumber3D;
-		pNumber3D = nullptr;
-		return nullptr;
-	}
+	CNumber3D* pNumber3D = DBG_NEW CNumber3D();                                                 //数字3Dを生成
+	CTexture* pTextureClass = CManager::GetTexture();                                           //テクスチャクラスを取得
+	pNumber3D->Init();                                                                          //初期化処理
+	pNumber3D->SetUseDeath(false);                                                              //死亡フラグを発動するかどうかを設定する
+	pNumber3D->SetTextureIndex(pTextureClass->Regist("data\\TEXTURE\\Number_000.png"));         //テクスチャ情報を登録し、テクスチャ番号を設定
+	pNumber3D->CBillboard::bindTexture(pTextureClass->GetAddress(pNumber3D->GetTextureIndex()));//テクスチャをセットする　
+	pNumber3D->CBillboard::SetPos(pos);                                                         //オブジェクト２Ｄの位置を設定
+	pNumber3D->SetSupportPos(pos);                                                              //召喚位置を設定
+	pNumber3D->CBillboard::SetSize(fWidth, fHeight);                                            //ポリゴンのサイズを設定
+	pNumber3D->CObject::SetType(CObject::TYPE::NUMBER3D);                                       //オブジェクトの種類を決める
+	pNumber3D->CBillboard::SetFormarSize(fWidth, fHeight);                                      //ポリゴンの元のサイズを設定
+	pNumber3D->SetAnimInfo(10, 1,col, false);                                                   //アニメーション情報を設定
+	pNumber3D->SetMove(move);                                                                   //移動量を設定
 	return pNumber3D;
 }
 //=================================================

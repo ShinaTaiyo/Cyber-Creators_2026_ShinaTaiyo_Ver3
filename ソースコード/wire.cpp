@@ -35,14 +35,8 @@ CWire::CWire(WIRETYPE WireType, float fRadius, float fHeight,int nNumDivsionXZ,
 	D3DXVECTOR3 Pos, D3DXVECTOR3 Rot, 
 	int nNumDivisionY, int nPri, bool bUseintPri, CObject::TYPE type, CObject::OBJECTTYPE ObjType) : CMeshCylinder(fRadius,fHeight,nNumDivsionXZ,nNumDivisionY,
 		Pos,Rot,
-		nPri,bUseintPri,type,ObjType),m_Type(WireType),m_bUseUpdate(true),m_pWireHead(nullptr),m_pPlayer(nullptr),m_VecMtxCircle()
-{
-	for (int nCnt = 0; nCnt < nNumDivsionXZ + 1; nCnt++)
-	{
-		CirclePosInfo Info = { D3DXVECTOR3(0.0f,0.0f,0.0f),{} };
-		m_VecMtxCircle.push_back(Info);
-	}
-}
+		nPri,bUseintPri,type,ObjType),m_Type(WireType),m_bUseUpdate(true),m_pWireHead(nullptr),m_pPlayer(nullptr)
+{}
 //===================================================================================================================
 
 //===============================================================
@@ -50,8 +44,7 @@ CWire::CWire(WIRETYPE WireType, float fRadius, float fHeight,int nNumDivsionXZ,
 //===============================================================
 CWire::~CWire()
 {
-	m_VecMtxCircle.clear();        //メモリ初期化
-	m_VecMtxCircle.shrink_to_fit();//メモリ開放
+
 }
 //===================================================================================================================
 
@@ -60,13 +53,13 @@ CWire::~CWire()
 //===============================================================
 HRESULT CWire::Init()
 {
-	CMeshCylinder::Init();
+	CMeshCylinder::Init();//メッシュシリンダーの初期化処理
 
 	//ワイヤーヘッドを生成
-	m_pWireHead = CWireHead::Create(D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1.0f, 1.0f, 1.0f), 120);
-	m_pWireHead->GetLifeInfo().SetAutoSubLife(false);
-	m_pWireHead->SetUseDeath(false);
-	m_pWireHead->GetDrawInfo().SetUseDraw(true);
+	m_pWireHead = CWireHead::Create(D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1.0f, 1.0f, 1.0f), 120);//生成処理
+	m_pWireHead->GetLifeInfo().SetAutoSubLife(false);//体力を自動的に減らさない
+	m_pWireHead->SetUseDeath(false);                 //死亡フラグを使用しない
+	m_pWireHead->GetDrawInfo().SetUseDraw(true);     //描画をする
 
 	return S_OK;
 }
@@ -77,7 +70,7 @@ HRESULT CWire::Init()
 //===============================================================
 void CWire::Uninit()
 {
-	CMeshCylinder::Uninit();
+	CMeshCylinder::Uninit();//メッシュシリンダーの終了処理
 }
 //===================================================================================================================
 
@@ -86,21 +79,20 @@ void CWire::Uninit()
 //===============================================================
 void CWire::Update()
 {
-	CMeshCylinder::Update();
-	const D3DXVECTOR3& Pos = GetPos();
-	//const D3DXVECTOR3* pSenterPos = GetSenterPos();
-	const int& nNumDivisionXZ = GetNumDivisionXZ();//XZ分割数
-	const int& nNumDivisionY = GetNumDivisionY();  //Y分割数
-	const int& nNumVtx = GetNumVtx();              //頂点数
-	const int& nNumIdx = GetNumIdx();              //インデックス数
-	const float& fRadius = GetRadius();            //半径
-	const float& fHeight = GetHeight();            //高さ
+	CMeshCylinder::Update();                                                                                             //メッシュシリンダーの更新処理
+	const D3DXVECTOR3& Pos = GetPos();                                                                                   //位置
+	const int& nNumDivisionXZ = GetNumDivisionXZ();                                                                      //XZ分割数
+	const int& nNumDivisionY = GetNumDivisionY();                                                                        //Y分割数
+	const int& nNumVtx = GetNumVtx();                                                                                    //頂点数
+	const int& nNumIdx = GetNumIdx();                                                                                    //インデックス数
+	const float& fRadius = GetRadius();                                                                                  //半径
+	const float& fHeight = GetHeight();                                                                                  //高さ
 	float fLength = CCalculation::CalculationLength(m_pWireHead->GetPosInfo().GetPos(),m_pPlayer->GetPosInfo().GetPos());//ワイヤーの頭とプレイヤーの距離を求める
-	SetHeight(fLength);//上の行で求めた距離を設定する
-	D3DXVECTOR3 Dir = m_pWireHead->GetPosInfo().GetPos() - m_pPlayer->GetPosInfo().GetPos();//ワイヤーの頭とプレイヤーのベクトルを求める
-	D3DXVec3Normalize(&Dir, &Dir);//ベクトルを正規化する
-	VERTEX_3D* pVtx;                    //3D頂点情報へのポインタ
-	LPDIRECT3DVERTEXBUFFER9 pVtxBuff = GetVtxBufferPointer();//頂点バッファへのポインタを取得
+	SetHeight(fLength);                                                                                                  //上の行で求めた距離を設定する
+	D3DXVECTOR3 Dir = m_pWireHead->GetPosInfo().GetPos() - m_pPlayer->GetPosInfo().GetPos();                             //ワイヤーの頭とプレイヤーのベクトルを求める
+	D3DXVec3Normalize(&Dir, &Dir);                                                                                       //ベクトルを正規化する
+	VERTEX_3D* pVtx;                                                                                                     //3D頂点情報へのポインタ
+	LPDIRECT3DVERTEXBUFFER9 pVtxBuff = GetVtxBufferPointer();                                                            //頂点バッファへのポインタを取得
 	//頂点バッファをロックし、頂点情報へのポインタを取得
 	pVtxBuff->Lock(0, 0, (void**)&pVtx, 0);
 
@@ -112,16 +104,14 @@ void CWire::Update()
 
 	if (m_bUseUpdate == true && m_pPlayer != nullptr)
 	{
-		int nCntArray = 0;//配列数をカウント
-		float fRatioXZ = 0.0f;//XZ方向のカウント数の割合
-		float fRatioY = 0.0f; //Y方向のカウント数の割合
-		D3DXVECTOR3 LastSenterPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);//最後の中心点計算用
-		D3DXVECTOR3 MeasureNor = D3DXVECTOR3(0.0f, 0.0f, 0.0f);//法線計算用
-		D3DXVECTOR3 V1 = { 0.0f,0.0f,0.0f };
-		D3DXVECTOR3 V2 = { 0.0f,0.0f,0.0f };
-		float fMeasureAngle = 0.0f;//角度計算用
-		float fMeasureX = 0.0f;
-		float fMeasureY = 0.0f;
+		int nCntArray = 0;                                        //配列数をカウント
+		float fRatioXZ = 0.0f;                                    //XZ方向のカウント数の割合
+		float fRatioY = 0.0f;                                     //Y方向のカウント数の割合
+		D3DXVECTOR3 V1 = { 0.0f,0.0f,0.0f };                      //ベクトル１
+		D3DXVECTOR3 V2 = { 0.0f,0.0f,0.0f };                      //ベクトル２
+		float fMeasureAngle = 0.0f;                               //角度計算用
+		float fMeasureX = 0.0f;		                              //X方向の角度せ
+		float fMeasureY = 0.0f;		                              
 
 		//円を展開する平面を求める基準ベクトルを計算する
 		D3DXVec3Cross(&V1, &Dir, &Up);//X方向
@@ -161,7 +151,7 @@ void CWire::Update()
 				nCntArray++;
 
 				if (nCntArray >= nNumVtx)
-				{
+				{//配列外チェック
 					assert("配列外アクセス");
 				}
 
@@ -246,17 +236,20 @@ void CWire::Draw()
 //===============================================================
 void CWire::SetDeath()
 {
-	if (m_pWireHead != nullptr)
-	{
-		m_pWireHead->SetUseDeath(true);
-		m_pWireHead->SetDeath();
-		m_pWireHead = nullptr;
+	if (GetUseDeath())
+	{//死亡フラグを使用するなら
+		if (m_pWireHead != nullptr)
+		{//ワイヤーの頭を破棄
+			m_pWireHead->SetUseDeath(true);//死亡フラグを使用する
+			m_pWireHead->SetDeath();       //死亡フラグを設定する
+			m_pWireHead = nullptr;         //ポインタを初期化
+		}
+		if (m_pPlayer != nullptr)
+		{//プレイヤーへのポインタを解除(ワイヤーからは開放しない）
+			m_pPlayer = nullptr;
+		}
 	}
-	if (m_pPlayer != nullptr)
-	{//プレイヤーへのポインタを解除(ワイヤーからは開放しない）
-		m_pPlayer = nullptr;
-	}
-	CMeshCylinder::SetDeath();
+	CMeshCylinder::SetDeath();//メッシュシリンダーの死亡フラグ設定処理
 }
 //===================================================================================================================
 
@@ -265,11 +258,11 @@ void CWire::SetDeath()
 //===============================================================
 CWire* CWire::Create(WIRETYPE Type, D3DXVECTOR3 Pos, D3DXVECTOR3 Rot, float fRadius, float fHeight, int nNumDivisionXZ, int nNumDivisionY)
 {
-	CTexture* pTexture = CManager::GetTexture();
-	CWire* pWire = DBG_NEW CWire(Type, fRadius, fHeight, nNumDivisionXZ, Pos, Rot, nNumDivisionY);
-	pWire->Init();//初期化処理
-	pWire->SetTextureIndex(pTexture->Regist(s_WIRE_FILENAME[static_cast<int>(Type)]));
-	pWire->BindTexture(pTexture->GetAddress(pWire->GetTextureIndex()));
+	CTexture* pTexture = CManager::GetTexture();                                                  //テクスチャ情報へのポインタ
+	CWire* pWire = DBG_NEW CWire(Type, fRadius, fHeight, nNumDivisionXZ, Pos, Rot, nNumDivisionY);//ワイヤーの生成
+	pWire->Init();                                                                                //初期化処理  
+	pWire->SetTextureIndex(pTexture->Regist(s_WIRE_FILENAME[static_cast<int>(Type)]));            //テクスチャを登録し、テクスチャ番号を設定
+	pWire->BindTexture(pTexture->GetAddress(pWire->GetTextureIndex()));                           //テクスチャを割り当てる
 
 	return pWire;
 }

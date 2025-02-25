@@ -67,36 +67,42 @@ CPlayer::~CPlayer()
 //====================================================
 HRESULT CPlayer::Init()
 {
-    CCharacter::Init();                 //Xオブジェクト初期化
-
-    GetLifeInfo().SetAutoSubLife(false);//自動的に体力を減らすかどうか
-    GetMoveInfo().SetUseGravity(true,1.0f);  //重力を使用する
+    CCharacter::Init();                               //Xオブジェクト初期化
+                                                      
+    GetLifeInfo().SetAutoSubLife(false);              //自動的に体力を減らすかどうか
+    GetMoveInfo().SetUseGravity(true,1.0f);           //重力を使用する
 
     if (CScene::GetMode() == CScene::MODE::MODE_GAME)
-    {
-        m_pLockOn = CLockon::Create(CLockon::TYPE::SHOT,D3DXVECTOR3(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 0.0f), CObject2D::POLYGONTYPE::SENTERROLLING, 100.0f, 100.0f, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
-        m_pLockOn->SetUseDeath(false);
-        m_pLockOn->SetPolygonRotSpeed(0.01f);
+    {//ゲームシーンなら
 
+        //ロックオンの生成
+        m_pLockOn = CLockon::Create(CLockon::TYPE::SHOT,D3DXVECTOR3(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 0.0f), CObject2D::POLYGONTYPE::SENTERROLLING, 100.0f, 100.0f, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+        m_pLockOn->SetUseDeath(false);       //死亡フラグを使用しない
+        m_pLockOn->SetPolygonRotSpeed(0.01f);//ポリゴンを回転させる
+
+        //モード表示の生成
         m_pModeDisp = CUi::Create(CUi::UITYPE::ACTIONMODE_GUN, CObject2D::POLYGONTYPE::SENTERROLLING, 100.0f, 100.0f, 1, false, D3DXVECTOR3(50.0f, 50.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f),
             D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
-        m_pModeDisp->SetUseDeath(false);
+        m_pModeDisp->SetUseDeath(false);     //死亡フラグを使用しない
 
-        //ダイブゲージのフレームを生成
+        //*ダイブゲージのフレームを生成
         m_pDiveGaugeFrame = CUi::Create(CUi::UITYPE::DIVEGAUGEFRAME_000, CObject2D::POLYGONTYPE::SENTERROLLING, 450.0f, 100.0f, 1, false, D3DXVECTOR3(SCREEN_WIDTH - 250.0f, 100.0f, 0.0f),
             D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
-        m_pDiveGaugeFrame->SetUseDeath(false);//死亡フラグを発動させない
+        m_pDiveGaugeFrame->SetUseDeath(false);//死亡フラグを使用しない
+        //ゲージの機能を持たせる
         m_pDiveGaugeFrame->PushUiState(DBG_NEW CUiState_Gauge(D3DXVECTOR3(SCREEN_WIDTH - 390.0f, 106.5f, 0.0f),D3DXCOLOR(1.0f,1.0f,0.0f,1.0f),CObject2D::POLYGONTYPE::LEFT, CGauge::GAUGETYPE::DIVE, 350.0f, 19.6f, 0, 20));//ゲージ保持の状態を付与する
 
+        //*ダイブ可能回数のUIを生成
         m_pDivePossibleNum = CUi::Create(CUi::UITYPE::POSSIBLEDIVENUMTEXT_000, CObject2D::POLYGONTYPE::SENTERROLLING, 200.0f, 100.0f, 1, false, D3DXVECTOR3(200.0f, 100.0f, 0.0f),
             D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 61.0f, 1.0f, 1.0f));
-        m_pDivePossibleNum->SetNumericState(0, 50.0f, 50.0f);
-        m_pDivePossibleNum->SetUseDeath(false);
+        m_pDivePossibleNum->SetNumericState(0, 50.0f, 50.0f);//数字の機能を持たせる
+        m_pDivePossibleNum->SetUseDeath(false);              //死亡フラグを使用しない
 
+        //*ワイヤーを生成
         m_pWire = CWire::Create(CWire::WIRETYPE::ROPE, D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), 5.0f, 20.0f, 4, 5);
-        m_pWire->SetUseDeath(false);
+        m_pWire->SetUseDeath(false);    //死亡フラグを使用しない
         m_pWire->SetPlayerPointer(this);//プレイヤーのポインタを設定
-        m_pWire->SetUseDraw(false);
+        m_pWire->SetUseDraw(false);     //描画しない
 
         m_pPlayerActionMode = DBG_NEW CPlayerActionMode_ShotMove(this);//プレイヤーのアクションモード（メインステート）を射撃移動に設定
     }
@@ -118,14 +124,14 @@ void CPlayer::Uninit()
 //====================================================
 void CPlayer::Update()
 {
-    CObjectX::PosInfo& PosInfo = GetPosInfo();//位置情報
-    CObjectX::SizeInfo& SizeInfo = GetSizeInfo();//サイズ情報
-    const D3DXVECTOR3& Pos = PosInfo.GetPos();//位置
-    const D3DXVECTOR3& VtxMax = SizeInfo.GetVtxMax();//最大頂点
+    CObjectX::PosInfo& PosInfo = GetPosInfo();            //位置情報
+    CObjectX::SizeInfo& SizeInfo = GetSizeInfo();         //サイズ情報
+    const D3DXVECTOR3& Pos = PosInfo.GetPos();            //位置
+    const D3DXVECTOR3& VtxMax = SizeInfo.GetVtxMax();     //最大頂点
     if (CScene::GetMode() == CScene::MODE_GAME)
-    {
+    {//ゲームシーンなら
         if (GetLanding())
-        {//地面にいるなら重力を最小限に
+        {//地面にいるなら重力を０に
             GetMoveInfo().SetMove(D3DXVECTOR3(GetMoveInfo().GetMove().x,0.0f, GetMoveInfo().GetMove().z));
         }
 
@@ -135,29 +141,32 @@ void CPlayer::Update()
         }
 
         if (m_pMove != nullptr)
-        {
+        {//移動ステート
             m_pMove->MoveProcess(this);//現在のアクションモードの移動処理を実行
         }
+
         if (m_pAbnormalState != nullptr)
-        {
+        {//状態異常ステート
             m_pAbnormalState->Process(this);//状態異常の処理を実行
         }
+
         AdjustRot();//向き調整処理
 
         ActionModeChengeProcess(); //現在のアクションモードを変更する
     }
 
-    CCharacter::Update();//更新処理
+    CCharacter::Update();//キャラクター更新処理
 
-    CollisionProcess();
+    CollisionProcess();//当たり判定処理
 
     if (CScene::GetMode() == CScene::MODE_GAME)
-    {
+    {//ゲームシーンなら
         CUiState_Numeric* pUiState_Numeric = dynamic_cast<CUiState_Numeric*>(m_pDivePossibleNum->GetUiState(CUiState::UISTATE::NUMERIC));//UIの数字情報取得
         if (m_pAttack != nullptr)
-        {
+        {//攻撃ステート
             m_pAttack->AttackProcess(this);//現在のアクションモードの攻撃処理を実装
         }
+
         DiveGaugeMaxEffect();//ダイブゲージがマックスになった時の演出
 
         if (pUiState_Numeric->GetValue() == s_nMaxDiveNum)
@@ -170,19 +179,20 @@ void CPlayer::Update()
             m_pDivePossibleNum->SetColor(D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), false, 1.0f);
         }
 
+        //デバッグ表示
         CManager::GetDebugText()->PrintDebugText("プレイヤーの位置：%f %f %f\n", GetPosInfo().GetPos().x, GetPosInfo().GetPos().y, GetPosInfo().GetPos().z);
         CManager::GetDebugText()->PrintDebugText("プレイヤーの体力：%d\n", GetLifeInfo().GetLife());
 
         if (GetLifeInfo().GetLife() < 1)
-        {
+        {//体力がなくなったら
             CManager::GetSceneFade()->SetSceneFade(CFade::FADEMODE_IN, CScene::MODE_RESULT);
         }
     }
 
     if (m_bDamage == true)
-    {
-        SetNextMotion(3);
-        m_bDamage = false;
+    {//ダメージを与える
+        SetNextMotion(3);//ダメージモーションにする
+        m_bDamage = false;//ダメージ状態をオフに
     }
 
     MotionProcess();//モーション処理を行う
@@ -194,7 +204,7 @@ void CPlayer::Update()
 //====================================================
 void CPlayer::Draw()
 {
-    CCharacter::Draw();
+    CCharacter::Draw();//キャラクターの描画処理
 }
 //==========================================================================================================
 
@@ -204,7 +214,7 @@ void CPlayer::Draw()
 void CPlayer::SetDeath()
 {
     if (GetUseDeath() == true)
-    {
+    {//死亡フラグを使用するなら
         if (m_pMove != nullptr)
         {//移動ステートの開放
             delete m_pMove;
@@ -271,7 +281,7 @@ void CPlayer::SetDeath()
             m_pDiveGaugeFrame = nullptr;
         }
     }
-    CCharacter::SetDeath();
+    CCharacter::SetDeath();//キャラクターの死亡フラグを設定する
 }
 //===========================================================================================================
 
@@ -281,38 +291,37 @@ void CPlayer::SetDeath()
 CPlayer* CPlayer::Create(D3DXVECTOR3 pos, D3DXVECTOR3 rot, D3DXVECTOR3 move, D3DXVECTOR3 Scale)
 {
     CPlayer* pPlayer = DBG_NEW CPlayer(DBG_NEW CPlayerMove_Normal(),DBG_NEW CPlayerAttack_Shot());//プレイヤーを生成
-    bool bSuccess = pPlayer->CObject::GetCreateSuccess();
     int nIdx = 0;//テクスチャのインデックス
-    CObjectX::PosInfo& PosInfo = pPlayer->GetPosInfo();
-    CObjectX::RotInfo& RotInfo = pPlayer->GetRotInfo();
-    CObjectX::SizeInfo& SizeInfo = pPlayer->GetSizeInfo();
-    CObjectX::LifeInfo& LifeInfo = pPlayer->GetLifeInfo();
-    pPlayer->Init();                                                                 //初期化処理
-    pPlayer->GetMoveInfo().SetMove(move);//移動量
-    pPlayer->CObject::SetType(CObject::TYPE::PLAYER);                                 //オブジェクトの種類を決める
-    pPlayer->SetObjXType(CObjectX::OBJECTXTYPE_PLAYER);                    //オブジェクトXのタイプを設定
-    pPlayer->SetTypeNum(0);                                                //オブジェクトXごとのタイプ番号を設定
+    CObjectX::PosInfo& PosInfo = pPlayer->GetPosInfo();                                                      //位置情報
+    CObjectX::RotInfo& RotInfo = pPlayer->GetRotInfo();                                                      //向き情報
+    CObjectX::SizeInfo& SizeInfo = pPlayer->GetSizeInfo();                                                   //サイズ情報
+    CObjectX::LifeInfo& LifeInfo = pPlayer->GetLifeInfo();                                                   //体力情報
+    pPlayer->Init();                                                                                         //初期化処理
+    pPlayer->GetMoveInfo().SetMove(move);                                                                    //移動量
+    pPlayer->CObject::SetType(CObject::TYPE::PLAYER);                                                        //オブジェクトの種類を決める
+    pPlayer->SetObjXType(CObjectX::OBJECTXTYPE_PLAYER);                                                      //オブジェクトXのタイプを設定
+    pPlayer->SetTypeNum(0);                                                                                  //オブジェクトXごとのタイプ番号を設定
     pPlayer->RegistMotion("data\\MODEL\\Enemy\\MotionEnemy\\DiveWeakEnemy\\DiveWeakEnemyMotion.txt",pPlayer);//モーションファイルを割り当てる
-    pPlayer->GetDrawInfo().SetUseDraw(false);                                                     //描画しない
-    PosInfo.SetPos(pos);                                                            //位置の設定
-    PosInfo.SetPosOld(pos);                                                         //1f前の位置を設定
-    PosInfo.SetPosFuture(pos);                                                      //1f後の位置を設定
-    PosInfo.SetSupportPos(pos);                                                     //設置位置
-    RotInfo.SetRot(rot);                                                            //向きの設定
-    SizeInfo.SetScale(Scale);                                                       //拡大率の設定
-    SizeInfo.SetFormarScale(Scale);                                                  //元の拡大率を設定する
-    pPlayer->GetLifeInfo().SetAutoDeath(false);                                                    //死亡フラグを自動で発動するかどうか
-    pPlayer->GetDrawInfo().SetUseShadow(true);
+    pPlayer->GetDrawInfo().SetUseDraw(false);                                                                //描画しない
+    PosInfo.SetPos(pos);                                                                                     //位置の設定
+    PosInfo.SetPosOld(pos);                                                                                  //1f前の位置を設定
+    PosInfo.SetPosFuture(pos);                                                                               //1f後の位置を設定
+    PosInfo.SetSupportPos(pos);                                                                              //設置位置
+    RotInfo.SetRot(rot);                                                                                     //向きの設定
+    SizeInfo.SetScale(Scale);                                                                                //拡大率の設定
+    SizeInfo.SetFormarScale(Scale);                                                                          //元の拡大率を設定する
+    pPlayer->GetLifeInfo().SetAutoDeath(false);                                                              //死亡フラグを自動で発動するかどうか
+    pPlayer->GetDrawInfo().SetUseShadow(true);                                                               //影を描画する
 
     //体力
-    LifeInfo.SetLife(s_nNORMAL_MAXLIFE);
-    LifeInfo.SetMaxLife(s_nNORMAL_MAXLIFE);
+    LifeInfo.SetLife(s_nNORMAL_MAXLIFE);                                                                     //体力
+    LifeInfo.SetMaxLife(s_nNORMAL_MAXLIFE);                                                                  //最大体力
 
     if (CScene::GetMode() == CScene::MODE::MODE_GAME)
-    {
-        pPlayer->m_pHpGauge = CGauge::Create(CGauge::GAUGETYPE::PLAYERHP, s_nNORMAL_MAXLIFE, 600.0f, 50.0f, D3DXVECTOR3(50.0f, SCREEN_HEIGHT - 50.0f, 0.0f));
-        pPlayer->m_pHpGauge->SetParam(s_nNORMAL_MAXLIFE);//最初から体力を最大値に設定
-        pPlayer->m_pHpGauge->SetUseDeath(false);
+    {//ゲームシーンなら
+        pPlayer->m_pHpGauge = CGauge::Create(CGauge::GAUGETYPE::PLAYERHP, s_nNORMAL_MAXLIFE, 600.0f, 50.0f, D3DXVECTOR3(50.0f, SCREEN_HEIGHT - 50.0f, 0.0f));//体力ゲージを生成
+        pPlayer->m_pHpGauge->SetParam(s_nNORMAL_MAXLIFE);                                                                                                    //最初から体力を最大値に設定
+        pPlayer->m_pHpGauge->SetUseDeath(false);                                                                                                             //死亡フラグを使用しない
     }
 	return pPlayer;
 }
@@ -341,8 +350,8 @@ void CPlayer::SetModeDisp(CUi* pModeDisp)
 void CPlayer::ActionModeChengeProcess()
 {
     if (CManager::GetInputJoypad()->GetTrigger(CInputJoypad::JOYKEY::X) || CManager::GetInputMouse()->GetMouseRightClickTrigger())
-    {
-        CGame::GetTutorial()->SetSuccessCheck(CTutorial::CHECK::MODECHENGE);
+    {//マウスの右クリック又はジョイパッドのXボタンを押したら
+        CGame::GetTutorial()->SetSuccessCheck(CTutorial::CHECK::MODECHENGE);//モードを変更するチュートリアルを完了
 
         //モードを切り替える
         if (m_NowActionMode == ACTIONMODE::SHOT)
@@ -362,28 +371,30 @@ void CPlayer::ActionModeChengeProcess()
 //========================================================
 void CPlayer::DiveGaugeMaxEffect()
 {
-    CDebugText* pDebugText = CManager::GetDebugText();
-    CUiState_Numeric* pUiState_Numeric = dynamic_cast<CUiState_Numeric*>(m_pDivePossibleNum->GetUiState(CUiState::UISTATE::NUMERIC));//UIの数字状態を取得
+    CDebugText* pDebugText = CManager::GetDebugText();//デバッグ情報
+    CUiState_Numeric* pUiState_Numeric = dynamic_cast<CUiState_Numeric*>(m_pDivePossibleNum->GetUiState(CUiState::UISTATE::NUMERIC));//UIの数字機能を取得
     CUiState_Gauge* pUiState_Gauge = dynamic_cast<CUiState_Gauge*>(m_pDiveGaugeFrame->GetUiState(CUiState::UISTATE::GAUGE));//UIのゲージ情報を取得
     if (pUiState_Gauge != nullptr)
     {
         CGauge* pDiveGauge = pUiState_Gauge->GetGauge();//ダイブゲージを取得する
         if (pUiState_Numeric != nullptr)
         {
+            //デバッグ表示
             pDebugText->PrintDebugText("ダイブ可能回数：%d\n", pUiState_Numeric->GetValue());
             if (pDiveGauge->GetFullGaugeFlag() == true)
             {//ゲージがマックスになった「瞬間」にフラグを発動＆＆最大ダイブ可能回数に達していなかったら
+                //生成処理
                 CGauge* pGauge = CGauge::Create(CGauge::GAUGETYPE::PLAYERHP, pDiveGauge->GetParam(), pDiveGauge->GetWidth(), pDiveGauge->GetHeight(), pDiveGauge->GetPos());
-                pGauge->SetUseLife(true, 50, 50);
-                pGauge->SetPolygonType(pDiveGauge->GetPolygonType());
-                pGauge->SetColor(pDiveGauge->GetColor(), false, 1.0f);
-                pGauge->SetUseLifeRatioColor(true);
-                pGauge->SetUseDeath(true);
-                pGauge->SetUseAddScale(D3DXVECTOR2(0.3f, 0.3f), true);
-                pGauge->SetUseScale(true);
-                pGauge->SetScale(D3DXVECTOR2(1.0f, 1.0f));
-                pDiveGauge->SetParam(0);//ダイブゲージをリセット
-                pUiState_Numeric->SetValue(pUiState_Numeric->GetValue() + 1, m_pDivePossibleNum);
+                pGauge->SetUseLife(true, 50, 50);//体力を使用する
+                pGauge->SetPolygonType(pDiveGauge->GetPolygonType());//ポリゴンの種類を設定
+                pGauge->SetColor(pDiveGauge->GetColor(), false, 1.0f);//色合いを設定
+                pGauge->SetUseLifeRatioColor(true);                   //体力の割合で色合いを変える
+                pGauge->SetUseDeath(true);                            //死亡フラグ設定処理
+                pGauge->SetUseAddScale(D3DXVECTOR2(0.3f, 0.3f), true);//拡大率の加算を使用する
+                pGauge->SetUseScale(true);                            //拡大率を使用する
+                pGauge->SetScale(D3DXVECTOR2(1.0f, 1.0f));            //拡大率を設定
+                pDiveGauge->SetParam(0);                              //ダイブゲージをリセット
+                pUiState_Numeric->SetValue(pUiState_Numeric->GetValue() + 1, m_pDivePossibleNum);//ダイブ可能回数を増やす
             }
         }
     }
@@ -396,7 +407,7 @@ void CPlayer::DiveGaugeMaxEffect()
 void CPlayer::ChengeMoveMode(CPlayerMove* pPlayerMove)
 {
     if (m_pMove != nullptr)
-    {
+    {//移動ステートが存在していたら破棄して新しい移動ステートを設定
         delete m_pMove;
         m_pMove = nullptr;
 
@@ -411,7 +422,7 @@ void CPlayer::ChengeMoveMode(CPlayerMove* pPlayerMove)
 void CPlayer::ChengeAttackMode(CPlayerAttack* pPlayerAttack)
 {
     if (m_pAttack != nullptr)
-    {
+    {//攻撃ステートが存在していたら破棄して新しい攻撃ステートを設定
         delete m_pAttack;
         m_pAttack = nullptr;
 
@@ -426,7 +437,7 @@ void CPlayer::ChengeAttackMode(CPlayerAttack* pPlayerAttack)
 void CPlayer::ChengeActionMode(CPlayerActionMode* pPlayerActionMode)
 {
     if (m_pPlayerActionMode != nullptr)
-    {
+    {//プレイヤーアクションモードステートが存在していたら破棄して新しいステートに設定
         delete m_pPlayerActionMode;
         m_pPlayerActionMode = nullptr;
 
@@ -455,8 +466,8 @@ void CPlayer::SetInitialActionMode(ACTIONMODE ActionMode)
         break;
     }
 
-    m_pWire->SetUseDraw(false);
-    m_pWire->GetWireHead()->GetDrawInfo().SetUseDraw(false);
+    m_pWire->SetUseDraw(false);//ワイヤーの描画をしない
+    m_pWire->GetWireHead()->GetDrawInfo().SetUseDraw(false);//ワイヤーの頭の描画をしない
 
 }
 //==========================================================================================================
@@ -466,15 +477,15 @@ void CPlayer::SetInitialActionMode(ACTIONMODE ActionMode)
 //========================================================
 void CPlayer::CollisionProcess()
 {
-    SetIsLanding(false);                           //地面に乗っているかどうかのフラグをリセット
+    SetIsLanding(false);                                       //地面に乗っているかどうかのフラグをリセット
     GetCollisionInfo().GetSquareInfo().ResetPushOutFirstFlag();//それぞれの軸の押し出し判定の優先フラグをリセット
-    m_bCollision = false;                          //判定状態をリセット
+    m_bCollision = false;                                      //判定状態をリセット
     for (int nCntPri = 0; nCntPri < CObject::m_nMAXPRIORITY; nCntPri++)
-    {
-        CObject* pObj = CObject::GetTopObject(nCntPri);
+    {//オブジェクトリストを検索
+        CObject* pObj = CObject::GetTopObject(nCntPri);//リストの先頭オブジェクトを取得する
 
         while (pObj != nullptr)
-        {
+        {//オブジェクトがnullptrになるまで
             //次のオブジェクトを格納
             CObject* pNext = pObj->GetNextObject();
 
@@ -482,10 +493,11 @@ void CPlayer::CollisionProcess()
             CObject::TYPE type = pObj->GetType();
 
             if (type == CObject::TYPE::BLOCK || type == CObject::TYPE::BGMODEL)
-            {
-                CObjectX* pObjX = static_cast<CObjectX*>(pObj);//オブジェクトXにダウンキャスト
+            {//オブジェクトタイプが「ブロック」又は「背景モデル」だったら
+                CObjectX* pObjX = static_cast<CObjectX*>(pObj);                     //オブジェクトXにキャスト
                 CCollision::ExtrusionCollisionSquarePushOutFirstDecide(this, pObjX);//正方形の押し出し判定のそれぞれの軸の順序の優先度を決める
             }
+
             //オブジェクトを次に進める
             pObj = pNext;
         }
@@ -493,14 +505,14 @@ void CPlayer::CollisionProcess()
     //=======================================================================================
 
     //============================================================
-    //押し出し判定開始
+    //押し出し判定開始（上記の処理で決めた判定順序でAABB押し出し判定をする)
     //============================================================
     for (int nCntPri = 0; nCntPri < CObject::m_nMAXPRIORITY; nCntPri++)
-    {
-        CObject* pObj = CObject::GetTopObject(nCntPri);
+    {//オブジェクトリストを検索
+        CObject* pObj = CObject::GetTopObject(nCntPri);//リストの先頭オブジェクトを取得
 
         while (pObj != nullptr)
-        {
+        {//オブジェクトが存在していたら
             //次のオブジェクトを格納
             CObject* pNext = pObj->GetNextObject();
 
@@ -508,34 +520,16 @@ void CPlayer::CollisionProcess()
             CObject::TYPE type = pObj->GetType();
 
             if (type == CObject::TYPE::BLOCK || type == CObject::TYPE::BGMODEL)
-            {
+            {//オブジェクトタイプが「ブロック」又は「背景モデル」だったら
                 CObjectX* pObjX = static_cast<CObjectX*>(pObj);//オブジェクトXにダウンキャスト
 
                 CCollision::ResolveExtrusionCollisionSquare(this, pObjX);//正方形の押し出し判定をする
             }
 
-            pObj = pNext;
+            pObj = pNext;//リストを次に進める
         }
     }
     //=======================================================================================
-}
-//==========================================================================================================
-
-//========================================================
-//ブロックとの当たり判定
-//========================================================
-void CPlayer::CollisionBlock()
-{
-
-}
-//==========================================================================================================
-
-//========================================================
-//ジャンプ処理
-//========================================================
-void CPlayer::JumpProcess()
-{
-    //
 }
 //==========================================================================================================
 
@@ -545,7 +539,7 @@ void CPlayer::JumpProcess()
 void CPlayer::ChengeAbnormalState(CPlayerAbnormalState* pAbnormalState)
 {
     if (m_pAbnormalState != nullptr)
-    {
+    {//状態異常ステートが存在していたら新しいステートに変更
         delete m_pAbnormalState;
         m_pAbnormalState = pAbnormalState;
     }
@@ -559,25 +553,26 @@ void CPlayer::SetDamage(int nDamage, int nHitStopTime)
 {
     if (GetLifeInfo().GetHitStop() == false)
     {//ヒットストップ状態じゃなければ処理を実行する
-        CCharacter::SetDamage(nDamage, nHitStopTime);
-        CSound* pSound = CManager::GetSound();
-        
-        m_pHpGauge->SetParam(GetLifeInfo().GetLife());
-        m_pHpGauge->SetShake(5.0f * nDamage, 30);
+        CCharacter::SetDamage(nDamage, nHitStopTime);                    //キャラクターのダメージ処理
+        CSound* pSound = CManager::GetSound();                           //サウンド情報
+                                                                         
+        m_pHpGauge->SetParam(GetLifeInfo().GetLife());                   //体力ゲージのパラメータを設定（キャラクターのダメージ処理で体力が変動)
+        m_pHpGauge->SetShake(5.0f * nDamage, 30);                        //体力ゲージを振動させる
 
+        //演出用ゲージを生成
         CGauge* pGauge = CGauge::Create(CGauge::GAUGETYPE::PLAYERHP, m_pHpGauge->GetParam(), m_pHpGauge->GetWidth(), m_pHpGauge->GetHeight(), m_pHpGauge->GetPos());
-        pGauge->SetUseLife(true, 10, 10);
-        pGauge->SetColor(D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f), false, 1.0f);
-        pGauge->SetUseLifeRatioColor(true);
-        pGauge->SetUseDeath(true);
-        pGauge->SetUseAddScale(D3DXVECTOR2(0.1f, 0.1f), true);
-        pGauge->SetUseScale(true);
-        pGauge->SetScale(D3DXVECTOR2(1.0f, 1.0f));
+        pGauge->SetUseLife(true, 10, 10);//体力を使用する
+        pGauge->SetColor(D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f), false, 1.0f);//色合いを設定する
+        pGauge->SetUseLifeRatioColor(true);                              //体力の割合に応じて透明度を変える
+        pGauge->SetUseDeath(true);                                       //死亡フラグを使用する
+        pGauge->SetUseAddScale(D3DXVECTOR2(0.1f, 0.1f), true);           //拡大率の加算を行う
+        pGauge->SetUseScale(true);                                       //拡大率を使用する
+        pGauge->SetScale(D3DXVECTOR2(1.0f, 1.0f));                       //拡大率を設定する
 
-        pSound->PlaySoundB(CSound::SOUND_LABEL::SE_DAMAGE_000);
+        pSound->PlaySoundB(CSound::SOUND_LABEL::SE_DAMAGE_000);          //ダメージサウンドを呼ぶ
 
-        m_bDamage = true;//ダメージを受けた状態を明示的に示す
-        SetNextMotion(2);
+        m_bDamage = true;                                                //ダメージを受けた状態を明示的に示す
+        SetNextMotion(2);                                                //ダメージモーションにする
     }
 }
 //==========================================================================================================
@@ -587,25 +582,8 @@ void CPlayer::SetDamage(int nDamage, int nHitStopTime)
 //========================================================
 void CPlayer::AdjustRot()
 {
-    const D3DXVECTOR3& CameraRot = CManager::GetCamera()->GetRot();
-    GetRotInfo().SetRot(D3DXVECTOR3(GetRotInfo().GetRot().x,D3DX_PI + CameraRot.y, GetRotInfo().GetRot().z));
-}
-//==========================================================================================================
-
-//========================================================
-//位置調整処理
-//========================================================
-void CPlayer::AdjustPos()
-{
-    const D3DXVECTOR3& Pos = GetPosInfo().GetPos();
-    D3DXVECTOR3 ScreenPos = CCalculation::CalcWorldToScreenNoViewport(Pos, *CManager::GetCamera()->GetMtxView(), *CManager::GetCamera()->GetMtxProjection(),
-        static_cast<float>(SCREEN_WIDTH), static_cast<float>(SCREEN_HEIGHT));
-
-    //画面外に出ないように補正
-    if (ScreenPos.x > SCREEN_WIDTH || ScreenPos.x < 0.0f)
-    {
-        GetPosInfo().SetPos(GetPosInfo().GetPosOld());
-    }
+    const D3DXVECTOR3& CameraRot = CManager::GetCamera()->GetRot();                                           //カメラの向き
+    GetRotInfo().SetRot(D3DXVECTOR3(GetRotInfo().GetRot().x,D3DX_PI + CameraRot.y, GetRotInfo().GetRot().z)); //カメラの向きを基準にプレイヤーの向きを設定
 }
 //==========================================================================================================
 
@@ -667,14 +645,16 @@ CPlayerAbnormalState_KnockBack::~CPlayerAbnormalState_KnockBack()
 //=======================================================
 void CPlayerAbnormalState_KnockBack::Process(CPlayer* pPlayer)
 {
+    //ノックバックの移動量を減衰させる
     m_KnockBackMove.x += (0.0f - m_KnockBackMove.x) * m_fInertia;
     m_KnockBackMove.y += (0.0f - m_KnockBackMove.y) * m_fInertia;
     m_KnockBackMove.z += (0.0f - m_KnockBackMove.z) * m_fInertia;
 
+    //移動量の設定
     pPlayer->GetMoveInfo().SetMove(m_KnockBackMove);
 
     if (fabsf(m_KnockBackMove.x) < 1.0f && fabsf(m_KnockBackMove.y) < 1.0f && fabsf(m_KnockBackMove.z) < 1.0f)
-    {
+    {//それぞれの軸の移動量が絶対値1.0fを下回ったら状態異常を元に戻す
         pPlayer->ChengeAbnormalState(DBG_NEW CPlayerAbnormalState());
     }
 }

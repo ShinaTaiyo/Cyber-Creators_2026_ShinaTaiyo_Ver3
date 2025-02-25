@@ -18,15 +18,15 @@ class CMeshCylinder : public CObject
 {
 public:
 	CMeshCylinder(const float fRadius,const float fHeight,const int nNumDivisionXZ,const int nNumDivisionY,const D3DXVECTOR3 Pos,const D3DXVECTOR3 Rot, int nPri = 0, bool bUseintPri = false, CObject::TYPE type = CObject::TYPE::NONE, CObject::OBJECTTYPE ObjType = CObject::OBJECTTYPE::OBJECTTYPE_3D);                               //コンストラクタ
-	~CMeshCylinder() override;                     //デストラクタ
-	HRESULT Init() override;                       //初期化処理
-	void Uninit() override;                        //終了処理
-	void Update() override;                        //更新処理
-	void Draw() override;                          //描画処理
-	void SetDeath() override;                      //死亡フラグ設定処理
-	void BindTexture(LPDIRECT3DTEXTURE9 pTexture); //テクスチャを割り当てる
-	void SetTextureIndex(int nIdx) { m_nTextureIndex = nIdx; }//テクスチャ番号を割り当てる4
-	int GetTextureIndex() { return m_nTextureIndex; }         //テクスチャ番号を取得する
+	~CMeshCylinder() override;                                    //デストラクタ
+	HRESULT Init() override;                                      //初期化処理
+	void Uninit() override;                                       //終了処理
+	void Update() override;                                       //更新処理
+	void Draw() override;                                         //描画処理
+	void SetDeath() override;                                     //死亡フラグ設定処理
+	void BindTexture(LPDIRECT3DTEXTURE9 pTexture);                //テクスチャを割り当てる
+	void SetTextureIndex(int nIdx) { m_nTextureIndex = nIdx; }    //テクスチャ番号を割り当てる4
+	int GetTextureIndex() { return m_nTextureIndex; }             //テクスチャ番号を取得する
 
 	//位置
 	void SetPos(D3DXVECTOR3 Pos) { m_Pos = Pos; }
@@ -84,15 +84,15 @@ private:
 	LPDIRECT3DTEXTURE9 m_pTexture;       //テクスチャへのポインタ
 
 	//大きさ（動的に変化する可能性がある）
-	float m_fRadius;               //半径
-	float m_fHeight;               //高さ
+	float m_fRadius;                     //半径
+	float m_fHeight;                     //高さ
 
 	//分割数
 	const int m_nNumDivisionXZ;          //XZ方向分割数
 	const int m_nNumDivisionY;           //Y方向分割数
 
 	//構成要素数
-	int m_nNumPolygon;             //ポリゴン数
+	int m_nNumPolygon;                   //ポリゴン数
 	const int m_nNumVtx;                 //頂点数
 	const int m_nNumIdx;                 //インデックス数
 
@@ -112,14 +112,14 @@ private:
 	//それぞれの中心点
 	D3DXVECTOR3* m_pSenterPos;
 
-	bool m_bUseDraw;//描画するかどうか
+	bool m_bUseDraw;                     //描画するかどうか
 
 	//=============================================
 	//関数
 	//=============================================
-	void SetVertexInfo(VERTEX_3D* pVtx,float & fRatioXZ,float & fRatioY,int &nCntVtxXZ,int & nCntVtxY);
-	void ChengeNumPolygon();//ポリゴン数を変える処理
-	void CheckMeshInfo();//メッシュのそれぞれの情報を確認する
+	void SetVertexInfo(VERTEX_3D* pVtx,float & fRatioXZ,float & fRatioY,int &nCntVtxXZ,int & nCntVtxY); //頂点情報を設定する
+	void ChengeNumPolygon();                                                                            //ポリゴン数を変える処理
+	void CheckMeshInfo();                                                                               //メッシュのそれぞれの情報を確認する
 }; 
 #endif
 

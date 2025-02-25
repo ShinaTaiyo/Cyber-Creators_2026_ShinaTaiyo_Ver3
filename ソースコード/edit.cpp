@@ -28,7 +28,7 @@ CStageManager* CEdit::m_pStageManager = nullptr;
 //=============================================================
 CEdit::CEdit()
 {
-	m_pStageManager = nullptr;
+	m_pStageManager = nullptr;//ステージマネージャーへのポインタを初期化
 }
 //=========================================================================================================================
 
@@ -48,9 +48,9 @@ HRESULT CEdit::Init()
 {
 	CScene::Init();//シーン初期化処理
 
-	m_pStageManager = CStageManager::Create();
+	m_pStageManager = CStageManager::Create();//生成処理
 
-	CBg3D::Create(CBg3D::BG3DTYPE::SKY, D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1200.0f, 1200.0f, 1200.0f));
+	CBg3D::Create(CBg3D::BG3DTYPE::SKY, D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1200.0f, 1200.0f, 1200.0f));//3D背景の生成処理
 	return S_OK;
 }
 //=========================================================================================================================
@@ -82,7 +82,7 @@ void CEdit::Uninit()
 void CEdit::Update()
 {
 	if (CManager::GetInputKeyboard()->GetTrigger(DIK_Z) == true)
-	{
+	{//画面遷移ボタン
 		CManager::GetSceneFade()->SetSceneFade(CFade::FADEMODE_IN, CScene::MODE_TITLE);
 	}
 }

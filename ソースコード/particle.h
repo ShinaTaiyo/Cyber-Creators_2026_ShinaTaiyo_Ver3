@@ -34,13 +34,13 @@ public:
 		TYPE_MAX
 	}TYPE;
 
-	CParticle(int nPri = 0, bool bUseintPri = false, CObject::TYPE type = CObject::TYPE::PARTICLE, CObject::OBJECTTYPE ObjType = CObject::OBJECTTYPE::OBJECTTYPE_BILLBOARD);              //コンストラクタ
-	~CParticle() override;    //デストラクタ
-	HRESULT Init() override;//初期化処理
-	void Uninit() override; //終了処理
-	void Update() override; //更新処理
-	void Draw() override;   //描画処理
-	void SetDeath() override;//死亡フラグを設定
+	CParticle(int nPri = 0, bool bUseintPri = false, CObject::TYPE type = CObject::TYPE::PARTICLE, CObject::OBJECTTYPE ObjType = CObject::OBJECTTYPE::OBJECTTYPE_BILLBOARD);//コンストラクタ
+	~CParticle() override;                  //デストラクタ
+	HRESULT Init() override;                //初期化処理
+	void Uninit() override;                 //終了処理
+	void Update() override;                 //更新処理
+	void Draw() override;                   //描画処理
+	void SetDeath() override;               //死亡フラグを設定
 
 	//詳細設定
 	void SetAddSpeed(float fAddSpeed);      //加速パーティクルにする
@@ -49,19 +49,19 @@ public:
 	static void SummonParticle(TYPE type,int nNum,int nLife, float fWidth, float fHeight,int nRandSpeed,int nDivision,bool bRandumCol,D3DXVECTOR3 Pos,D3DXCOLOR col, bool bBreanding);//ランダム方向に放出するパーティクルを出す
 	static void SummonChargeParticle(TYPE type, int nNum, int nLife, float fInitialSpeed,float fWidth, float fHeight,float fSummonLength, int nRandSpeed, int nDivision, bool bRandumCol,D3DXVECTOR3 SupportPos, D3DXCOLOR col, bool bBreanding);//チャージするような挙動のパーティクルを出す
 private:
-	bool m_bBranding;         //アルファブレンディングをするかどうか
-	TYPE m_Type;              //種類
-	float m_fReductionWidth;  //横幅縮小スピード
-	float m_fReductionHeight; //高さ縮小スピード
+	bool m_bBranding;                                  //アルファブレンディングをするかどうか
+	TYPE m_Type;                                       //種類
+	float m_fReductionWidth;                           //横幅縮小スピード
+	float m_fReductionHeight;                          //高さ縮小スピード
+							                           
+	bool m_bAddSpeed;                                  //加速させるかどうか
+	float m_fAddSpeed;                                 //加速度
+							                           
+	bool m_bUseChargePartilce;                         //チャージする挙動をするかどうか
+	bool m_bGravity;                                   //重力をかけるかどうか
+	float m_fGravity;                                  //重力
 
-	bool m_bAddSpeed;         //加速させるかどうか
-	float m_fAddSpeed;        //加速度
-
-	bool m_bUseChargePartilce;//チャージする挙動をするかどうか
-	bool m_bGravity;          //重力をかけるかどうか
-	float m_fGravity;         //重力
-
-	D3DXVECTOR3 m_SupportPos;   //支点となる位置
+	D3DXVECTOR3 m_SupportPos;                          //支点となる位置
 
 	static const char* m_apPARTICLE_FILENAME[TYPE_MAX];//パーティクルのファイル名
 };

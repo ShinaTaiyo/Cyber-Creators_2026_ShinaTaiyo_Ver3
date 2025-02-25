@@ -527,12 +527,12 @@ bool CInputJoypad::GetRStickPress(const int nDivisionRot)
 	float fRangeRotA = 0.0f;
 	float fRangeRotB = 0.0f;
 	for (int nCnt = 0; nCnt < nDivisionRot; nCnt++)
-	{
+	{//スティック入力方向の調整(分割して分割数の値分入力方向をずらす)
 		fRangeRotA = fDivRot * nCnt - D3DX_PI - fDivRot * 0.5f;
 		fRangeRotB = fDivRot * (nCnt + 1) - D3DX_PI - fDivRot * 0.5f;
 
 		if (fAimRot >= fRangeRotA && fAimRot <= fRangeRotB)
-		{
+		{//入力方向をずらしたときに境界線もずれて一部の方向が機能しないので、その対策
 			fAimRot = fDivRot * nCnt - D3DX_PI;
 			bSuccessDivision = true;
 			break;
@@ -635,45 +635,6 @@ void CInputMouse::Update()
 	GetStateRightClick();//右クリック状態を取得
 	GetStateLeftClick(); //左クリック状態を取得
 	GetStateMiddleClick();//ミドルクリック状態を取得
-}
-//================================================================
-
-//======================================
-//カーソルの位置を取得
-//======================================
-D3DXVECTOR2 CInputMouse::GetMousePos()
-{
-	POINT MousePoint;
-	memset(&MousePoint, 0, sizeof(POINT));
-	GetCursorPos(&MousePoint);//スクリーン座標を取得
-	HWND hwnd = FindWindow(nullptr, "AcrobaticGuns");//exeのウインドウを取得
-	ScreenToClient(hwnd, &MousePoint);//現在のカーソルの位置をウインドウの位置に変換
-	D3DXVECTOR2 CursorPos;
-	CursorPos.x = static_cast<float>(MousePoint.x);//float型にキャストした位置を代入
-	CursorPos.y = static_cast<float>(MousePoint.y);//float型にキャストした位置を代入
-
-	m_bCursorSenterWarp = false;//端にいった場合に中心に移動する処理の前で毎回初期化
-	if (CScene::GetMode() != CScene::MODE_TITLE)
-	{
-		if (CManager::GetInputKeyboard()->GetPress(DIK_LCONTROL) == false)
-		{//タイトル画面でウインドウの位置を調整できるようにするため
-			if (CursorPos.x > SCREEN_WIDTH || CursorPos.x < 0.0f)
-			{//カーソルを中心に移動
-				CursorPos.x = SCREEN_WIDTH / 2;
-				CursorPos.y = SCREEN_HEIGHT / 2;
-				SetCursorPos(static_cast<int>(CursorPos.x), static_cast<int>(CursorPos.y));
-				m_bCursorSenterWarp = true;
-			}
-			if (CursorPos.y > SCREEN_HEIGHT || CursorPos.y < 0.0f)
-			{//カーソルを中心に移動
-				CursorPos.x = SCREEN_WIDTH / 2;
-				CursorPos.y = SCREEN_HEIGHT / 2;
-				SetCursorPos(static_cast<int>(CursorPos.x), static_cast<int>(CursorPos.y));
-				m_bCursorSenterWarp = true;
-			}
-		}
-	}
-	return CursorPos;
 }
 //================================================================
 

@@ -19,7 +19,7 @@
 //前方宣言
 //==================================================================
 const string CBgModel::BGMODEL_FILENAME[static_cast<int>(CBgModel::BGMODELTYPE::MAX)] =
-{
+{//背景モデルのファイル名
 	"data\\MODEL\\BgModel\\Bill_000.x",
 	"data\\MODEL\\BgModel\\Tree_000.x",
 	"data\\MODEL\\BgModel\\Bill_001.x",
@@ -58,7 +58,7 @@ CBgModel::~CBgModel()
 //==================================================================
 HRESULT CBgModel::Init()
 {
-	CObjectX::Init();
+	CObjectX::Init();//オブジェクトXの初期化処理
 	return S_OK;
 }
 //======================================================================================================================
@@ -68,7 +68,7 @@ HRESULT CBgModel::Init()
 //==================================================================
 void CBgModel::Uninit()
 {
-	CObjectX::Uninit();
+	CObjectX::Uninit();//オブジェクトXの終了処理
 }
 //======================================================================================================================
 
@@ -77,7 +77,7 @@ void CBgModel::Uninit()
 //==================================================================
 void CBgModel::Update()
 {
-	CObjectX::Update();
+	CObjectX::Update();//オブジェクトXの更新処理
 }
 //======================================================================================================================
 
@@ -86,7 +86,7 @@ void CBgModel::Update()
 //==================================================================
 void CBgModel::Draw()
 {
-	CObjectX::Draw();
+	CObjectX::Draw();//オブジェクトXの描画処理
 }
 //======================================================================================================================
 
@@ -95,7 +95,7 @@ void CBgModel::Draw()
 //==================================================================
 void CBgModel::SetDeath()
 {
-	CObject::SetDeath();
+	CObjectX::SetDeath();//死亡フラグ設定処理
 }
 //======================================================================================================================
 
@@ -104,16 +104,17 @@ void CBgModel::SetDeath()
 //==================================================================
 CBgModel* CBgModel::Create(BGMODELTYPE bgModelType, D3DXVECTOR3 pos, D3DXVECTOR3 rot, D3DXVECTOR3 Scale, bool bSwapVtxXZ)
 {
-	CBgModel* pBgModel = DBG_NEW CBgModel();     //生成
+	CBgModel* pBgModel = DBG_NEW CBgModel();              //生成
 
-	pBgModel->Init();                        //初期化処理
-	pBgModel->SetBgModelType(bgModelType);   //背景モデルの種類を設定する
-	pBgModel->GetPosInfo().SetPos(pos);                   //位置  
+	pBgModel->Init();                                     //初期化処理
+	pBgModel->SetBgModelType(bgModelType);                //背景モデルの種類を設定する
+	pBgModel->GetPosInfo().SetPos(pos);                   //位置を設定  
 	pBgModel->GetPosInfo().SetSupportPos(pos);            //支点となる位置を設定
-	pBgModel->GetRotInfo().SetRot(rot);                   //向き
-	pBgModel->GetSizeInfo().SetScale(Scale);             //拡大率
-	pBgModel->GetSizeInfo().SetUseSwapVtxXZ(bSwapVtxXZ);   //XZをチェンジする
-	pBgModel->GetDrawInfo().SetUseShadow(false);
+	pBgModel->GetRotInfo().SetRot(rot);                   //向きを設定
+	pBgModel->GetSizeInfo().SetScale(Scale);              //拡大率を設定
+	pBgModel->GetSizeInfo().SetUseSwapVtxXZ(bSwapVtxXZ);  //XZの頂点のサイズを入れ替えるかどうか
+	pBgModel->GetDrawInfo().SetUseShadow(false);          //影を使用しない
+
 	//モデル情報設定
 	int nIdx = CManager::GetObjectXInfo()->Regist(BGMODEL_FILENAME[static_cast<int>(bgModelType)]);
 
@@ -124,20 +125,20 @@ CBgModel* CBgModel::Create(BGMODELTYPE bgModelType, D3DXVECTOR3 pos, D3DXVECTOR3
 		CManager::GetObjectXInfo()->GetTexture(nIdx),
 		CManager::GetObjectXInfo()->GetColorValue(nIdx));
 
-	pBgModel->SetManagerObjectType(CObject::MANAGEROBJECTTYPE::BGMODEL);           //マネージャーで呼び出す時の種類を設定
+	pBgModel->SetManagerObjectType(CObject::MANAGEROBJECTTYPE::BGMODEL);//ステージマネージャーで呼び出す時の種類を設定
 	pBgModel->SetSize();//サイズを設定する
 
 	if (bSwapVtxXZ == true)
-	{
-		D3DXVECTOR3 VtxMax = pBgModel->GetSizeInfo().GetOriginVtxMax();
-		D3DXVECTOR3 VtxMin = pBgModel->GetSizeInfo().GetOriginVtxMin();
+	{//XZのサイズを入れ替えるなら
+		D3DXVECTOR3 VtxMax = pBgModel->GetSizeInfo().GetOriginVtxMax();//元の最大頂点を取得
+		D3DXVECTOR3 VtxMin = pBgModel->GetSizeInfo().GetOriginVtxMin();//元の最小頂点を取得
 
-		VtxMax.x = pBgModel->GetSizeInfo().GetOriginVtxMax().z;
-		VtxMax.z = pBgModel->GetSizeInfo().GetOriginVtxMax().x;
-		VtxMin.x = pBgModel->GetSizeInfo().GetOriginVtxMin().z;
-		VtxMin.z = pBgModel->GetSizeInfo().GetOriginVtxMin().x;
-		pBgModel->GetSizeInfo().SetOriginVtxMax(VtxMax);
-		pBgModel->GetSizeInfo().SetOriginVtxMin(VtxMin);
+		VtxMax.x = pBgModel->GetSizeInfo().GetOriginVtxMax().z;//最大頂点のXをZに
+		VtxMax.z = pBgModel->GetSizeInfo().GetOriginVtxMax().x;//最大頂点のZをXに
+		VtxMin.x = pBgModel->GetSizeInfo().GetOriginVtxMin().z;//最小頂点のXをZに
+		VtxMin.z = pBgModel->GetSizeInfo().GetOriginVtxMin().x;//最小頂点のZをXに
+		pBgModel->GetSizeInfo().SetOriginVtxMax(VtxMax);       //元の最大頂点を現在設定した情報に更新
+		pBgModel->GetSizeInfo().SetOriginVtxMin(VtxMin);       //元の最小頂点を現在設定した情報に更新
 	}
 	return pBgModel;
 }

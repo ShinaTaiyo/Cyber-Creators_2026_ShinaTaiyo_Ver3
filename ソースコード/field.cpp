@@ -62,14 +62,6 @@ void CField::Uninit()
 //===================================================================================
 
 //===========================================
-//別枠の終了処理
-//===========================================
-void CField::ExtraUninit()
-{
-}
-//===================================================================================
-
-//===========================================
 //更新処理
 //===========================================
 void CField::Update()
@@ -92,7 +84,7 @@ void CField::Draw()
 //===========================================
 void CField::SetDeath()
 {
-	CObject::SetDeath();
+	CObject3D::SetDeath();//3Dオブジェクト死亡フラグ設定処理
 }
 //===================================================================================
 
@@ -102,29 +94,16 @@ void CField::SetDeath()
 //===========================================
 CField* CField::Create(D3DXVECTOR3 pos, D3DXVECTOR3 rot, float fWidth, float fHeight, FIELDTYPE FieldType)
 {
-	CField* pField = DBG_NEW CField();                                             //床を生成
-	bool bSuccess = pField->CObject::GetCreateSuccess();                            //生成が成功したかどうか
-	if (bSuccess == true)
-	{
-		if (pField != nullptr)
-		{
-			pField->Init();                                                                             //初期化処理
-			pField->SetRot(rot);
-			pField->SetPos(pos);
-			pField->SetUseDeath(true);                                                                  //死亡フラグを発動するかどうかを設定する
-			pField->SetTextureIndex(CManager::GetTexture()->Regist(m_apFIELD_FILENAME[static_cast<int>(FieldType)]));     //テクスチャインデックスを設定
-			pField->bindTexture(CManager::GetTexture()->GetAddress(pField->GetTextureIndex()));         //テクスチャをセットする　
-			pField->CObject::SetType(CObject::TYPE::FIELD);                                              //オブジェクトの種類を決める
-			pField->CObject3D::SetWidth(fWidth);                                                        //横幅
-			pField->CObject3D::SetHeight(fHeight);                                                      //高さ
-		}
-	}
-	else
-	{//オブジェクトに空きがなかったので破棄する
-		delete pField;
-		pField = nullptr;
-	}
-
+	CField* pField = DBG_NEW CField();                                                                         //床を生成
+	pField->Init();                                                                                            //初期化処理
+	pField->SetRot(rot);                                                                                       //向きの設定
+	pField->SetPos(pos);                                                                                       //位置の設定
+	pField->SetUseDeath(true);                                                                                 //死亡フラグを発動するかどうかを設定する
+	pField->SetTextureIndex(CManager::GetTexture()->Regist(m_apFIELD_FILENAME[static_cast<int>(FieldType)]));  //テクスチャインデックスを設定
+	pField->bindTexture(CManager::GetTexture()->GetAddress(pField->GetTextureIndex()));                        //テクスチャをセットする　
+	pField->CObject::SetType(CObject::TYPE::FIELD);                                                            //オブジェクトの種類を決める
+	pField->CObject3D::SetWidth(fWidth);                                                                       //横幅
+	pField->CObject3D::SetHeight(fHeight);                                                                     //高さ
 	return pField;
 }
 //===================================================================================

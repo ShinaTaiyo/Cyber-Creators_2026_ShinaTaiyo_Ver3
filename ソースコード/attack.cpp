@@ -59,7 +59,7 @@ CAttack::~CAttack()
 //==================================================================
 HRESULT CAttack::Init()
 {
-	CObjectX::Init();
+	CObjectX::Init();//オブジェクトX初期化
 	return S_OK;
 }
 //======================================================================================================================
@@ -69,7 +69,7 @@ HRESULT CAttack::Init()
 //==================================================================
 void CAttack::Uninit()
 {
-	CObjectX::Uninit();
+	CObjectX::Uninit();//オブジェクトX終了処理
 }
 //======================================================================================================================
 
@@ -78,9 +78,9 @@ void CAttack::Uninit()
 //==================================================================
 void CAttack::Update()
 {
-	CObjectX::Update();
+	CObjectX::Update();//オブジェクトX更新処理
 
-	m_bCollisionSuccess = false;
+	m_bCollisionSuccess = false;//当たり判定が成功したかどうかをマイフレームリセット
 
 	if (m_bAutoCollision == true)
 	{//生きているものとの当たり判定を行う（プレイヤー、敵、ボスなど）
@@ -111,7 +111,7 @@ void CAttack::Update()
 //==================================================================
 void CAttack::Draw()
 {
-	CObjectX::Draw();
+	CObjectX::Draw();//オブジェクトX描画処理
 }
 //======================================================================================================================
 
@@ -120,7 +120,7 @@ void CAttack::Draw()
 //==================================================================
 void CAttack::SetDeath()
 {
-	CObject::SetDeath();
+	CObjectX::SetDeath();//終了処理
 }
 //======================================================================================================================
 
@@ -130,43 +130,43 @@ void CAttack::SetDeath()
 void CAttack::Collision()
 {
 	for (int nCntPri = 0; nCntPri < m_nMAXPRIORITY; nCntPri++)
-	{
-		CObject* pObj = GetTopObject(nCntPri);
+	{//全てのリストを検索
+		CObject* pObj = GetTopObject(nCntPri);//リストの先頭オブジェクトを取得
 		while (pObj != nullptr)
 		{
-		    bool bNowCollision = false;
-			CObject* pNext = pObj->GetNextObject();
+		    bool bNowCollision = false;//当たったかどうかを初期化
+			CObject* pNext = pObj->GetNextObject();//次のオブジェクトを取得
 
 			if (pObj->GetType() == CObject::TYPE::ENEMY && m_TargetType == TARGETTYPE::ENEMY)
-			{
-				CEnemy* pEnemy = static_cast<CEnemy*>(pObj);
-				CollisionProcess(m_bCollisionSuccess, bNowCollision, pEnemy);
+			{//オブジェクトが敵で、攻撃が狙うオブジェクトが「敵」だった場合
+				CEnemy* pEnemy = static_cast<CEnemy*>(pObj);//オブジェクトを敵にキャスト
+				CollisionProcess(m_bCollisionSuccess, bNowCollision, pEnemy);//当たり判定の処理
 				if (m_bCollisionSuccess == true)
-				{
+				{//当たり判定が上記の処理で成功していたら
 					m_CollisionObjType = CObject::TYPE::ENEMY;//当たったオブジェクトのタイプを格納する
 					if (pEnemy->GetLifeInfo().GetLife() < 1)
-					{
+					{//敵の体力がなくなっていたら攻撃が倒したオブジェクトのタイプを「敵」に設定
 						pEnemy->SetDefeatAttack(m_Type);
 					}
 				}
 			}
 			else if (pObj->GetType() == CObject::TYPE::PLAYER && m_TargetType == TARGETTYPE::PLAYER)
-			{
-				CObjectX* pObjX = static_cast<CObjectX*>(pObj);
-				CollisionProcess(m_bCollisionSuccess, bNowCollision, pObjX);
+			{//オブジェクトが「プレイヤー」で攻撃が狙うオブジェクトが「プレイヤー」だった場合
+				CObjectX* pObjX = static_cast<CObjectX*>(pObj);//オブジェクトをオブジェクトXにキャスト
+				CollisionProcess(m_bCollisionSuccess, bNowCollision, pObjX);//当たり判定の処理を行う
 
 				if (m_bCollisionSuccess == true)
-				{
+				{//上記の処理で当たり判定が発動していたら
 					m_CollisionObjType = CObject::TYPE::PLAYER;//当たったオブジェクトのタイプを格納する
 				}
 			}
 
-			pObj = pNext;
+			pObj = pNext;//リストを次に進める
 		}
 	}
 
 	if (m_bCollisionSuccess == true && GetCollisionRelease() == true)
-	{
+	{//当たり判定が成功し、当たった時にオブジェクトを消すフラグがtrueなら、死亡フラグを発動する
 		SetDeath();
 	}
 
@@ -179,30 +179,30 @@ void CAttack::Collision()
 void CAttack::HitOtherCollisionProcess()
 {
 	for (int nCntPri = 0; nCntPri < m_nMAXPRIORITY; nCntPri++)
-	{
-		CObject* pObj = GetTopObject(nCntPri);
+	{//全てのリストを検索する
+		CObject* pObj = GetTopObject(nCntPri);//先頭オブジェクトを取得する
 		while (pObj != nullptr)
-		{
-			bool bNowCollision = false;
-			CObject* pNext = pObj->GetNextObject();
+		{//オブジェクトがnullptrになるまで繰り返す
+			bool bNowCollision = false;//現在当たったかどうかを初期化
+			CObject* pNext = pObj->GetNextObject();//リストの次のオブジェクトを取得
 
 			if (pObj->GetType() == CObject::TYPE::BGMODEL || pObj->GetType() == CObject::TYPE::BLOCK)
-			{
-				CObjectX* pObjX = static_cast<CObjectX*>(pObj);
+			{//オブジェクトのタイプが「背景モデル」か「ブロック」なら
+				CObjectX* pObjX = static_cast<CObjectX*>(pObj);//オブジェクトを「オブジェクトX」にキャスト
 
 				if (CCollision::CollisionSquare(GetPosInfo().GetPos(), GetSizeInfo().GetVtxMax(), GetSizeInfo().GetVtxMin(), pObjX->GetPosInfo().GetPos(), pObjX->GetSizeInfo().GetVtxMax(), pObjX->GetSizeInfo().GetVtxMin()))
-				{
-					m_bCollisionSuccess = true;
+				{//正方形の当たり判定を行う
+					m_bCollisionSuccess = true;//当たり判定が成功したフラグをオンにする
 					m_CollisionObjType = pObj->GetType();//当たったオブジェクトのタイプを格納する
 				}
 			}
 
-			pObj = pNext;
+			pObj = pNext;//リストを次に進める
 		}
 	}
 
 	if (m_bCollisionSuccess == true && m_bCollisionRelease == true)
-	{
+	{//当たり判定が成功し、当たった時に消すフラグがtrueになっていたら死亡フラグを発動する
 		SetDeath();
 	}
 
@@ -215,22 +215,22 @@ void CAttack::HitOtherCollisionProcess()
 void CAttack::ExtrusionCollisionProcess()
 {
 	GetCollisionInfo().GetSquareInfo().ResetPushOutFirstFlag();//それぞれの軸の押し出し判定の優先フラグをリセット
-	SetIsLanding(false);
+	SetIsLanding(false);//オブジェクトが地面に乗っているかどうかを初期化
 
 	for (int nCntPri = 0; nCntPri < CObject::m_nMAXPRIORITY; nCntPri++)
-	{
-		CObject* pObj = CObject::GetTopObject(nCntPri);
+	{//全てのリストを検索する
+		CObject* pObj = CObject::GetTopObject(nCntPri);//リストの先頭オブジェクトを取得する
 
 		while (pObj != nullptr)
-		{
+		{//オブジェクトがnullptrになるまで繰り返す
 			//次のオブジェクトを格納
-			CObject* pNext = pObj->GetNextObject();
+			CObject* pNext = pObj->GetNextObject();//次のオブジェクトを取得する
 
 			//種類の取得（敵なら当たり判定）
 			CObject::TYPE type = pObj->GetType();
 
 			if (type == CObject::TYPE::BLOCK || type == CObject::TYPE::BGMODEL)
-			{
+			{//オブジェクトの種類が「ブロック」または「背景モデル」なら
 				CObjectX* pObjX = static_cast<CObjectX*>(pObj);//オブジェクトXにダウンキャスト
 				CCollision::ExtrusionCollisionSquarePushOutFirstDecide(this, pObjX);//正方形の押し出し判定のそれぞれの軸の順序の優先度を決める
 			}
@@ -244,11 +244,11 @@ void CAttack::ExtrusionCollisionProcess()
 	//押し出し判定開始
 	//============================================================
 	for (int nCntPri = 0; nCntPri < CObject::m_nMAXPRIORITY; nCntPri++)
-	{
-		CObject* pObj = CObject::GetTopObject(nCntPri);
+	{//全てのリストを検索する
+		CObject* pObj = CObject::GetTopObject(nCntPri);//リストの先頭オブジェクトを取得する
 
 		while (pObj != nullptr)
-		{
+		{//オブジェクトがnullptrになるまで繰り返す
 			//次のオブジェクトを格納
 			CObject* pNext = pObj->GetNextObject();
 
@@ -256,13 +256,13 @@ void CAttack::ExtrusionCollisionProcess()
 			CObject::TYPE type = pObj->GetType();
 
 			if (type == CObject::TYPE::BLOCK || type == CObject::TYPE::BGMODEL)
-			{
+			{//オブジェクトの種類が「ブロック」または「背景モデル」なら
 				CObjectX* pObjX = static_cast<CObjectX*>(pObj);//オブジェクトXにダウンキャスト
 
 				CCollision::ResolveExtrusionCollisionSquare(this, pObjX);//正方形の押し出し判定をする
 			}
 
-			pObj = pNext;
+			pObj = pNext;//オブジェクトを次に進める
 		}
 	}
 	//=======================================================================================
@@ -275,19 +275,19 @@ void CAttack::ExtrusionCollisionProcess()
 void CAttack::CollisionProcess(bool& bCollision, bool& bNowCollision, CObjectX* pObjX)
 {
 	switch (GetCollisionType())
-	{
-	case CAttack::COLLISIONTYPE::SQUARE:
+	{//当たり判定の種類によって変える
+	case CAttack::COLLISIONTYPE::SQUARE://正方形の当たり判定
 		if (CCollision::CollisionSquare(GetPosInfo().GetPos(), GetSizeInfo().GetVtxMax(), GetSizeInfo().GetVtxMin(), pObjX->GetPosInfo().GetPos(), pObjX->GetSizeInfo().GetVtxMax(), pObjX->GetSizeInfo().GetVtxMin()) == true)
-		{
-			bCollision = true;
-			bNowCollision = true;
+		{//正方形の当たり判定を行う
+			bCollision = true;//当たった
+			bNowCollision = true;//現在当たった
 		}
 		break;
-	case CAttack::COLLISIONTYPE::RECTANGLE_XZ:
+	case CAttack::COLLISIONTYPE::RECTANGLE_XZ://XZ方向の斜めの当たり判定
 		if (CCollision::RectAngleCollisionXZ(this, pObjX) == true)
-		{
-			bCollision = true;
-			bNowCollision = true;
+		{//XZ方向の斜めの当たり判定を行う
+			bCollision = true;//当たった
+			bNowCollision = true;//現在当たった
 		}
 		break;
 	default:
@@ -295,9 +295,9 @@ void CAttack::CollisionProcess(bool& bCollision, bool& bNowCollision, CObjectX* 
 	}
 
 	if (bNowCollision == true)
-	{
-		pObjX->SetDamage(GetPower(), m_HitStop.nSetTime);
-		pObjX->SetColor(D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f), m_HitStop.nSetTime, false, false,false);
+	{//当たったら
+		pObjX->SetDamage(GetPower(), m_HitStop.nSetTime);//引数に設定されているオブジェクトにダメージを与える
+		pObjX->SetColor(D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f), m_HitStop.nSetTime, false, false,false);//引数に設定されているオブジェクトの色合いを赤くする
 	}
 
 }
@@ -328,7 +328,7 @@ CAttackPlayer::~CAttackPlayer()
 //==================================================================
 HRESULT CAttackPlayer::Init()
 {
-	CAttack::Init();
+	CAttack::Init();//攻撃の初期化処理
 	return S_OK;
 }
 //======================================================================================================================
@@ -338,7 +338,7 @@ HRESULT CAttackPlayer::Init()
 //==================================================================
 void CAttackPlayer::Uninit()
 {
-	CAttack::Uninit();
+	CAttack::Uninit();//攻撃の終了処理
 }
 //======================================================================================================================
 
@@ -347,7 +347,7 @@ void CAttackPlayer::Uninit()
 //==================================================================
 void CAttackPlayer::Update()
 {
-	CAttack::Update();//スーパークラスの更新
+	CAttack::Update();//攻撃の更新処理
 
 	BulletCollisionProcess();//弾が当たった時の処理
 }
@@ -358,7 +358,7 @@ void CAttackPlayer::Update()
 //==================================================================
 void CAttackPlayer::Draw()
 {
-	CAttack::Draw();
+	CAttack::Draw();//攻撃の描画処理
 }
 //======================================================================================================================
 
@@ -367,7 +367,7 @@ void CAttackPlayer::Draw()
 //==================================================================
 void CAttackPlayer::SetDeath()
 {
-	CAttack::SetDeath();
+	CAttack::SetDeath();//攻撃の死亡フラグ設定処理
 }
 //======================================================================================================================
 
@@ -377,26 +377,27 @@ void CAttackPlayer::SetDeath()
 CAttackPlayer* CAttackPlayer::Create(ATTACKTYPE AttackType, TARGETTYPE TargetType, COLLISIONTYPE CollisionType,
 	bool bHitOtherThanLiving, bool bAutoCollision, int nPower, int nSetHitStopTime, int nLife, D3DXVECTOR3 pos, D3DXVECTOR3 rot, D3DXVECTOR3 move, D3DXVECTOR3 Scale)
 {
-	CAttackPlayer* pAttackPlayer = nullptr;       //生成
-	pAttackPlayer = DBG_NEW CAttackPlayer(nPower,nSetHitStopTime);//生成
-	pAttackPlayer->Init();                        //初期化処理
-	pAttackPlayer->SetTargetType(TargetType);     //ターゲットタイプを設定
-	pAttackPlayer->SetCollisionType(CollisionType);//判定タイプを設定
-	pAttackPlayer->SetType(CObject::TYPE::ATTACK);//オブジェクトごとのタイプを設定する
-	pAttackPlayer->SetAttackType(AttackType);     //攻撃の種類を設定する
-	pAttackPlayer->GetLifeInfo().SetLife(nLife);                //体力を設定
-	pAttackPlayer->GetLifeInfo().SetMaxLife(nLife);             //最大体力を設定
-	pAttackPlayer->GetPosInfo().SetPos(pos);                   //位置  
-	pAttackPlayer->GetPosInfo().SetSupportPos(pos);            //支点位置
-	pAttackPlayer->GetRotInfo().SetRot(rot);                   //向き
-	pAttackPlayer->GetMoveInfo().SetMove(move);                 //移動量
-	pAttackPlayer->GetSizeInfo().SetScale(Scale);               //拡大率
-	pAttackPlayer->GetLifeInfo().SetAutoSubLife(true);          //体力を使用する
-	pAttackPlayer->GetLifeInfo().SetAutoDeath(true);
-	pAttackPlayer->GetMoveInfo().SetUseInteria(false, CObjectX::GetNormalInertia());
-	pAttackPlayer->GetMoveInfo().SetUseGravity(false,1.0f);
-	pAttackPlayer->SetHitOtherThanLibing(bHitOtherThanLiving);
-	pAttackPlayer->SetAutoCollision(bAutoCollision);//攻撃の当たり判定を攻撃クラスに任せるかどうか
+	CAttackPlayer* pAttackPlayer = nullptr;                                         //プレイヤーの攻撃へのポインタを初期化
+	pAttackPlayer = DBG_NEW CAttackPlayer(nPower,nSetHitStopTime);                  //生成
+	pAttackPlayer->Init();                                                          //初期化処理
+	pAttackPlayer->SetTargetType(TargetType);                                       //ターゲットタイプを設定
+	pAttackPlayer->SetCollisionType(CollisionType);                                 //判定タイプを設定
+	pAttackPlayer->SetType(CObject::TYPE::ATTACK);                                  //オブジェクトごとのタイプを設定する
+	pAttackPlayer->SetAttackType(AttackType);                                       //攻撃の種類を設定する
+	pAttackPlayer->GetLifeInfo().SetLife(nLife);                                    //体力を設定
+	pAttackPlayer->GetLifeInfo().SetMaxLife(nLife);                                 //最大体力を設定
+	pAttackPlayer->GetPosInfo().SetPos(pos);                                        //位置  
+	pAttackPlayer->GetPosInfo().SetSupportPos(pos);                                 //支点位置
+	pAttackPlayer->GetRotInfo().SetRot(rot);                                        //向き
+	pAttackPlayer->GetMoveInfo().SetMove(move);                                     //移動量
+	pAttackPlayer->GetSizeInfo().SetScale(Scale);                                   //拡大率
+	pAttackPlayer->GetLifeInfo().SetAutoSubLife(true);                              //体力を使用する
+	pAttackPlayer->GetLifeInfo().SetAutoDeath(true);                                //体力が０になったときに自動的に死亡フラグを発動する 
+	pAttackPlayer->GetMoveInfo().SetUseInteria(false, CObjectX::GetNormalInertia());//慣性を使用しない
+	pAttackPlayer->GetMoveInfo().SetUseGravity(false,1.0f);                         //重力を使用しない
+	pAttackPlayer->SetHitOtherThanLibing(bHitOtherThanLiving);                      //背景オブジェクトとも当たり判定を行うかどうか
+	pAttackPlayer->SetAutoCollision(bAutoCollision);                                //攻撃の当たり判定を攻撃クラスに任せるかどうか
+
 	//モデル情報設定
 	int nIdx = CManager::GetObjectXInfo()->Regist(ATTACK_FILENAME[static_cast<int>(AttackType)]);
 
@@ -418,9 +419,9 @@ CAttackPlayer* CAttackPlayer::Create(ATTACKTYPE AttackType, TARGETTYPE TargetTyp
 void CAttackPlayer::BulletCollisionProcess()
 {
 	if (CScene::GetMode() == CScene::MODE::MODE_GAME)
-	{
+	{//ゲームシーンなら
 		if (GetCollisionSuccess() == true && GetAttackType() == ATTACKTYPE::BULLET)
-		{
+		{//当たり判定が成功していて、攻撃の種類が「弾」だったら
 			CObjectX::PosInfo& PosInfo = GetPosInfo();//位置情報を取得
 			const D3DXVECTOR3& Pos = PosInfo.GetPos();//位置
 			//パーティクルを衝突位置に召喚する
@@ -432,17 +433,20 @@ void CAttackPlayer::BulletCollisionProcess()
 					CGauge* pDiveGauge = pUiState_Gauge->GetGauge();//ダイブゲージを取得する
 					CUiState_Numeric* pUiState_Numeric = dynamic_cast<CUiState_Numeric*>(CGame::GetPlayer()->GetDivePossibleNum()->GetUiState(CUiState::UISTATE::NUMERIC));//ダイブ可能階数のUIの数値（ダイブ可能回数)を取得
 					if (pUiState_Numeric != nullptr)
-					{
+					{//取得したUIの機能が数字だったら
 						if (pUiState_Numeric->GetValue() < CPlayer::GetMaxDiveNum())
 						{//最大ダイブ可能回数に達していない場合はダイブ可能回数を＋１する
 							pDiveGauge->SetParam(pDiveGauge->GetParam() + 1);
 						}
 					}
 				}
+				//パーティクルを召喚する
 				CParticle::SummonParticle(CParticle::TYPE::TYPE00_NORMAL, 20, 30, 30.0f, 30.0f, 100, 10, true, Pos, D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f), true);
 			}
 			else
 			{//それ以外なら
+
+				//パーティクルを召喚する
 				CParticle::SummonParticle(CParticle::TYPE::TYPE00_NORMAL, 20, 30, 30.0f, 30.0f, 100, 10, false, Pos, D3DXCOLOR(0.0f, 1.0f, 1.0f, 1.0f), true);
 			}
 		}
@@ -475,7 +479,7 @@ CAttackEnemy::~CAttackEnemy()
 //==================================================================
 HRESULT CAttackEnemy::Init()
 {
-	CAttack::Init();
+	CAttack::Init();//攻撃の初期化処理
 	return S_OK;
 }
 //======================================================================================================================
@@ -485,7 +489,7 @@ HRESULT CAttackEnemy::Init()
 //==================================================================
 void CAttackEnemy::Uninit()
 {
-	CAttack::Uninit();
+	CAttack::Uninit();//攻撃の終了処理
 }
 //======================================================================================================================
 
@@ -494,7 +498,7 @@ void CAttackEnemy::Uninit()
 //==================================================================
 void CAttackEnemy::Update()
 {
-	CAttack::Update();
+	CAttack::Update();//攻撃の更新処理
 }
 //======================================================================================================================
 
@@ -503,7 +507,7 @@ void CAttackEnemy::Update()
 //==================================================================
 void CAttackEnemy::Draw()
 {
-	CAttack::Draw();
+	CAttack::Draw();//攻撃の描画処理
 }
 //======================================================================================================================
 
@@ -512,7 +516,7 @@ void CAttackEnemy::Draw()
 //==================================================================
 void CAttackEnemy::SetDeath()
 {
-	CAttack::SetDeath();
+	CAttack::SetDeath();//攻撃の死亡フラグ設定処理
 }
 //======================================================================================================================
 
@@ -524,23 +528,23 @@ CAttackEnemy* CAttackEnemy::Create(ATTACKTYPE AttackType, TARGETTYPE TargetType,
 {
 	CAttackEnemy* pAttackEnemy = DBG_NEW CAttackEnemy(nPower, nSetHitStopTime);
 
-	pAttackEnemy->Init();                        //初期化処理
-	pAttackEnemy->SetType(CObject::TYPE::ATTACK); //オブジェクトごとのタイプを設定する
-	pAttackEnemy->SetAttackType(AttackType);     //攻撃の種類を設定する
-	pAttackEnemy->SetTargetType(TargetType);     //ターゲットタイプを設定する
-	pAttackEnemy->SetCollisionType(CollisionType);//判定タイプを設定する
-	pAttackEnemy->GetLifeInfo().SetLife(nLife);                //体力を設定
-	pAttackEnemy->GetLifeInfo().SetMaxLife(nLife);             //最大体力を設定
-	pAttackEnemy->GetLifeInfo().SetAutoSubLife(true);          //体力を自動的に減らす
-	pAttackEnemy->GetPosInfo().SetPos(pos);                   //位置  
-	pAttackEnemy->GetRotInfo().SetRot(rot);                   //向き
-	pAttackEnemy->GetMoveInfo().SetMove(move);                 //移動量
-	pAttackEnemy->GetSizeInfo().SetScale(Scale);               //拡大率
-	pAttackEnemy->GetMoveInfo().SetUseInteria(false, CObjectX::GetNormalInertia());
-	pAttackEnemy->GetLifeInfo().SetAutoDeath(true);
-	pAttackEnemy->GetMoveInfo().SetUseGravity(false, 1.0f);
-	pAttackEnemy->SetHitOtherThanLibing(bHitOtherThanLiving);
-	pAttackEnemy->SetAutoCollision(bAutoCollision);//攻撃クラスに判定を任せるかどうか
+	pAttackEnemy->Init();                                       //初期化処理
+	pAttackEnemy->SetType(CObject::TYPE::ATTACK);               //オブジェクトごとのタイプを設定する
+	pAttackEnemy->SetAttackType(AttackType);                    //攻撃の種類を設定する
+	pAttackEnemy->SetTargetType(TargetType);                    //ターゲットタイプを設定する
+	pAttackEnemy->SetCollisionType(CollisionType);              //判定タイプを設定する
+	pAttackEnemy->GetLifeInfo().SetLife(nLife);                 //体力を設定
+	pAttackEnemy->GetLifeInfo().SetMaxLife(nLife);              //最大体力を設定
+	pAttackEnemy->GetLifeInfo().SetAutoSubLife(true);           //体力を自動的に減らす
+	pAttackEnemy->GetPosInfo().SetPos(pos);                     //位置  
+	pAttackEnemy->GetRotInfo().SetRot(rot);                     //向き
+	pAttackEnemy->GetMoveInfo().SetMove(move);                  //移動量
+	pAttackEnemy->GetSizeInfo().SetScale(Scale);                //拡大率
+	pAttackEnemy->GetMoveInfo().SetUseInteria(false, CObjectX::GetNormalInertia());//慣性を使用しない
+	pAttackEnemy->GetLifeInfo().SetAutoDeath(true);                                //体力がなくなった時に自動的に死亡フラグを発動する
+	pAttackEnemy->GetMoveInfo().SetUseGravity(false, 1.0f);                        //重力を使用する
+	pAttackEnemy->SetHitOtherThanLibing(bHitOtherThanLiving);                      //背景オブジェクトとも当たり判定を発動するかどうか
+	pAttackEnemy->SetAutoCollision(bAutoCollision);                                //攻撃クラスに判定を任せるかどうか
 	//モデル情報設定
 	int nIdx = CManager::GetObjectXInfo()->Regist(ATTACK_FILENAME[static_cast<int>(AttackType)]);
 
@@ -550,7 +554,7 @@ CAttackEnemy* CAttackEnemy::Create(ATTACKTYPE AttackType, TARGETTYPE TargetType,
 		CManager::GetObjectXInfo()->GetdwNumMat(nIdx),
 		CManager::GetObjectXInfo()->GetTexture(nIdx),
 		CManager::GetObjectXInfo()->GetColorValue(nIdx));
-	pAttackEnemy->SetSize();
+	pAttackEnemy->SetSize();//オブジェクトのサイズを設定する
 	return pAttackEnemy;
 }
 //======================================================================================================================
@@ -561,7 +565,9 @@ CAttackEnemy* CAttackEnemy::Create(ATTACKTYPE AttackType, TARGETTYPE TargetType,
 void CAttack::BoundInfo::BoundProcess(CAttack* pAttack)
 {
 	if (pAttack->GetLanding() == true)
-	{
+	{//地面に乗っていたら
+
+		//跳ねさせる
 		pAttack->GetMoveInfo().SetMove(D3DXVECTOR3(pAttack->GetMoveInfo().GetMove().x, Power.y, pAttack->GetMoveInfo().GetMove().z));
 
 		if (bGravity == true)

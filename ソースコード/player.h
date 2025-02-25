@@ -45,50 +45,50 @@ public:
 	//===============================================================================================
 
 	CPlayer(CPlayerMove* pPlayerMove, CPlayerAttack* pPlayerAttack,
-		int nPri = 0, bool bUseintPri = false, CObject::TYPE type = CObject::TYPE::PLAYER, CObject::OBJECTTYPE ObjType = CObject::OBJECTTYPE::OBJECTTYPE_X);                  //コンストラクタ
-	~CPlayer();                 //デストラクタ
-	HRESULT Init() override;    //初期化処理
-	void Uninit() override;     //終了処理
-	void Update() override;     //更新処理
-	void Draw() override;       //描画処理
-	void SetDeath() override;   //死亡フラグを設定
-	static CPlayer* Create(D3DXVECTOR3 pos, D3DXVECTOR3 rot, D3DXVECTOR3 move, D3DXVECTOR3 Scale);
-	CLockon* GetLockOn() { return m_pLockOn; }//ロックオンのインスタンスを取得
+		int nPri = 0, bool bUseintPri = false, CObject::TYPE type = CObject::TYPE::PLAYER, CObject::OBJECTTYPE ObjType = CObject::OBJECTTYPE::OBJECTTYPE_X);//コンストラクタ
+	~CPlayer();                                                                                    //デストラクタ
+	HRESULT Init() override;                                                                       //初期化処理
+	void Uninit() override;                                                                        //終了処理
+	void Update() override;                                                                        //更新処理
+	void Draw() override;                                                                          //描画処理
+	void SetDeath() override;                                                                      //死亡フラグを設定
+	static CPlayer* Create(D3DXVECTOR3 pos, D3DXVECTOR3 rot, D3DXVECTOR3 move, D3DXVECTOR3 Scale); //生成処理
+	CLockon* GetLockOn() { return m_pLockOn; }                                                     //ロックオンのインスタンスを取得
 
 	//================================================
 	//当たり判定
 	//================================================
-	void SetSuccessCollision(bool bSuccess) { m_bCollision = bSuccess; }//当たり判定が成功したかどうかを設定
-	const bool& GetCollisionSuccess() const { return m_bCollision; }//当たり判定が成功したかどうかを取得
+	void SetSuccessCollision(bool bSuccess) { m_bCollision = bSuccess; }    //当たり判定が成功したかどうかを設定
+	const bool& GetCollisionSuccess() const { return m_bCollision; }        //当たり判定が成功したかどうかを取得
 	//===============================================================================================
 
 	//================================================
 	//モードディスプ
 	//================================================
-	void SetModeDisp(CUi* pModeDisp);//モード表示を設定
-	CUi* GetModeDisp() { return m_pModeDisp; }//モード表示を取得
+	void SetModeDisp(CUi* pModeDisp);                 //モード表示を設定
+	CUi* GetModeDisp() { return m_pModeDisp; }        //モード表示を取得
 	//===============================================================================================
 
 	//================================================
 	//メッシュ
 	//================================================
-	CWire* GetWire() { return m_pWire; }//ワイヤーを取得
+	CWire* GetWire() { return m_pWire; }              //ワイヤーを取得
 	//===============================================================================================
 
 	//================================================
 	//ゲージ
 	//================================================
-	CUi* GetDiveGaugeFrame() { return m_pDiveGaugeFrame; }
-	CUi* GetDivePossibleNum() { return m_pDivePossibleNum; }
+	CUi* GetDiveGaugeFrame() { return m_pDiveGaugeFrame; }   //ダイブゲージのフレーム
+	CUi* GetDivePossibleNum() { return m_pDivePossibleNum; } //ダイブ回数表示用UI
 	//===============================================================================================
 	
 	//================================================
 	//モードチェンジ
 	//================================================
-	void ChengeMoveMode(CPlayerMove* pPlayerMove);//移動モードを変える
-	void ChengeAttackMode(CPlayerAttack* pPlayerAttack);//攻撃モードを変える
-	void ChengeActionMode(CPlayerActionMode* pPlayerActionMode);//プレイヤーのアクションモードを変更する
-	void SetInitialActionMode(ACTIONMODE ActionMode);          //アクションモードを設定する
+	void ChengeMoveMode(CPlayerMove* pPlayerMove);                      //移動モードを変える
+	void ChengeAttackMode(CPlayerAttack* pPlayerAttack);                //攻撃モードを変える
+	void ChengeActionMode(CPlayerActionMode* pPlayerActionMode);        //プレイヤーのアクションモードを変更する
+	void SetInitialActionMode(ACTIONMODE ActionMode);                   //アクションモードを設定する
 	//===============================================================================================
 
 	//================================================
@@ -113,34 +113,34 @@ private:
 	//================================================
 	//静的メンバ
 	//================================================
-	static constexpr float m_fNORMALATTACK_SPEED = 10.0f;//通常攻撃の移動量を設定
-	static const int s_nNORMAL_MAXLIFE;//プレイヤーの通常最大体力
-	static const int s_nMaxDiveNum;    //プレイヤーの最大ダイブ数
+	static constexpr float m_fNORMALATTACK_SPEED = 10.0f;   //通常攻撃の移動量を設定
+	static const int s_nNORMAL_MAXLIFE;                     //プレイヤーの通常最大体力
+	static const int s_nMaxDiveNum;                         //プレイヤーの最大ダイブ数
 	//===============================================================================================
 
 	//================================================
 	//変数宣言
 	//================================================
-	float m_fRotAim;                    //目的の向き
-	bool m_bCollision;                  //当たり判定が成功したかどうか
-	bool m_bDamage;                     //ダメージを受けたかどうか
-
-	//他クラスインスタンス
-	ACTIONMODE m_NowActionMode;         //現在のアクションモード
-	CLockon* m_pLockOn;                 //ロックオンカーソル
-	CUi* m_pModeDisp;                   //モード表示UI
-	CWire* m_pWire;                     //ワイヤー
-	CGauge* m_pHpGauge;                 //体力ゲージ
-	CUi* m_pDivePossibleNum;            //ダイブ可能回数UI
-	CUi* m_pDiveGaugeFrame;             //ダイブゲージのフレーム
-
-	//行動状態
-	CPlayerMove* m_pMove;               //移動処理
-	CPlayerAttack* m_pAttack;           //攻撃処理
-	CPlayerActionMode* m_pPlayerActionMode;//プレイヤーアクションモード(メインのステートクラス)
-
-	//状態異常ステート
-	CPlayerAbnormalState* m_pAbnormalState;   //状態異常
+	float m_fRotAim;                             //目的の向き
+	bool m_bCollision;                           //当たり判定が成功したかどうか
+	bool m_bDamage;                              //ダメージを受けたかどうか
+										         
+	//他クラスインスタンス			   	         
+	ACTIONMODE m_NowActionMode;                  //現在のアクションモード
+	CLockon* m_pLockOn;                          //ロックオンカーソル
+	CUi* m_pModeDisp;                            //モード表示UI
+	CWire* m_pWire;                              //ワイヤー
+	CGauge* m_pHpGauge;                          //体力ゲージ
+	CUi* m_pDivePossibleNum;                     //ダイブ可能回数UI
+	CUi* m_pDiveGaugeFrame;                      //ダイブゲージのフレーム
+										         
+	//行動状態							         
+	CPlayerMove* m_pMove;                        //移動処理
+	CPlayerAttack* m_pAttack;                    //攻撃処理
+	CPlayerActionMode* m_pPlayerActionMode;      //プレイヤーアクションモード(メインのステートクラス)
+											     
+	//状態異常ステート						     
+	CPlayerAbnormalState* m_pAbnormalState;      //状態異常
 
 	//===============================================================================================
 
@@ -153,7 +153,6 @@ private:
 	//位置系
 	//=============================
 	void AdjustRot();//向き調整処理
-	void AdjustPos();//位置を調整する
 	//================================================
 
 	//=============================
@@ -172,13 +171,6 @@ private:
 	//判定系
 	//=============================
 	void CollisionProcess();//当たり判定処理全般
-	void CollisionBlock();//ブロックとの当たり判定処理
-	//===============================================================================================
-
-	//=============================
-	//ジャンプ関係
-	//=============================
-	void JumpProcess();     //ジャンプ処理
 	//===============================================================================================
 };
 
@@ -188,9 +180,9 @@ private:
 class CPlayerAbnormalState
 {
 public:
-	CPlayerAbnormalState();//コンストラクタ
-	virtual ~CPlayerAbnormalState();//デストラクタ
-	virtual void Process(CPlayer * pPlayer);//処理
+	CPlayerAbnormalState();                   //コンストラクタ
+	virtual ~CPlayerAbnormalState();          //デストラクタ
+	virtual void Process(CPlayer * pPlayer);  //処理
 };
 //===============================================================================================
 
@@ -200,12 +192,12 @@ public:
 class CPlayerAbnormalState_KnockBack : public CPlayerAbnormalState
 {
 public:
-	CPlayerAbnormalState_KnockBack(CPlayer * pPlayer,D3DXVECTOR3 KnockBackMove,float fInertia);//コンストラクタ
-	~CPlayerAbnormalState_KnockBack() override;//デストラクタ
-	void Process(CPlayer* pPlayer) override;//処理
-private:
-	D3DXVECTOR3 m_KnockBackMove;//ノックバックする移動量
-	float m_fInertia;           //減衰度
+	CPlayerAbnormalState_KnockBack(CPlayer * pPlayer,D3DXVECTOR3 KnockBackMove,float fInertia);   //コンストラクタ
+	~CPlayerAbnormalState_KnockBack() override;                                                   //デストラクタ
+	void Process(CPlayer* pPlayer) override;                                                      //処理
+private:																					      
+	D3DXVECTOR3 m_KnockBackMove;                                                                  //ノックバックする移動量
+	float m_fInertia;                                                                             //減衰度
 };
 //===============================================================================================
 #endif

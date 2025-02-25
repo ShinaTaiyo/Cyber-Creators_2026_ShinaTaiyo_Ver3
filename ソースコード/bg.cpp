@@ -50,12 +50,7 @@ CBg::~CBg()
 //========================
 HRESULT CBg::Init()
 {
-	//======================================================
-    //２Ｄオブジェクトの初期化
-    //======================================================
-	CObject2D::Init();
-	//================================================================================================
-
+	CObject2D::Init();//2Dオブジェクトの初期化
 	return S_OK;
 }
 //=========================================================================
@@ -65,7 +60,7 @@ HRESULT CBg::Init()
 //========================
 void CBg::Uninit()
 {
-	CObject2D::Uninit();
+	CObject2D::Uninit();//2Dオブジェクトの終了処理
 }
 //=========================================================================
 
@@ -74,13 +69,12 @@ void CBg::Uninit()
 //========================
 void CBg::Update()
 {
-	//Rot.z += 0.01f;
-	CObject2D::Update();
+	CObject2D::Update();//オブジェクト2Dの更新処理
 
 	if (m_bUseTexMove == true)
-	{
+	{//テクスチャ座標を移動させるかどうか
 		LPDIRECT3DVERTEXBUFFER9 pVtxBuff = GetVertexBuffer();
-		VERTEX_2D* pVtx;
+		VERTEX_2D* pVtx;//2D頂点情報へのポインタ
 		//頂点バッファをロックし、頂点データへのポインタを取得
 		pVtxBuff->Lock(0, 0, (void**)&pVtx, 0);
 
@@ -104,7 +98,7 @@ void CBg::Update()
 //========================
 void CBg::Draw()
 {
-	CObject2D::Draw();
+	CObject2D::Draw();//オブジェクト2Dの描画処理
 }
 //=========================================================================
 
@@ -113,7 +107,7 @@ void CBg::Draw()
 //========================
 void CBg::SetDeath()
 {
-	CObject::SetDeath();
+	CObject2D::SetDeath();//オブジェクト2Dの死亡フラグ設定処理
 }
 //=========================================================================
 
@@ -122,36 +116,25 @@ void CBg::SetDeath()
 //=============================
 void CBg::Create(BG type)
 {
-	CBg* pBg = DBG_NEW CBg;   //弾を生成
-	bool bSuccess = pBg->CObject::GetCreateSuccess();
+	CBg* pBg = DBG_NEW CBg;                                     //背景を生成
 	CTexture* pTextureClass = CManager::GetTexture();           //テクスチャクラスを取得
-	if (bSuccess == true)
-	{
-		if (pBg != nullptr)
-		{
-			pBg->Init();                                                     //初期化処理
-			pBg->CObject2D::SetAnimInfo(1, 1, false);//ポリゴンとテクスチャ情報を設定
-			pBg->SetColor(D3DXCOLOR(1.0f,1.0f, 1.0f, 1.0f), false, 1.0f);
-			pBg->SetWidth(SCREEN_WIDTH / 2);
-			pBg->SetMaxWidth(SCREEN_WIDTH / 2);
-			pBg->SetHeight(SCREEN_HEIGHT / 2);
-			pBg->SetMaxHeight(SCREEN_HEIGHT / 2);
-			pBg->SetPolygonType(CObject2D::POLYGONTYPE::NORMAL);
-			pBg->SetTextureIndex(pTextureClass->Regist(m_apBGFILE_NAME[type]));
-			pBg->SetUseDeath(true);                 //死亡フラグを発動するかどうかを設定する
-			pBg->CObject2D::BindTexture(pTextureClass->GetAddress(pBg->GetTextureIndex()));
-			pBg->CObject2D::SetPos(D3DXVECTOR3(SCREEN_WIDTH / 2,SCREEN_HEIGHT / 2,0.0f));//ポリゴンとテクスチャ情報を設定
-			pBg->m_Type = type;  //弾の種類
-			pBg->CObject::SetType(CObject::TYPE::BG);//オブジェクの種類を決める
-		}
+	if (pBg != nullptr)
+	{//背景が存在していたら
+		pBg->Init();                                                                   //初期化処理
+		pBg->CObject2D::SetAnimInfo(1, 1, false);                                      //ポリゴンとテクスチャ情報を設定
+		pBg->SetColor(D3DXCOLOR(1.0f,1.0f, 1.0f, 1.0f), false, 1.0f);                  //色合いを設定
+		pBg->SetWidth(SCREEN_WIDTH / 2);                                               //ポリゴンの横幅を設定
+		pBg->SetMaxWidth(SCREEN_WIDTH / 2);                                            //ポリゴンの最大横幅を設定
+		pBg->SetHeight(SCREEN_HEIGHT / 2);                                             //ポリゴンの高さを設定
+		pBg->SetMaxHeight(SCREEN_HEIGHT / 2);                                          //ポリゴンの最大高さを設定
+		pBg->SetPolygonType(CObject2D::POLYGONTYPE::NORMAL);                           //ポリゴンの種類を設定
+		pBg->SetTextureIndex(pTextureClass->Regist(m_apBGFILE_NAME[type]));            //テクスチャ番号の設定
+		pBg->SetUseDeath(true);                                                        //死亡フラグを発動するかどうかを設定する
+		pBg->CObject2D::BindTexture(pTextureClass->GetAddress(pBg->GetTextureIndex()));//テクスチャ情報の設定
+		pBg->CObject2D::SetPos(D3DXVECTOR3(SCREEN_WIDTH / 2,SCREEN_HEIGHT / 2,0.0f));  //ポリゴンとテクスチャ情報を設定
+		pBg->m_Type = type;                                                            //背景の種類
+		pBg->CObject::SetType(CObject::TYPE::BG);                                      //オブジェクトの種類を決める
 	}
-	else
-	{
-		delete pBg;
-		pBg = nullptr;
-	}
-
-
 }
 //=========================================================================
 
@@ -180,7 +163,7 @@ CBgTitle::~CBgTitle()
 //=====================================================
 HRESULT CBgTitle::Init()
 {
-	CBg::Init();
+	CBg::Init();//背景の初期化
 	return S_OK;
 }
 //=========================================================================
@@ -190,7 +173,7 @@ HRESULT CBgTitle::Init()
 //=====================================================
 void CBgTitle::Uninit()
 {
-	CBg::Uninit();
+	CBg::Uninit();//背景の終了処理
 }
 //=========================================================================
 
@@ -199,7 +182,7 @@ void CBgTitle::Uninit()
 //=====================================================
 void CBgTitle::Update()
 {
-	CBg::Update();
+	CBg::Update();//背景の更新処理
 }
 //=========================================================================
 
@@ -208,7 +191,7 @@ void CBgTitle::Update()
 //=====================================================
 void CBgTitle::Draw()
 {
-	CBg::Draw();
+	CBg::Draw();//背景の描画処理
 }
 //=========================================================================
 
@@ -217,7 +200,7 @@ void CBgTitle::Draw()
 //=====================================================
 void CBgTitle::SetDeath()
 {
-	CObject::SetDeath();
+	CBg::SetDeath();//背景の死亡フラグ設定処理
 }
 //=========================================================================
 
@@ -226,24 +209,23 @@ void CBgTitle::SetDeath()
 //=====================================================
 CBgTitle* CBgTitle::Create(BG type)
 {
-	CBgTitle* pBgTitle = DBG_NEW CBgTitle;   //弾を生成
-	bool bSuccess = pBgTitle->CObject::GetCreateSuccess();
-	CTexture* pTextureClass = CManager::GetTexture();           //テクスチャクラスを取得
-	pBgTitle->Init();                                                     //初期化処理
-	pBgTitle->SetUseScale(true);//拡大率を使用する
-	pBgTitle->CObject2D::SetAnimInfo(1, 1,false);//ポリゴンとテクスチャ情報を設定
-	pBgTitle->SetWidth(SCREEN_WIDTH / 2);
-	pBgTitle->SetMaxWidth(SCREEN_WIDTH / 2);
-	pBgTitle->SetHeight(SCREEN_HEIGHT / 2);
-	pBgTitle->SetMaxHeight(SCREEN_HEIGHT / 2);
-	pBgTitle->SetPolygonType(CObject2D::POLYGONTYPE::NORMAL);
-	pBgTitle->SetColor(D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), false, 1.0f);
-	pBgTitle->SetTextureIndex(pTextureClass->Regist(m_apBGFILE_NAME[type]));
-	pBgTitle->SetUseDeath(true);                 //死亡フラグを発動するかどうかを設定する
-	pBgTitle->CObject2D::BindTexture(pTextureClass->GetAddress(pBgTitle->GetTextureIndex()));
-	pBgTitle->CObject2D::SetPos(D3DXVECTOR3(SCREEN_WIDTH / 2,SCREEN_HEIGHT / 2,0.0f));//ポリゴンとテクスチャ情報を設定
-	pBgTitle->SetBgType(type);                  //背景の種類を設定
-	pBgTitle->CObject::SetType(CObject::TYPE::BG);//オブジェクの種類を決める
+	CBgTitle* pBgTitle = DBG_NEW CBgTitle;                                                   //タイトル背景を生成
+	CTexture* pTextureClass = CManager::GetTexture();                                        //テクスチャクラスを取得
+	pBgTitle->Init();                                                                        //初期化処理
+	pBgTitle->SetUseScale(true);                                                             //拡大率を使用する
+	pBgTitle->CObject2D::SetAnimInfo(1, 1,false);                                            //ポリゴンとテクスチャ情報を設定
+	pBgTitle->SetWidth(SCREEN_WIDTH / 2);                                                    //横幅を設定
+	pBgTitle->SetMaxWidth(SCREEN_WIDTH / 2);                                                 //最大横幅を設定
+	pBgTitle->SetHeight(SCREEN_HEIGHT / 2);                                                  //高さを設定
+	pBgTitle->SetMaxHeight(SCREEN_HEIGHT / 2);                                               //最大高さを設定
+	pBgTitle->SetPolygonType(CObject2D::POLYGONTYPE::NORMAL);                                //ポリゴンの種類を設定
+	pBgTitle->SetColor(D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), false, 1.0f);                      //色合いを設定
+	pBgTitle->SetTextureIndex(pTextureClass->Regist(m_apBGFILE_NAME[type]));                 //テクスチャ番号の設定
+	pBgTitle->SetUseDeath(true);                                                             //死亡フラグを発動するかどうかを設定する
+	pBgTitle->CObject2D::BindTexture(pTextureClass->GetAddress(pBgTitle->GetTextureIndex()));//テクスチャ情報の設定
+	pBgTitle->CObject2D::SetPos(D3DXVECTOR3(SCREEN_WIDTH / 2,SCREEN_HEIGHT / 2,0.0f));       //ポリゴンとテクスチャ情報を設定
+	pBgTitle->SetBgType(type);                                                               //背景の種類を設定
+	pBgTitle->CObject::SetType(CObject::TYPE::BG);                                           //オブジェクの種類を決める
 
 
 	return pBgTitle;
@@ -275,7 +257,7 @@ CBgDifficulty::~CBgDifficulty()
 //=====================================================
 HRESULT CBgDifficulty::Init()
 {
-	CBg::Init();
+	CBg::Init();//背景の初期化処理
 	return S_OK;
 }
 //=========================================================================
@@ -285,7 +267,7 @@ HRESULT CBgDifficulty::Init()
 //=====================================================
 void CBgDifficulty::Uninit()
 {
-	CBg::Uninit();
+	CBg::Uninit();//背景の終了処理
 }
 //=========================================================================
 
@@ -294,7 +276,7 @@ void CBgDifficulty::Uninit()
 //=====================================================
 void CBgDifficulty::Update()
 {
-	CBg::Update();
+	CBg::Update();//背景の更新処理
 }
 //=========================================================================
 
@@ -303,7 +285,7 @@ void CBgDifficulty::Update()
 //=====================================================
 void CBgDifficulty::Draw()
 {
-	CBg::Draw();
+	CBg::Draw();//背景の描画処理
 }
 //=========================================================================
 
@@ -312,7 +294,7 @@ void CBgDifficulty::Draw()
 //=====================================================
 void CBgDifficulty::SetDeath()
 {
-	CBg::SetDeath();
+	CBg::SetDeath();//背景の死亡フラグ設定処理
 }
 //=========================================================================
 
@@ -321,37 +303,26 @@ void CBgDifficulty::SetDeath()
 //=====================================================
 CBgDifficulty* CBgDifficulty::Create(BG type)
 {
-	CBgDifficulty* pBgDifficulty = DBG_NEW CBgDifficulty;   //弾を生成
-	bool bSuccess = pBgDifficulty->CObject::GetCreateSuccess();
-	CTexture* pTextureClass = CManager::GetTexture();           //テクスチャクラスを取得
-	if (bSuccess == true)
-	{
-		if (pBgDifficulty != nullptr)
-		{
-			pBgDifficulty->Init();                                                     //初期化処理
-			pBgDifficulty->SetUseScale(true);//拡大率を使用する
-			pBgDifficulty->CObject2D::SetAnimInfo(1, 1, false);//ポリゴンとテクスチャ情報を設定
-			pBgDifficulty->SetWidth(SCREEN_WIDTH);
-			pBgDifficulty->SetMaxWidth(SCREEN_WIDTH);
-			pBgDifficulty->SetHeight(SCREEN_HEIGHT);
-			pBgDifficulty->SetMaxHeight(SCREEN_HEIGHT);
-			pBgDifficulty->SetPolygonType(CObject2D::POLYGONTYPE::SENTERROLLING);
+	CBgDifficulty* pBgDifficulty = DBG_NEW CBgDifficulty;                                                    //難易度選択の背景を生成
+	CTexture* pTextureClass = CManager::GetTexture();                                                        //テクスチャクラスを取得
+	if (pBgDifficulty != nullptr)								                                             
+	{//難易度選択背景が存在したら							                                                 
+		pBgDifficulty->Init();                                                                               //初期化処理
+		pBgDifficulty->SetUseScale(true);                                                                    //拡大率を使用する
+		pBgDifficulty->CObject2D::SetAnimInfo(1, 1, false);                                                  //ポリゴンとテクスチャ情報を設定
+		pBgDifficulty->SetWidth(SCREEN_WIDTH);                                                               //横幅を設定
+		pBgDifficulty->SetMaxWidth(SCREEN_WIDTH);                                                            //最大横幅を設定
+		pBgDifficulty->SetHeight(SCREEN_HEIGHT);                                                             //高さを設定
+		pBgDifficulty->SetMaxHeight(SCREEN_HEIGHT);                                                          //最大高さを設定
+		pBgDifficulty->SetPolygonType(CObject2D::POLYGONTYPE::SENTERROLLING);                                //ポリゴンの種類を設定
 
-			pBgDifficulty->SetTextureIndex(pTextureClass->Regist(m_apBGFILE_NAME[type]));
-			pBgDifficulty->SetUseDeath(true);                 //死亡フラグを発動するかどうかを設定する
-			pBgDifficulty->CObject2D::BindTexture(pTextureClass->GetAddress(pBgDifficulty->GetTextureIndex()));
-			pBgDifficulty->CObject2D::SetPos(D3DXVECTOR3(SCREEN_WIDTH / 2,SCREEN_HEIGHT / 2,0.0f));//ポリゴンとテクスチャ情報を設定
-			pBgDifficulty->SetBgType(type);                  //背景の種類を設定
-			pBgDifficulty->CObject::SetType(CObject::TYPE::BG);//オブジェクの種類を決める
-		}
+		pBgDifficulty->SetTextureIndex(pTextureClass->Regist(m_apBGFILE_NAME[type]));                        //テクスチャ番号を設定
+		pBgDifficulty->SetUseDeath(true);                                                                    //死亡フラグを発動させるかどうかを設定
+		pBgDifficulty->CObject2D::BindTexture(pTextureClass->GetAddress(pBgDifficulty->GetTextureIndex()));  //テクスチャ情報を設定
+		pBgDifficulty->CObject2D::SetPos(D3DXVECTOR3(SCREEN_WIDTH / 2,SCREEN_HEIGHT / 2,0.0f));              //ポリゴンとテクスチャ情報を設定
+		pBgDifficulty->SetBgType(type);                                                                      //背景の種類を設定
+		pBgDifficulty->CObject::SetType(CObject::TYPE::BG);                                                  //オブジェクトの種類を決める
 	}
-	else
-	{
-		delete pBgDifficulty;
-		pBgDifficulty = nullptr;
-		return nullptr;
-	}
-
 	return pBgDifficulty;
 }
 //=========================================================================

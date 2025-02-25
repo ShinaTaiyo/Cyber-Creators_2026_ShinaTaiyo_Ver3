@@ -21,7 +21,7 @@
 //==================================================
 //静的メンバ宣言
 //==================================================
-CScene::MODE CScene::m_Mode = CScene::MODE_TITLE;
+CScene::MODE CScene::m_Mode = CScene::MODE_TITLE;//シーンをタイトルに初期化
 
 //==================================================
 //コンストラクタ
@@ -55,7 +55,7 @@ HRESULT CScene::Init()
 //==================================================
 void CScene::Uninit()
 {
-	CObject::ReleaseAll();
+	CObject::ReleaseAll();//全てのオブジェクトの死亡フラグをONにする
 }
 //==================================================================================================
 
@@ -85,26 +85,26 @@ CScene* CScene::Create(MODE mode)
 {
 	CScene* pScene = nullptr;//シーンへのポインタ
 
-	m_Mode = mode;
+	m_Mode = mode;           //モード設定
 	switch (mode)
 	{
-	case MODE_TITLE:
+	case MODE_TITLE://タイトル
 		pScene = DBG_NEW CTitle();
 		break;
-	case MODE_GAME:
+	case MODE_GAME://ゲーム
 		pScene = DBG_NEW CGame(false);
 		break;
-	case MODE_RESULT:
+	case MODE_RESULT://リザルト
 		pScene = DBG_NEW CResult();
 		break;
-	case MODE_EDIT:
+	case MODE_EDIT://エディット
 		pScene = DBG_NEW CEdit();
 		break;
 	default:
 		break;
 	}
 
-	pScene->Init();
+	pScene->Init();//初期化処理
 	return pScene;
 }
 //==================================================================================================

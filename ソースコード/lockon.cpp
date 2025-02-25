@@ -61,7 +61,7 @@ CLockon::~CLockon()
 //===============================================================
 HRESULT CLockon::Init()
 {
-	CObject2D::Init();
+	CObject2D::Init();//オブジェクト2D
 	return S_OK;
 }
 //==============================================================================================================
@@ -71,7 +71,7 @@ HRESULT CLockon::Init()
 //===============================================================
 void CLockon::Uninit()
 {
-	CObject2D::Uninit();
+	CObject2D::Uninit();//オブジェクト2D
 }
 //==============================================================================================================
 
@@ -80,9 +80,9 @@ void CLockon::Uninit()
 //===============================================================
 void CLockon::Update()
 {
-	D3DXVECTOR3 Rot = GetRot();
-	Rot.z += 0.02f;
-	SetRot(Rot);
+	D3DXVECTOR3 Rot = GetRot();//向き
+	Rot.z += 0.02f;//ポリゴンを回転させる
+	SetRot(Rot);//向きを設定する
 
 	//移動処理
 	MoveProcess();
@@ -106,7 +106,7 @@ void CLockon::Update()
 //===============================================================
 void CLockon::Draw()
 {
-	CObject2D::Draw();
+	CObject2D::Draw();//オブジェクト2Dの描画処理
 }
 //==============================================================================================================
 
@@ -115,7 +115,7 @@ void CLockon::Draw()
 //===============================================================
 void CLockon::SetDeath()
 {
-	CObject2D::SetDeath();
+	CObject2D::SetDeath();//オブジェクト2Dの死亡フラグ設定処理
 }
 //==============================================================================================================
 
@@ -124,23 +124,23 @@ void CLockon::SetDeath()
 //===============================================================
 CLockon* CLockon::Create(TYPE Type, D3DXVECTOR3 Pos, CObject2D::POLYGONTYPE PolygonType, float fWidth, float fHeight, D3DXCOLOR col)
 {
-	CTexture* pTexture = CManager::GetTexture();
-	CLockon* pLockOn = DBG_NEW CLockon;
+	CTexture* pTexture = CManager::GetTexture();       //テクスチャクラス
+	CLockon* pLockOn = DBG_NEW CLockon;                //ロックオン
 
-	pLockOn->Init();//初期化処理
-	pLockOn->SetPos(Pos);//位置設定
-	pLockOn->SetSupportPos(Pos);//支点位置設定
-	pLockOn->SetAnimInfo(1, 1,false);//アニメーション情報を設定（必ず）
-	pLockOn->SetPolygonType(PolygonType);//ポリゴンの中心点の種類を設定する
-	pLockOn->SetWidth(fWidth);//横幅を設定
-	pLockOn->SetMaxWidth(fWidth);//最大横幅を設定
-	pLockOn->SetHeight(fHeight);//高さを設定
-	pLockOn->SetMaxHeight(fHeight);//最大高さを設定
-	pLockOn->m_Type = Type;//種類を設定
+	pLockOn->Init();                                   //初期化処理
+	pLockOn->SetPos(Pos);                              //位置設定
+	pLockOn->SetSupportPos(Pos);                       //支点位置設定
+	pLockOn->SetAnimInfo(1, 1,false);                  //アニメーション情報を設定（必ず）
+	pLockOn->SetPolygonType(PolygonType);              //ポリゴンの中心点の種類を設定する
+	pLockOn->SetWidth(fWidth);                         //横幅を設定
+	pLockOn->SetMaxWidth(fWidth);                      //最大横幅を設定
+	pLockOn->SetHeight(fHeight);                       //高さを設定
+	pLockOn->SetMaxHeight(fHeight);                    //最大高さを設定
+	pLockOn->m_Type = Type;                            //種類を設定
 
 	//テクスチャ設定
-	pLockOn->SetTextureIndex(pTexture->Regist(s_LOCKON_FILENAME[static_cast<int>(Type)]));//テクスチャを登録
-	pLockOn->BindTexture(pTexture->GetAddress(pLockOn->GetTextureIndex()));//登録、指定したテクスチャ番号のアドレスを取得
+	pLockOn->SetTextureIndex(pTexture->Regist(s_LOCKON_FILENAME[static_cast<int>(Type)])); //テクスチャを登録
+	pLockOn->BindTexture(pTexture->GetAddress(pLockOn->GetTextureIndex()));                //登録、指定したテクスチャ番号のアドレスを取得
 
 	//体力を使用しない
 	pLockOn->SetUseLife(false, 1, 1);
@@ -162,11 +162,12 @@ void CLockon::ChengeTexture(TYPE Type)
 
 	CTexture* pTexture = CManager::GetTexture();//テクスチャ管理クラスへのポインタ
 
+	//変えたロックオンのテクスチャを大きく表示する演出
 	CLockon* pLockOn = CLockon::Create(m_Type, GetPos(), GetPolygonType(), GetWidth(), GetHeight(), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 	pLockOn->SetUseAddScale(D3DXVECTOR2(s_fLOCKONSTAGING_ADDSCALE, s_fLOCKONSTAGING_ADDSCALE), true);//演出用に変えたモードを拡大する
-	pLockOn->SetUseLifeRatioColor(true);         //体力の割合に応じて透明度を薄くする
-	pLockOn->SetUseLife(true, s_nLOCKONSTAGING_LIFE, s_nLOCKONSTAGING_LIFE);//体力を使用する
-	pLockOn->SetUseDeath(true);//死亡フラグを使用する
+	pLockOn->SetUseLifeRatioColor(true);                                                             //体力の割合に応じて透明度を薄くする
+	pLockOn->SetUseLife(true, s_nLOCKONSTAGING_LIFE, s_nLOCKONSTAGING_LIFE);                         //体力を使用する
+	pLockOn->SetUseDeath(true);                                                                      //死亡フラグを使用する
 
 	//テクスチャ設定
 	SetTextureIndex(pTexture->Regist(s_LOCKON_FILENAME[static_cast<int>(m_Type)]));//テクスチャを登録
@@ -192,7 +193,7 @@ void CLockon::BackWallRayCollisionPosSearch()
 	D3DXVECTOR3 Pos = GetPos();//位置
 
 	CCalculation::CalcScreenToWorld(&m_LockOnPos,GetPos().x,GetPos().y, 1.0f,SCREEN_WIDTH,SCREEN_HEIGHT,CManager::GetCamera()->GetMtxView(),
-		CManager::GetCamera()->GetMtxProjection()); //（椎名）多分描画範囲の一番奥の位置
+		CManager::GetCamera()->GetMtxProjection()); //描画範囲の一番奥の位置
 }
 //==============================================================================================================
 
@@ -202,22 +203,23 @@ void CLockon::BackWallRayCollisionPosSearch()
 void CLockon::CalcRay()
 {
 	D3DXVECTOR3 FarPos = D3DXVECTOR3(0.0f,0.0f,0.0f); //奥
-	CCamera* pCamera = CManager::GetCamera();
+	CCamera* pCamera = CManager::GetCamera();         //カメラへのポインタを取得
 	//============================================
 	//カメラ手前と奥のワールド座標を求める
 	//============================================
 	CCalculation::CalcScreenToWorld(&m_FrontPos,GetPos().x,GetPos().y, 0.0f, SCREEN_WIDTH, SCREEN_HEIGHT,
 		CManager::GetCamera()->GetMtxView(), CManager::GetCamera()->GetMtxProjection());//手前
 
-	//m_FrontPos = CManager::GetCamera()->GetPosV();
+	//デバッグ表示
 	CManager::GetDebugText()->PrintDebugText("カメラ手前座標：%f %f %f\n", m_FrontPos.x, m_FrontPos.y, m_FrontPos.z);
 	CManager::GetDebugText()->PrintDebugText("カメラ支点：%f %f %f\n", pCamera->GetPosV().x, pCamera->GetPosV().y, pCamera->GetPosV().z);
+
 	CCalculation::CalcScreenToWorld(&FarPos,GetPos().x,GetPos().y, 1.0f, SCREEN_WIDTH, SCREEN_HEIGHT,
 		CManager::GetCamera()->GetMtxView(), CManager::GetCamera()->GetMtxProjection());//奥
 	//============================================================================================================================
 
-	m_NowRay = FarPos - m_FrontPos;//手前座標と奥座標のベクトルを求める
-	D3DXVec3Normalize(&m_NowRay, &m_NowRay);//ベクトルを正規化する
+	m_NowRay = FarPos - m_FrontPos;          //手前座標と奥座標のベクトルを求める
+	D3DXVec3Normalize(&m_NowRay, &m_NowRay); //ベクトルを正規化する
 }
 //==============================================================================================================
 
@@ -257,7 +259,7 @@ void CLockon::RayCollisionToObject()
 				if (bRayCollision == true)
 				{
 					D3DXVECTOR3 ScreenPos = CCalculation::CalcWorldToScreenNoViewport(pObjX->GetPosInfo().GetSenterPos(), *CManager::GetCamera()->GetMtxView(), *CManager::GetCamera()->GetMtxProjection(),
-						float(SCREEN_WIDTH), float(SCREEN_HEIGHT));
+						float(SCREEN_WIDTH), float(SCREEN_HEIGHT));//対象のスクリーン座標を取得
 					VecCollisionSuccess.push_back(CollisionStartPos);//当たり判定が成功したオブジェクトの判定開始位置を保存する
 				}
 

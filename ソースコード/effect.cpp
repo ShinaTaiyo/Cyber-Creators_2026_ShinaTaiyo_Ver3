@@ -27,8 +27,7 @@ const string CEffect::s_EffectFileName[static_cast<int>(CEffect::EFFECTTYPE::MAX
 //==========================================
 //コンストラクタ
 //==========================================
-CEffect::CEffect(int nPri, bool bUseintPri, CObject::TYPE type, CObject::OBJECTTYPE ObjType) : CBillboard(nPri,bUseintPri,type,ObjType), m_Type(EFFECTTYPE::NORMAL),m_fReductionHeight(0.0f),m_fReductionWidth(0.0f),
-m_bBallMove(false), m_BallMoveRot({ 0.0f,0.0f }), m_BallMoveAddRot({ 0.0f,0.0f }), m_fBallMoveSpeed(0.0f)
+CEffect::CEffect(int nPri, bool bUseintPri, CObject::TYPE type, CObject::OBJECTTYPE ObjType) : CBillboard(nPri,bUseintPri,type,ObjType), m_Type(EFFECTTYPE::NORMAL),m_fReductionHeight(0.0f),m_fReductionWidth(0.0f)
 {
 
 }
@@ -48,11 +47,11 @@ CEffect::~CEffect()
 //==========================================
 HRESULT CEffect::Init()
 {
-	CBillboard::Init();           //2Dオブジェクトの初期化
-
-	m_fReductionWidth = 0.0f;    //横幅の縮小スピード
-	m_fReductionHeight = 0.0f;   //高さの縮小スピード
-	m_Type = EFFECTTYPE::NORMAL;//エフェクトの種類
+	CBillboard::Init();                                    //ビルボードの初期化処理
+								                           
+	m_fReductionWidth = 0.0f;                              //横幅の縮小スピード
+	m_fReductionHeight = 0.0f;                             //高さの縮小スピード
+	m_Type = EFFECTTYPE::NORMAL;                           //エフェクトの種類
 	return S_OK;
 }
 //================================================================
@@ -74,47 +73,26 @@ void CEffect::Update()
 	//=======================
     //変数宣言
     //=======================
-	D3DXVECTOR3 Pos = CBillboard::GetPos();
-	float fWidth = CBillboard::GetWidth();
-	float fHeight = CBillboard::GetHeight();
-	float fAlpha = 1.0f;//色のアルファ値を決める
-	int& nLife = GetLife();//体力
-	int& nMaxLife = GetMaxLife();//最大体力
+	D3DXVECTOR3 Pos = CBillboard::GetPos();                               //位置
+	float fWidth = CBillboard::GetWidth();                                //横幅
+	float fHeight = CBillboard::GetHeight();                              //高さ
+	float fAlpha = 1.0f;                                                  //色のアルファ値を決める
+	int& nLife = GetLife();                                               //体力
+	int& nMaxLife = GetMaxLife();                                         //最大体力
 	//===================================================
 	
-	fAlpha = (float)(nLife) / (float)(nMaxLife);//色のアルファ値を最大体力との割合で決める
-	fWidth -= m_fReductionWidth;   //横幅を減らす
-	fHeight -= m_fReductionHeight; //高さを減らす
-	SetPos(Pos);                   //位置を設定
-	SetSize(fWidth, fHeight);      //ポリゴンサイズを設定
-	SetColor(D3DXCOLOR(GetColor().r, GetColor().g, GetColor().b, fAlpha));
+	fAlpha = (float)(nLife) / (float)(nMaxLife);                          //色のアルファ値を最大体力との割合で決める
+	fWidth -= m_fReductionWidth;                                          //横幅を減らす
+	fHeight -= m_fReductionHeight;                                        //高さを減らす
+	SetPos(Pos);                                                          //位置を設定
+	SetSize(fWidth, fHeight);                                             //ポリゴンサイズを設定
+	SetColor(D3DXCOLOR(GetColor().r, GetColor().g, GetColor().b, fAlpha));//アルファ値
 
-	//========================================
-	//ビルボードの更新処理
-	//========================================
-	CBillboard::Update();
-	//===========================================================================================
-
-	if (m_bBallMove == true)
-	{
-		D3DXVECTOR3 BallMove = { 0.0f,0.0f,0.0f };//球状移動計算用
-		m_BallMoveRot += m_BallMoveAddRot;//移動向きを加算する
-		
-		//円状に移動させ続ける
-		SetMove(D3DXVECTOR3(sinf(m_BallMoveRot.y) * cosf(m_BallMoveRot.x) * m_fBallMoveSpeed,
-			sinf(m_BallMoveRot.x) * m_fBallMoveSpeed,
-			cosf(m_BallMoveRot.y) * cosf(m_BallMoveRot.x) * m_fBallMoveSpeed));
-	}
-
-	//=======================================
-	//使用状態がオフになったら・・・
-	//=======================================
+	CBillboard::Update();                                                 //ビルボードの更新処理
 	if (nLife == 0)
-	{
-		SetDeath();
+	{//体力が０になったら
+		SetDeath();//死亡フラグを設定する
 	}
-	//===========================================================================================
-
 }
 //================================================================
 
@@ -158,6 +136,7 @@ void CEffect::Draw()
 	pDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
 	pDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
 	pDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+
 	//================================================
     //描画の調整を元に戻す
     //================================================

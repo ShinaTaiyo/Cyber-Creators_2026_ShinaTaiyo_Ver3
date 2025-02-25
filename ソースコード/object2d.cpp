@@ -57,26 +57,16 @@ HRESULT CObject2D::Init()
 	m_bUse = true;          //使用状態
 
 	m_pos = D3DXVECTOR3(SCREEN_WIDTH / 2,SCREEN_HEIGHT / 2,0.0f);//位置（中心）
-	m_Move = D3DXVECTOR3(0.0f,0.0f,0.0f);//移動量
-	m_col = D3DXCOLOR(1.0f,1.0f,1.0f,1.0f);//色合い
-	m_SupportPos = D3DXVECTOR3(0.0f,0.0f,0.0f);
+	m_Move = D3DXVECTOR3(0.0f,0.0f,0.0f);                        //移動量
+	m_col = D3DXCOLOR(1.0f,1.0f,1.0f,1.0f);                      //色合い
+	m_SupportPos = D3DXVECTOR3(0.0f,0.0f,0.0f);                  //支点
+	m_rot = D3DXVECTOR3(0.0f,0.0f,0.0f);                         //向き
+	m_Scale = D3DXVECTOR2(1.0f, 1.0f);                           //拡大率
 
-	//=======================================
-	//回転系
-	//=======================================
-	m_rot = D3DXVECTOR3(0.0f,0.0f,0.0f);
-	//===============================================================================================
-
-	//=======================================
-	//サイズ系
-	//=======================================
-	m_Scale = D3DXVECTOR2(1.0f, 1.0f);
-	//===============================================================================================
-
-	VERTEX_2D* pVtx;
+	VERTEX_2D* pVtx;                                             //2D頂点情報
 	
-	CRenderer* pRenderer = CManager::GetRenderer();     //レンダラークラスを取得
-	LPDIRECT3DDEVICE9 pDevice = pRenderer->GetDevice(); //デバイスを取得
+	CRenderer* pRenderer = CManager::GetRenderer();              //レンダラークラスを取得
+	LPDIRECT3DDEVICE9 pDevice = pRenderer->GetDevice();          //デバイスを取得
 
 	
 	//頂点バッファの生成
@@ -91,6 +81,7 @@ HRESULT CObject2D::Init()
 	//頂点バッファをロックし、頂点データへのポインタを取得
 	m_pVtxBuff->Lock(0, 0, (void**)&pVtx, 0);
 
+	//位置
 	pVtx[0].pos = D3DXVECTOR3(0.0f,0.0f,0.0f);
 	pVtx[1].pos = D3DXVECTOR3(0.0f,0.0f,0.0f);
 	pVtx[2].pos = D3DXVECTOR3(0.0f,0.0f,0.0f);
@@ -137,7 +128,6 @@ void CObject2D::Uninit()
 		m_pVtxBuff->Release();
 		m_pVtxBuff = nullptr;
 	}
-
 	//==================================================
 
 	//============================
@@ -147,8 +137,9 @@ void CObject2D::Uninit()
 	{
 		m_pTexture = nullptr;
 	}
+	//==================================================
 
-	CObject::Uninit();
+	CObject::Uninit();//オブジェクトの終了処理
 }
 //================================================================================
 
@@ -178,11 +169,11 @@ void CObject2D::Update()
 	if (m_bAnimFlag == true)
 	{//アニメーションをするなら
 		if (m_nAnimationCnt % m_nAnimationChange == 0)
-		{
+		{//アニメーションを変えるフレーム数に達したらアニメーションパターンを増やす
 			m_nAnimaionPattern++;
 
 			if (m_nAnimaionPattern >= m_nMaxAnimationPattern)
-			{
+			{//最大に達したので０に戻す
 				m_nAnimaionPattern = 0;
 			}
 		}
@@ -340,7 +331,7 @@ void CObject2D::Draw()
 		pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 	}
 
-	CObject::Draw();
+	CObject::Draw();//オブジェクトの描画処理
 }
 //================================================================================
 
@@ -349,7 +340,7 @@ void CObject2D::Draw()
 //========================
 void CObject2D::SetDeath()
 {
-	CObject::SetDeath();
+	CObject::SetDeath();//オブジェクトの死亡フラグ設定処理
 }
 //================================================================================
 
@@ -358,7 +349,7 @@ void CObject2D::SetDeath()
 //=====================================
 void CObject2D::BindTexture(LPDIRECT3DTEXTURE9 pTex)
 {
- 	m_pTexture = pTex;
+ 	m_pTexture = pTex;//テクスチャアドレスを格納
 }
 //================================================================================
 
@@ -385,7 +376,7 @@ void CObject2D::SetAnimInfo(int nMaxAnimationPattern, int nAnimationChange, bool
 
 	m_nMaxAnimationPattern = nMaxAnimationPattern;             //アニメーションのパターンの最大数
 	m_nAnimationChange = nAnimationChange;                     //アニメーションの座標を変えるフレーム数
-	m_fAnimationSplit = 1.0f / m_nMaxAnimationPattern;//１分割当たりのアニメーション範囲
+	m_fAnimationSplit = 1.0f / m_nMaxAnimationPattern;         //１分割当たりのアニメーション範囲
 	m_bAnimFlag = bAnim;                                       //使用状態
 }
 //================================================================================
@@ -394,9 +385,7 @@ void CObject2D::SetAnimInfo(int nMaxAnimationPattern, int nAnimationChange, bool
 //拡大率の処理
 //======================================================
 void CObject2D::ScaleProcess()
-{
-	CDebugText* pDebugText = CManager::GetDebugText();//デバッグテキスト情報を取得
-	
+{	
 	if (m_bUseAddScale == true)
 	{
 		m_Scale += m_AddScale;//拡大率を加算する
@@ -417,11 +406,11 @@ void CObject2D::FloatingProcess()
 {
 	if (m_bUseFloating == true)
 	{
-		float fAbsSpeed = 0.0f;
+		float fAbsSpeed = 0.0f;//加算速度格納用
 		fAbsSpeed = fabsf(m_fFloatingSpeed);
 
 		if (fAbsSpeed > m_fFloatingLimitSpeed)
-		{
+		{//浮遊速度の最大に達したら移動方向を逆にする
 			m_fFloatingAddSpeed *= -1;
 		}
 
@@ -438,7 +427,10 @@ void CObject2D::FloatingProcess()
 void CObject2D::BlinkingProcess()
 {
 	if (m_bUseBlinking == true)
-	{
+	{//点滅するかどうか
+
+		//点滅フレームと最大点滅フレームの割合を取り、その値を上下させて点滅を表現
+
 		if (m_bBlinkingAim == false)
 		{
 			m_nCntBlinkingFrame++;
@@ -471,9 +463,9 @@ void CObject2D::BlinkingProcess()
 void CObject2D::SubLifeProcess()
 {
 	if (m_bUseLife == true)
-	{
-		m_nLife--;
-		m_fRatioLife = float(m_nLife) / float(m_nMaxLife);
+	{//体力を使用する
+		m_nLife--;//体力を自動的に減らす
+		m_fRatioLife = float(m_nLife) / float(m_nMaxLife);//体力の割合を計算
 
 		if (m_bUseLifeRatioColor == true)
 		{//体力割合に応じて色合いを変えるかどうか
@@ -489,7 +481,7 @@ void CObject2D::SubLifeProcess()
 //====================================================================================================
 
 //======================================================
-//体力を減らす処理
+//体力の割合で色合いの透明度を変える処理
 //======================================================
 void CObject2D::LifeRatioColorProcess()
 {

@@ -48,7 +48,7 @@ HRESULT CModelParts::Init()
 //============================================
 void CModelParts::Uninit()
 {
-	CObjectX::Uninit();
+	CObjectX::Uninit();//オブジェクトX終了処理
 }
 //====================================================================================
 
@@ -57,7 +57,7 @@ void CModelParts::Uninit()
 //============================================
 void CModelParts::SetDeath()
 {
-	CObjectX::SetDeath();
+	CObjectX::SetDeath();//オブジェクトX死亡フラグ設定処理
 }
 //====================================================================================
 
@@ -93,7 +93,7 @@ void CModelParts::Draw()
 //==========================================================================
 void CModelParts::ExtraDraw()
 {
-	CObjectX::Draw();
+	CObjectX::Draw();//オブジェクトX描画処理
 }
 //================================================================================================================================================
 
@@ -102,21 +102,21 @@ void CModelParts::ExtraDraw()
 //=====================================================================================================================
 CModelParts* CModelParts::Create(string String)
 {
-	CModelParts* pModelParts = DBG_NEW CModelParts;                                                                             //プレイヤーを生成
+	CModelParts* pModelParts = DBG_NEW CModelParts;                                   //プレイヤーを生成
+	int nIdx = 0;                                                                     //モデルのインデックス
+	pModelParts->Init();                                                              //初期化処理
+	pModelParts->GetSizeInfo().SetScale(D3DXVECTOR3(1.0f,1.0f,1.0f));                 //拡大率を設定する
+	pModelParts->SetUseDeath(false);                                                  //死亡フラグを発動するかどうかを設定する
+	nIdx = CManager::GetObjectXInfo()->Regist(String);                                //モデル情報を登録し、モデル番号を取得
 
-	bool bSuccess = pModelParts->CObject::GetCreateSuccess();
-	int nIdx = 0;//モデルのインデックス
-	pModelParts->Init();                             //初期化処理
-	pModelParts->GetSizeInfo().SetScale(D3DXVECTOR3(1.0f,1.0f,1.0f));              //拡大率を設定する
-	pModelParts->SetUseDeath(false);                 //死亡フラグを発動するかどうかを設定する
-	nIdx = CManager::GetObjectXInfo()->Regist(String);
+	//モデル情報を割り当てる
 	pModelParts->CObjectX::BindObjectXInfo(CManager::GetObjectXInfo()->GetMesh(nIdx),
 		CManager::GetObjectXInfo()->GetBuffMat(nIdx),
 		CManager::GetObjectXInfo()->GetdwNumMat(nIdx),
 		CManager::GetObjectXInfo()->GetTexture(nIdx),
-		CManager::GetObjectXInfo()->GetColorValue(nIdx));                  //モデル情報を割り当てる
-	pModelParts->GetDrawInfo().SetUseShadow(true);
-	pModelParts->SetSize();                                                                                 //Xオブジェクトのサイズを設定する
+		CManager::GetObjectXInfo()->GetColorValue(nIdx));
+	pModelParts->GetDrawInfo().SetUseShadow(true);                                    //影を描画する
+	pModelParts->SetSize();                                                           //Xオブジェクトのサイズを設定する
 	return pModelParts;
 }
 //================================================================================================================================================

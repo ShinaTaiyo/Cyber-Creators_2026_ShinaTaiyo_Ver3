@@ -30,31 +30,31 @@ class CEventManager;
 class CNowEvent
 {
 public:
-	CNowEvent() {};//コンストラクタ
-	virtual ~CNowEvent() {};//デストラクタ
-	virtual void Process(CEventManager* pEventManager) {};//処理
+	CNowEvent() {};                                        //コンストラクタ
+	virtual ~CNowEvent() {};                               //デストラクタ
+	virtual void Process(CEventManager* pEventManager) {}; //処理
 };
 
 //フェーズ移行クラス
 class CNowEvent_NextPhase : public CNowEvent
 {
 public:
-	CNowEvent_NextPhase(CUi * pUI,int nPhaseNum,float fValueWidth,float fValueHeight);//コンストラクタ
-	~CNowEvent_NextPhase() override;//デストラクタ
-	void Process(CEventManager* pEventManager) override;//処理
-	static const int& GetNumNextPhaseEvent() { return s_nNumNextPhaseEvent; }
+	CNowEvent_NextPhase(CUi * pUI,int nPhaseNum,float fValueWidth,float fValueHeight); //コンストラクタ
+	~CNowEvent_NextPhase() override;                                                   //デストラクタ
+	void Process(CEventManager* pEventManager) override;                               //処理
+	static const int& GetNumNextPhaseEvent() { return s_nNumNextPhaseEvent; }          
 private:
-	CUi* m_PhaseText;//フェーズの文字
-	static int s_nNumNextPhaseEvent;//次のフェーズに移行するイベントの数
+	CUi* m_PhaseText;                                                                  //フェーズの文字
+	static int s_nNumNextPhaseEvent;                                                   //次のフェーズに移行するイベントの数
 };
 
 //チュートリアルクラス
 class CNowEvent_Tutorial : public CNowEvent
 {
 public:
-	CNowEvent_Tutorial();//コンストラクタ
-	~CNowEvent_Tutorial();//デストラクタ
-	void Process(CEventManager* pEventManager) override;
+	CNowEvent_Tutorial();                                                              //コンストラクタ
+	~CNowEvent_Tutorial();                                                             //デストラクタ
+	void Process(CEventManager* pEventManager) override;							   //処理
 };
 
 //===================================================================================================
@@ -82,10 +82,10 @@ public:
     //====================================================
 	struct EventProgressInfo
 	{
-		int nEventPattern;     //イベントのパターン
-		int nCntEventTime;     //イベントの時間を測る
-		bool bEventProgress;   //イベントが進行中かどうか
-		EVENTTYPE EventType;//現在のイベント
+		int nEventPattern = 0;     //イベントのパターン
+		int nCntEventTime = 0;     //イベントの時間を測る
+		bool bEventProgress = false;   //イベントが進行中かどうか
+		EVENTTYPE EventType = EVENTTYPE::NONE;//現在のイベント
 
 		void NextPattern();      //パターンを次に進める
 		void ResetPattern();     //パターンをリセットする

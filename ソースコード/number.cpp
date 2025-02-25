@@ -38,7 +38,7 @@ HRESULT CNumber::Init()
 {
 	CObject2D::Init();//2Dオブジェクト初期化処理
 
-	m_nNumber = 0;//表示する数値
+	m_nNumber = 0;     //表示する数値
 	return S_OK;
 }
 //==============================================================================================================
@@ -49,14 +49,6 @@ HRESULT CNumber::Init()
 void CNumber::Uninit()
 {
 	CObject2D::Uninit();//2Dオブジェクト終了処理
-}
-//==============================================================================================================
-
-//========================================================
-//別枠の終了処理
-//========================================================
-void CNumber::ExtraUninit()
-{
 }
 //==============================================================================================================
 
@@ -83,7 +75,7 @@ void CNumber::Draw()
 //========================================================
 void CNumber::SetDeath()
 {
-	CObject2D::SetDeath();
+	CObject2D::SetDeath();//オブジェクト2D死亡フラグ設定処理
 }
 //==============================================================================================================
 
@@ -92,32 +84,19 @@ void CNumber::SetDeath()
 //========================================================
 CNumber* CNumber::Create(D3DXVECTOR3 pos, float fWidth, float fHeight)
 {
-	CNumber* pNumber = DBG_NEW CNumber;                           //弾を生成 
-	bool bSuccess = pNumber->CObject::GetCreateSuccess();         //生成が成功したかどうかを取得する
-	if (bSuccess == true)
-	{//生成が成功したら
-		if (pNumber != nullptr)
-		{
-			pNumber->Init();                                                                                 //初期化処理
-			pNumber->SetUseDeath(false);                                                                     //死亡フラグを発動するかどうかを設定する
-			pNumber->SetPos(pos);                                                                            //オブジェクト２Ｄの位置を設定
-			pNumber->CObject::SetType(CObject::TYPE::NUMBER);                                                  //オブジェクトの種類を決める
-			pNumber->SetTextureIndex(CManager::GetTexture()->Regist("data\\TEXTURE\\Number_000.png"));       //テクスチャを割り当てる
-			pNumber->BindTexture(CManager::GetTexture()->GetAddress(pNumber->GetTextureIndex()));            //テクスチャを設定する
-			pNumber->SetAnimInfo(10, 1, false);
-			pNumber->SetWidth(fWidth);
-			pNumber->SetMaxWidth(fWidth);
-			pNumber->SetHeight(fHeight);
-			pNumber->SetMaxHeight(fHeight);
-			pNumber->SetPolygonType(CObject2D::POLYGONTYPE::SENTERROLLING);
-		}
-	}
-	else
-	{//オブジェクトに空きがなかったので破棄する
-		delete pNumber;
-		pNumber = nullptr;
-	}
-
+	CNumber* pNumber = DBG_NEW CNumber;                                                              //数字を生成 
+	pNumber->Init();                                                                                 //初期化処理
+	pNumber->SetUseDeath(false);                                                                     //死亡フラグを発動するかどうかを設定する
+	pNumber->SetPos(pos);                                                                            //オブジェクト２Ｄの位置を設定
+	pNumber->CObject::SetType(CObject::TYPE::NUMBER);                                                //オブジェクトの種類を決める
+	pNumber->SetTextureIndex(CManager::GetTexture()->Regist("data\\TEXTURE\\Number_000.png"));       //テクスチャを登録し、テクスチャ番号を設定
+	pNumber->BindTexture(CManager::GetTexture()->GetAddress(pNumber->GetTextureIndex()));            //テクスチャを割り当てる
+	pNumber->SetAnimInfo(10, 1, false);                                                              //アニメーション情報を設定
+	pNumber->SetWidth(fWidth);                                                                       //横幅を設定
+	pNumber->SetMaxWidth(fWidth);                                                                    //最大横幅を設定
+	pNumber->SetHeight(fHeight);                                                                     //高さを設定
+	pNumber->SetMaxHeight(fHeight);                                                                  //最大高さを設定
+	pNumber->SetPolygonType(CObject2D::POLYGONTYPE::SENTERROLLING);                                  //ポリゴンの種類を設定
 	return pNumber;
 }
 //==============================================================================================================

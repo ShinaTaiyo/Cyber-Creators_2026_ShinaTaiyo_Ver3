@@ -130,11 +130,6 @@ HRESULT CMeshOrbit::Init()
 			pIdx[nCntArray + 1] = static_cast<WORD>(m_nNUMVERTEX_X * (nCntBlockZ + 2));
 			nCntArray += 2;
 		}
-
-		//if (nCntArray >= m_nTOTAL_INDEX || nCntArray < 0)
-		//{
-		//	assert(false);
-		//}
 	}
 	//頂点バッファをアンロックする
 	m_pVtxBuff->Unlock();
@@ -153,19 +148,19 @@ void CMeshOrbit::Uninit()
 {
 
 	if (m_pVtxBuff != nullptr)
-	{
+	{//頂点バッファの破棄
 		m_pVtxBuff->Release();
 		m_pVtxBuff = nullptr;
 	}
 
 	if (m_pIdxBuff != nullptr)
-	{
+	{//インデックスバッファの破棄
 		m_pIdxBuff->Release();
 		m_pIdxBuff = nullptr;
 	}
 
 	if (m_pTexture != nullptr)
-	{
+	{//テクスチャへのポインタを初期化
 		m_pTexture = nullptr;
 	}
 }
@@ -299,7 +294,7 @@ void CMeshOrbit::Draw()
 //=============================================================
 void CMeshOrbit::SetDeath()
 {
-	CObject::SetDeath();
+	CObject::SetDeath();//死亡フラグ設定処理
 }
 //===============================================================================================
 
@@ -308,7 +303,7 @@ void CMeshOrbit::SetDeath()
 //=============================================================
 void CMeshOrbit::BindTexture(LPDIRECT3DTEXTURE9 pTexture)
 {
-	m_pTexture = pTexture;
+	m_pTexture = pTexture;//テクスチャ
 }
 //===============================================================================================
 
@@ -317,14 +312,13 @@ void CMeshOrbit::BindTexture(LPDIRECT3DTEXTURE9 pTexture)
 //=============================================================
 CMeshOrbit* CMeshOrbit::Create(MESHORBITTYPE type)
 {
-	CMeshOrbit* pMeshOrbit = DBG_NEW CMeshOrbit;                                           //軌跡メッシュを生成
-	CTexture* pTextureClass = CManager::GetTexture();                                      //テクスチャクラスを取得
-
-	pMeshOrbit->Init();                                                                    //初期化処理
-	pMeshOrbit->m_type = type;                                                             //種類
+	CMeshOrbit* pMeshOrbit = DBG_NEW CMeshOrbit;                                                            //軌跡メッシュを生成
+	CTexture* pTextureClass = CManager::GetTexture();                                                       //テクスチャクラスを取得
+	pMeshOrbit->Init();                                                                                     //初期化処理
+	pMeshOrbit->m_type = type;                                                                              //種類
 	pMeshOrbit->SetTextureIndex(pTextureClass->Regist(m_aMESHORBIT_FILENAME[static_cast<int>(type)]));      //テクスチャを割り当てる
-	pMeshOrbit->BindTexture(pTextureClass->GetAddress(pMeshOrbit->GetTextureIndex()));     //テクスチャをセットする　
-	pMeshOrbit->SetUseDeath(false);                                                        //死亡フラグを使用しない
+	pMeshOrbit->BindTexture(pTextureClass->GetAddress(pMeshOrbit->GetTextureIndex()));                      //テクスチャをセットする　
+	pMeshOrbit->SetUseDeath(false);                                                                         //死亡フラグを使用しない
 	return pMeshOrbit;
 }
 //===============================================================================================

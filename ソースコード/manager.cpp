@@ -29,18 +29,18 @@
 //=======================
 //静的メンバ
 //=======================
-CRenderer* CManager::m_pRenderer = nullptr;
-CInputKeyboard* CManager::m_pInputKeyboard = nullptr;
-CInputJoypad* CManager::m_pInputJoypad = nullptr;
-CSound* CManager::m_pSound = nullptr;
-CCamera* CManager::m_pCamera = nullptr;
-CLight* CManager::m_pLight = nullptr;
-CTexture* CManager::m_pTexture = nullptr;
-CObjectXInfo* CManager::m_pObjectXInfo = nullptr;
-CScene* CManager::m_pScene = nullptr;
-CSceneFade* CManager::m_pSceneFade = nullptr;
-CInputMouse* CManager::m_pInputMouse = nullptr;
-CDebugText* CManager::m_pDebugText = nullptr;
+CRenderer* CManager::m_pRenderer = nullptr;              //レンダラー
+CInputKeyboard* CManager::m_pInputKeyboard = nullptr;    //キー入力情報
+CInputJoypad* CManager::m_pInputJoypad = nullptr;        //ジョイパッド入力情報
+CSound* CManager::m_pSound = nullptr;                    //サウンド情報
+CCamera* CManager::m_pCamera = nullptr;                  //カメラ
+CLight* CManager::m_pLight = nullptr;                    //ライト
+CTexture* CManager::m_pTexture = nullptr;                //テクスチャ情報
+CObjectXInfo* CManager::m_pObjectXInfo = nullptr;        //オブジェクトX情報
+CScene* CManager::m_pScene = nullptr;                    //シーン
+CSceneFade* CManager::m_pSceneFade = nullptr;            //シーン遷移用フェード
+CInputMouse* CManager::m_pInputMouse = nullptr;          //マウス入力情報
+CDebugText* CManager::m_pDebugText = nullptr;            //デバッグ表示
 //===================================================
 
 //=======================
@@ -360,12 +360,14 @@ void CManager::SetMode(CScene::MODE mode)
 {
 
 	if (m_pScene != nullptr)
-	{
+	{//シーンが存在していたら
+
+		//シーンを破棄
 		m_pScene->Uninit();
 		delete m_pScene;
 		m_pScene = nullptr;
 	}
 	
-	//生成
+	//新しいシーンを生成
 	m_pScene = CScene::Create(mode);
 }

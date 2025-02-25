@@ -41,8 +41,8 @@ CCalculation::~CCalculation()
 //=========================================================
 float CCalculation::CalculationLength(D3DXVECTOR3 Pos, D3DXVECTOR3 PurposePos)
 {
-	float fLength = 0.0f;
-	fLength = sqrtf(powf(PurposePos.x - Pos.x, 2) + powf(PurposePos.y - Pos.y, 2) + powf(PurposePos.z - Pos.z, 2));
+	float fLength = 0.0f;//距離格納用
+	fLength = sqrtf(powf(PurposePos.x - Pos.x, 2) + powf(PurposePos.y - Pos.y, 2) + powf(PurposePos.z - Pos.z, 2));//目的の位置との距離を求める
 	return fLength;
 }
 //==========================================================================================================
@@ -52,9 +52,9 @@ float CCalculation::CalculationLength(D3DXVECTOR3 Pos, D3DXVECTOR3 PurposePos)
 //=========================================================
 float CCalculation::CalculationXYaim(D3DXVECTOR3 Pos, D3DXVECTOR3 PurposePos)
 {
-	float fVXaim = PurposePos.x - Pos.x;
-	float fVYaim = PurposePos.y - Pos.y;
-	float fVLaim = atan2f(fVXaim, fVYaim);
+	float fVXaim = PurposePos.x - Pos.x;//X方向のベクトルを求める
+	float fVYaim = PurposePos.y - Pos.y;//Y方向のベクトルを求める
+	float fVLaim = atan2f(fVXaim, fVYaim);//二つのベクトルの角度を求める
 	return fVLaim;
 }
 //==========================================================================================================
@@ -64,13 +64,13 @@ float CCalculation::CalculationXYaim(D3DXVECTOR3 Pos, D3DXVECTOR3 PurposePos)
 //=========================================================
 float CCalculation::CalculationParabola(float fLength, float fGravity, float fSpeed, D3DXVECTOR3 Pos, D3DXVECTOR3 PurposePos)
 {
-	float fRot = 0.0f;//角度
+	float fRot = 0.0f;             //角度
 
 	float fXG = fLength * fGravity;//距離×重力
 	float fV = fSpeed;             //速度
 	float fV2 = powf(fV, 2);       //速度２条
 
-	fRot = asinf(fXG / fV2);
+	fRot = asinf(fXG / fV2);       
 	fRot /= 2;
 
 	if (PurposePos.x < Pos.x)
@@ -87,7 +87,7 @@ float CCalculation::CalculationParabola(float fLength, float fGravity, float fSp
 //=========================================================
 float CCalculation::CalculationRandVecXY()
 {
-	float fRandRot = float(rand() % 628 + 1) / 100;
+	float fRandRot = float(rand() % 628 + 1) / 100;//D3DX_PI * 2（約6.28)をランダムで求める
 	return fRandRot;
 }
 //===========================================================================================================
@@ -97,11 +97,11 @@ float CCalculation::CalculationRandVecXY()
 //=========================================================
 float CCalculation::CalculationCollectionRot2D(float fMyRot, float fRotAim, float fDecayRot, bool bCameraOffSet)
 {
-	float fRotDiff = 0.0f;//向きの差分
-	float fCameraRot = CManager::GetCamera()->GetRot().y;
+	float fRotDiff = 0.0f;                                 //向きの差分
+	float fCameraRot = CManager::GetCamera()->GetRot().y;  //カメラのYawを取得
 	fRotDiff = fRotAim - fMyRot;
 
-	//向きの差分の調整
+	//向きの差分の調整（ジンバルロックを回避するため)
 	if (fRotDiff > D3DX_PI)
 	{
 		fRotDiff -= D3DX_PI * 2;
@@ -115,7 +115,7 @@ float CCalculation::CalculationCollectionRot2D(float fMyRot, float fRotAim, floa
 	fMyRot += fRotDiff * fDecayRot;
 
 	if (bCameraOffSet == true)
-	{
+	{//カメラを基準に向きを決めるかどうか
 		//向きの調整（カメラを基準に値を3.14～-3.14の中に固定したいので・・・）
 		if (fMyRot >= D3DX_PI + fCameraRot)
 		{//3.14→-3.14にする
@@ -127,7 +127,7 @@ float CCalculation::CalculationCollectionRot2D(float fMyRot, float fRotAim, floa
 		}
 	}
 	else
-	{
+	{//普通に向きを決める
 		//向きの調整
 		if (fMyRot >= D3DX_PI)
 		{//3.14→-3.14にする
@@ -147,35 +147,35 @@ float CCalculation::CalculationCollectionRot2D(float fMyRot, float fRotAim, floa
 //=========================================================
 bool CCalculation::CaluclationMove(bool bUseStick, D3DXVECTOR3& Move, float fSpeed, MOVEAIM MoveAim, float& fRot)
 {
-	float fCameraRot = CManager::GetCamera()->GetRot().y;
+	float fCameraRot = CManager::GetCamera()->GetRot().y;           //カメラの向きを取得
 	float fMoveX = 0.0f;                                            //X方向の移動量
 	float fMoveZ = 0.0f;                                            //Z方向の移動量
 	bool bMove = false;                                             //移動しているかどうか 
-	bool bUseController = true;                                    //コントローラーを使用するかどうか
-	bMove = CManager::GetInputJoypad()->GetLStickPress(8, 0.0f);//コントローラーの入力
+	bool bUseController = true;                                     //コントローラーを使用するかどうか
+	bMove = CManager::GetInputJoypad()->GetLStickPress(8, 0.0f);    //コントローラーの入力
 
 	if (bMove == false)
 	{//この時点でコントローラーの入力がされていない場合、キー入力の受付を開始
 		bUseController = false;//コントローラーは使用しない
 		if (CManager::GetInputKeyboard()->GetPress(DIK_W) == true || CManager::GetInputJoypad()->GetPress(CInputJoypad::JOYKEY::UP) == true)
-		{
+		{//前へのベクトル
 			fMoveZ = 1.0f;
 		}
 		else if (CManager::GetInputKeyboard()->GetPress(DIK_S) == true || CManager::GetInputJoypad()->GetPress(CInputJoypad::JOYKEY::DOWN) == true)
-		{
+		{//後ろへのベクトル
 			fMoveZ = -1.0f;
 		}
 		if (CManager::GetInputKeyboard()->GetPress(DIK_D) == true || CManager::GetInputJoypad()->GetPress(CInputJoypad::JOYKEY::RIGHT) == true)
-		{
+		{//右へのベクトル
 			fMoveX = 1.0f;
 		}
 		else if (CManager::GetInputKeyboard()->GetPress(DIK_A) == true || CManager::GetInputJoypad()->GetPress(CInputJoypad::JOYKEY::LEFT) == true)
-		{
+		{//左へのベクトル
 			fMoveX = -1.0f;
 		}
 
 		if (fMoveX != 0.0f || fMoveZ != 0.0f)
-		{
+		{//上記の処理でボタンを入力していたら動いているとみなす
 			bMove = true;//移動状態
 		}
 		else
@@ -188,28 +188,28 @@ bool CCalculation::CaluclationMove(bool bUseStick, D3DXVECTOR3& Move, float fSpe
 		//カメラを基準に向きを決める
 		if (bUseController == true)
 		{
-			fRot = CManager::GetInputJoypad()->GetLStickAimRot();
-			CManager::GetDebugText()->PrintDebugText("スティックの向き：%f\n",fRot);
-			CManager::GetDebugText()->PrintDebugText("カメラの向き：%f\n",fCameraRot);
-			fRot += fCameraRot;
-			CManager::GetDebugText()->PrintDebugText("目的の向き：%f\n",fRot);
+			fRot = CManager::GetInputJoypad()->GetLStickAimRot();                     //左スティックの向きを取得する
+			CManager::GetDebugText()->PrintDebugText("スティックの向き：%f\n",fRot);  //デバッグ表示
+			CManager::GetDebugText()->PrintDebugText("カメラの向き：%f\n",fCameraRot);//デバッグ表示
+			fRot += fCameraRot;                                                       //取得した向きにカメラの向きを足してカメラ基準にする
+			CManager::GetDebugText()->PrintDebugText("目的の向き：%f\n",fRot);        //デバッグ表示
 		}
 		else
 		{//比から角度を求める（Z軸の正方向が前なので、Z軸を基準「右引数」にX方向の角度「左引数」を求める）
-			fRot = atan2f(fMoveX,fMoveZ) + fCameraRot;
-			CManager::GetDebugText()->PrintDebugText("目的の向き：%f\n", fRot);
+			fRot = atan2f(fMoveX,fMoveZ) + fCameraRot;//カメラを基準にキー入力の角度を求める
+			CManager::GetDebugText()->PrintDebugText("目的の向き：%f\n", fRot);//デバッグ表示
 		}
 		switch (MoveAim)
-		{
-		case MOVEAIM_XY:
+		{//どの面を軸に移動するかを決める
+		case MOVEAIM_XY://XY方向を基準に移動する
 			Move.x = sinf(fRot) * fSpeed;
 			Move.y = cosf(fRot) * fSpeed;
 			break;
-		case MOVEAIM_XZ:
+		case MOVEAIM_XZ://XZ方向を基準に移動する
 			Move.x = sinf(fRot) * fSpeed;
 			Move.z = cosf(fRot) * fSpeed;
 			break;
-		case MOVEAIM_ZY:
+		case MOVEAIM_ZY://ZY方向を基準に移動する
 			Move.z = sinf(fRot) * fSpeed;
 			Move.y = cosf(fRot) * fSpeed;
 			break;
@@ -229,13 +229,13 @@ D3DXVECTOR3 CCalculation::Calculation3DVec(D3DXVECTOR3 MyPos, D3DXVECTOR3 AimPos
 {
 	D3DXVECTOR3 VecAim = D3DXVECTOR3(0.0f,0.0f,0.0f);       //それぞれの方向のベクトル
 	D3DXVECTOR3 ResultMove = D3DXVECTOR3(0.0f,0.0f,0.0f);   //結果の移動量
-	float fVLaim = 0.0f;                     //総合ベクトル
+	float fVLaim = 0.0f;                                    //総合ベクトル
 
 	//==========================
 	//３次元ベクトルを取る
 	//==========================
 
-	//方向ベクトルの計算
+	//それぞれの軸のベクトルを計算
 	VecAim.x = AimPos.x - MyPos.x;
 	VecAim.y = AimPos.y - MyPos.y;
 	VecAim.z = AimPos.z - MyPos.z;
@@ -274,19 +274,24 @@ D3DXVECTOR3 CCalculation::Rand3DVec(int nMathSpeed, int nDivisionSpeed)
 	D3DXVECTOR3 Speed = { 0.0f,0.0f,0.0f };
 	bool bMinus = false;
 
-	bMinus = rand() % 2;
+	//X方向のランダムな向きを求める
+	bMinus = rand() % 2;//右か左かを決める
 	Speed.x = static_cast<float>(rand() % nMathSpeed) / nDivisionSpeed;
 	if (bMinus == true)
 	{
 		Speed.x *= -1;
 	}
-	bMinus = rand() % 2;
+
+	//Y方向のランダムな向きを決める
+	bMinus = rand() % 2;//上か下を決める
 	Speed.y = static_cast<float>(rand() % nMathSpeed) / nDivisionSpeed;
 	if (bMinus == true)
 	{
 		Speed.y *= -1;
 	}
-	bMinus = rand() % 2;
+
+	//Z方向のランダムな向きを決める
+	bMinus = rand() % 2;//前か後ろかを決める
 	Speed.z = static_cast<float>(rand() % nMathSpeed) / nDivisionSpeed;
 	if (bMinus == true)
 	{
@@ -301,10 +306,11 @@ D3DXVECTOR3 CCalculation::Rand3DVec(int nMathSpeed, int nDivisionSpeed)
 //=========================================================
 D3DXCOLOR CCalculation::CalRaibowColor()
 {
+    //RGBの値をランダムに決め続け虹色を表現する
 	D3DXCOLOR RaibowColor = D3DXCOLOR(1.0f,1.0f,1.0f,1.0f);
-	RaibowColor.r = float(rand() % 100 + 1) / 100;
-	RaibowColor.g = float(rand() % 100 + 1) / 100;
-	RaibowColor.b = float(rand() % 100 + 1) / 100;
+	RaibowColor.r = float(rand() % 100 + 1) / 100;//R値を求める
+	RaibowColor.g = float(rand() % 100 + 1) / 100;//G値を求める
+	RaibowColor.b = float(rand() % 100 + 1) / 100;//B値を求める
 	return RaibowColor;
 }
 //===========================================================================================================
@@ -377,69 +383,16 @@ D3DXVECTOR3* CCalculation::CalcScreenToXZ(D3DXVECTOR3* pout,float Sx,float Sy, i
 	bool bCross = false;
 
 	D3DXVECTOR3 Pos1 = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
-	CalcScreenToWorld(&nearpos, Sx, Sy, 0.0f, Screen_w, Screen_h, View, Prj);//（椎名）多分カメラの位置
-	CalcScreenToWorld(&farpos, Sx, Sy, 1.0f, Screen_w, Screen_h, View, Prj); //（椎名）多分描画範囲の一番奥の位置
+	CalcScreenToWorld(&nearpos, Sx, Sy, 0.0f, Screen_w, Screen_h, View, Prj);//カメラの位置
+	CalcScreenToWorld(&farpos, Sx, Sy, 1.0f, Screen_w, Screen_h, View, Prj); //描画範囲の一番奥の位置
 	ray = farpos - nearpos;
 
 	D3DXVec3Normalize(&ray, &ray);
 
 	nearpos *= -1;
-	// 床との交差が起きている場合は交点を
-	// 起きていない場合は遠くの壁との交点を出力
-	//if (ray.y <= 0) {
-	//	// 床交点
-	//	float Lray = D3DXVec3Dot(&ray, &Pos1);
-	//	float LP0 = D3DXVec3Dot(&nearpos, &Pos1);
-	//	*pout = nearpos + (LP0 / Lray) * ray;
-	//	bCross = true;
-	//}
-	//else {
 	* pout = farpos;
 	bCross = false;
-	//}
-
 	return pout;
-}
-//===========================================================================================================
-
-//=========================================================
-// レイと球の衝突判定
-//=========================================================
-bool CCalculation::CalcRaySphere(D3DXVECTOR3 LayPos, D3DXVECTOR3 LayVec, D3DXVECTOR3 SphereSenterPos, float r, D3DXVECTOR3& CollisionStartPos, D3DXVECTOR3& CollisoinEndPos)
-{
-	SphereSenterPos.x = SphereSenterPos.x - LayPos.x;
-	SphereSenterPos.y = SphereSenterPos.y - LayPos.y;
-	SphereSenterPos.z = SphereSenterPos.z - LayPos.z;
-
-	float A = LayVec.x * LayVec.x + LayVec.y * LayVec.y + LayVec.z * LayVec.z;
-	float B = LayVec.x * SphereSenterPos.x + LayVec.y * SphereSenterPos.y + LayVec.z * SphereSenterPos.z;
-	float C = SphereSenterPos.x * SphereSenterPos.x + SphereSenterPos.y * SphereSenterPos.y + SphereSenterPos.z * SphereSenterPos.z - r * r;
-	
-	if (A == 0.0f)
-		return false; // レイの長さが0
-
-	float s = B * B - A * C;
-	if (s < 0.0f)
-		return false; // 衝突していない
-
-	s = sqrtf(s);
-	float a1 = (B - s) / A;
-	float a2 = (B + s) / A;
-
-	if (a1 < 0.0f || a2 < 0.0f)
-		return false; // レイの反対で衝突
-
-	//衝突開始位置を求める
-	CollisionStartPos.x = LayPos.x + a1 * LayVec.x;
-	CollisionStartPos.y = LayPos.y + a1 * LayVec.y;
-	CollisionStartPos.z = LayPos.z + a1 * LayVec.z;
-
-	//衝突終了位置を求める
-	CollisoinEndPos.x = LayPos.x + a2 * LayVec.x;
-	CollisoinEndPos.y = LayPos.y + a2 * LayVec.y;
-	CollisoinEndPos.z = LayPos.z + a2 * LayVec.z;
-
-	return true;
 }
 //===========================================================================================================
 
@@ -453,8 +406,8 @@ bool CCalculation::CalcMatchRay(D3DXVECTOR3 AimPos, float fSx, float fSy, int nS
 	D3DXVECTOR3 ray1;
 
 	D3DXVECTOR3 Pos1 = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
-	CalcScreenToWorld(&nearpos1,fSx,fSy, 0.0f, nScreen_w, nScreen_h, View, Prj);//（椎名）多分カメラの位置
-	CalcScreenToWorld(&farpos1, fSx,fSy, 1.0f, nScreen_w, nScreen_h, View, Prj); //（椎名）多分描画範囲の一番奥の位置
+	CalcScreenToWorld(&nearpos1,fSx,fSy, 0.0f, nScreen_w, nScreen_h, View, Prj);//（椎名）カメラの位置
+	CalcScreenToWorld(&farpos1, fSx,fSy, 1.0f, nScreen_w, nScreen_h, View, Prj); //（椎名）描画範囲の一番奥の位置
 	ray1 = farpos1 - nearpos1;
 
 	D3DXVec3Normalize(&ray1, &ray1);
@@ -477,52 +430,12 @@ bool CCalculation::CalcMatchRay(D3DXVECTOR3 AimPos, float fSx, float fSy, int nS
 //===========================================================================================================
 
 //=========================================================
-//点と辺の距離を求める
-//=========================================================
-float CCalculation::pointLineDistance(float cx, float cy, float x1, float y1, float x2, float y2)
-{
-	float dx = x2 - x1;
-	float dy = y2 - y1;
-
-	// 円の中心から辺の端点までのベクトルを計算
-	float t = ((cx - x1) * dx + (cy - y1) * dy) / (dx * dx + dy * dy);
-
-	// tの範囲を[0, 1]に制限し、円の中心に最も近い点を見つける
-	t = (std::max)(0.0f, (std::min)(1.0f, t));
-
-	// 最短距離を計算
-	float closestX = x1 + t * dx;
-	float closestY = y1 + t * dy;
-	float distanceX = cx - closestX;
-	float distanceY = cy - closestY;
-
-	return std::sqrt(distanceX * distanceX + distanceY * distanceY);
-}
-//===========================================================================================================
-
-//=========================================================
-//正方形と円の当たり判定（2D)
-//=========================================================
-bool CCalculation::checkCollisionCircleRectangle(float cx, float cy, float r, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4)
-{
-	// 四角形の各辺に対して円との距離を計算
-	if (pointLineDistance(cx, cy, x1, y1, x2, y2) <= r) return true;
-	if (pointLineDistance(cx, cy, x2, y2, x3, y3) <= r) return true;
-	if (pointLineDistance(cx, cy, x3, y3, x4, y4) <= r) return true;
-	if (pointLineDistance(cx, cy, x4, y4, x1, y1) <= r) return true;
-
-	// どの辺とも当たっていない場合はfalse
-	return false;
-}
-//===========================================================================================================
-
-//=========================================================
 //桁数を計算する
 //=========================================================
 int CCalculation::CalculationDigit(int nNum)
 {
 	int nDigit = 0;
-	while (nNum != 0) {
+	while (nNum != 0) {//intを10で割って値が０になるまで繰り返し、桁数を計算する
 		nNum /= 10;
 		nDigit++;
 	}
@@ -530,7 +443,7 @@ int CCalculation::CalculationDigit(int nNum)
 }
 
 //=========================================================
-//指定した桁数を取得する
+//指定した桁数を取得する(numberが345、positionが2だったら)→345 / 100 = 3.45 = 3 % 10 = 3)
 //=========================================================
 int CCalculation::getDigit(int number, int position)
 {
@@ -547,70 +460,13 @@ D3DXVECTOR3 CCalculation::CalcVec(D3DXVECTOR3 MyPos, D3DXVECTOR3 AimPos, bool bN
 	D3DXVECTOR3 Vec = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 
 	//ベクトルを求める
-	Vec = AimPos - MyPos;
+	Vec = AimPos - MyPos;//目的の位置とのベクトルを求める
 
 	if (bNormalize == true)
 	{//正規化するかどうか
 		D3DXVec3Normalize(&Vec, &Vec);
 	}
 	return Vec;
-}
-//===========================================================================================================
-
-//=========================================================
-//仰角を計算する
-//=========================================================
-float CCalculation::CalcElevationAngle(const D3DXVECTOR3& MyPos, const D3DXVECTOR3& AimPos)
-{
-	D3DXVECTOR3 Vec = CalcVec(MyPos, AimPos, false);
-	float fElevAngle = atan2f(Vec.y, sqrtf(powf(Vec.x, 2) + powf(Vec.z, 2)));
-	return fElevAngle;
-}
-//===========================================================================================================
-
-//=========================================================
-//二つのベクトルがなす角
-//=========================================================
-float CCalculation::GetAngleBetweenVectors(const D3DXVECTOR3& v1, const D3DXVECTOR3& v2)
-{
-	// ベクトルの正規化
-	D3DXVECTOR3 v1_normalized = v1;
-	D3DXVECTOR3 v2_normalized = v2;
-	D3DXVec3Normalize(&v1_normalized, &v1);
-	D3DXVec3Normalize(&v2_normalized, &v2);
-
-	// 内積を計算
-	float dotProduct = D3DXVec3Dot(&v1_normalized, &v2_normalized);
-
-	// 内積から角度を計算 (acosでラジアンに変換)(v1 *v2 = |v1| * |v2| cosθ)なので、逆三角関数を求めれば良い
-	float angle = acosf(dotProduct);
-	return angle; // 結果はラジアン
-}
-//===========================================================================================================
-
-
-//=====================================================================
-//プレイヤーから見て線形範囲にオブジェクトが入っているかどうかを判定
-//=====================================================================
-bool CCalculation::IsObjectInFieldOfView(const D3DXVECTOR3& PlayerPos, const D3DXVECTOR3& PlayerViewDir, const D3DXVECTOR3& ObjectPos, float fovAngle, float maxDistance)
-{
-
-	// プレイヤーからオブジェクトへの方向ベクトルを計算
-	D3DXVECTOR3 objectDir = ObjectPos - PlayerPos;
-
-	// プレイヤーの視線とオブジェクトの方向ベクトルとの角度を計算
-	float angle = GetAngleBetweenVectors(PlayerViewDir, objectDir);
-
-	// オブジェクトが視野角度内に入っているかどうかを判定
-	if (angle <= fovAngle) {
-		// 視野範囲内にあるか確認（距離も判定）
-		float distance = D3DXVec3Length(&objectDir);
-		if (distance <= maxDistance) {
-			return true; // 視野内かつ距離範囲内
-		}
-	}
-
-	return false; // 視野角度外または距離が遠すぎる
 }
 //===========================================================================================================
 
@@ -646,16 +502,6 @@ float CCalculation::DetermineSide3D(const D3DXVECTOR3& origin, const D3DXVECTOR3
 	float fDot = D3DXVec3Dot(&Right,&Relative);
 
 	return fDot;
-	// 符号で判定
-	//if (dot > 0) {
-	//	return "右側";
-	//}
-	//else if (dot < 0) {
-	//	return "左側";
-	//}
-	//else {
-	//	return "平面上";
-	//}
 }
 //===========================================================================================================
 
@@ -695,7 +541,7 @@ D3DXVECTOR3 CCalculation::HormingVecRotXZ(float& fRotMove, const D3DXVECTOR3& My
 	//===============================
 	//角度差分の修正
 	//===============================
-	//向きの差分の調整(3.14を超えたら近い向きに補正）
+	//向きの差分の調整「ジンバルロックを回避」(3.14を超えたら近い向きに補正）
 	if (fRotDiff > D3DX_PI)
 	{
 		fRotDiff -= D3DX_PI * 2;
@@ -708,7 +554,7 @@ D3DXVECTOR3 CCalculation::HormingVecRotXZ(float& fRotMove, const D3DXVECTOR3& My
 	//==============================================================================================
 	fRotMove += fRotDiff * CorrectionRot;//移動方向（角度補正）
 
-	//向きの調整（カメラを基準に値を3.14～-3.14の中に固定したいので・・・）
+	//向きの調整「ジンバルロックを回避」（カメラを基準に値を3.14～-3.14の中に固定したいので・・・）
 	if (fRotMove >= D3DX_PI)
 	{//3.14→-3.14にする
 		fRotMove -= D3DX_PI * 2;
@@ -718,6 +564,7 @@ D3DXVECTOR3 CCalculation::HormingVecRotXZ(float& fRotMove, const D3DXVECTOR3& My
 		fRotMove += D3DX_PI * 2;
 	}
 
+	//移動量を更新する
 	Move.x = sinf(fRotMove) * fSpeed;
 	Move.z = cosf(fRotMove) * fSpeed;
 
@@ -731,6 +578,7 @@ D3DXVECTOR3 CCalculation::HormingVecRotXZ(float& fRotMove, const D3DXVECTOR3& My
 //=====================================================================
 float CCalculation::CorrectionRot(float fRot)
 {
+	//ジンバルロックを回避する
 	if (fRot > D3DX_PI)
 	{
 		fRot -= D3DX_PI * 2;
@@ -741,65 +589,5 @@ float CCalculation::CorrectionRot(float fRot)
 	}
 
 	return fRot;
-}
-//===========================================================================================================
-
-//=========================================================
-//目的の位置への向きを求める
-//=========================================================
-void CCalculation::CalcRotToTarget(const D3DXVECTOR3& MyPos, const D3DXVECTOR3& AimPos, float& OutYaw, float& OutPitch)
-{
-	D3DXVECTOR3 VecAim = D3DXVECTOR3(0.0f, 0.0f, 0.0f); // 方向ベクトル
-	float fVLaim = 0.0f; // ベクトルの大きさ
-
-	// 方向ベクトルを求める
-	VecAim.x = AimPos.x - MyPos.x;
-	VecAim.y = AimPos.y - MyPos.y;
-	VecAim.z = AimPos.z - MyPos.z;
-
-	// ベクトルの大きさを求める
-	fVLaim = sqrtf(VecAim.x * VecAim.x + VecAim.y * VecAim.y + VecAim.z * VecAim.z);
-
-	if (fVLaim != 0.0f) { // ゼロ除算を防ぐ
-		VecAim.x /= fVLaim; // 正規化
-		VecAim.y /= fVLaim;
-		VecAim.z /= fVLaim;
-	}
-
-	// Yaw (水平回転)
-	OutYaw = atan2f(VecAim.x, VecAim.z);
-
-	// Pitch (垂直回転)
-	OutPitch = asinf(-VecAim.y);
-}
-//===========================================================================================================
-
-//=========================================================
-//YawとPitchを用いて目的の角度を求める
-//=========================================================
-D3DXVECTOR3 CCalculation::CalcDirectionFromYawPitch(const float Yaw, const float Pitch)
-{
-	D3DXVECTOR3 direction;
-
-	// Yaw と Pitch を使用して方向ベクトルを計算
-	direction.x = cosf(Pitch) * sinf(Yaw);  // X成分
-	direction.y = sinf(Pitch);              // Y成分
-	direction.z = cosf(Pitch) * cosf(Yaw);  // Z成分
-
-	return direction;
-}
-//===========================================================================================================
-
-//=========================================================
-//目的の位置への角度をまとめて求める
-//=========================================================
-D3DXVECTOR3 CCalculation::CalcSummarizeRotToTarget(const D3DXVECTOR3& MyPos, const D3DXVECTOR3& AimPos)
-{
-	float fYaw = 0.0f;
-	float fPitch = 0.0f;
-	D3DXVECTOR3 Rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-	CalcRotToTarget(MyPos, AimPos, fYaw, fPitch);
-	Rot = CalcDirectionFromYawPitch(fYaw, fPitch);
-	return Rot;
 }
 //===========================================================================================================

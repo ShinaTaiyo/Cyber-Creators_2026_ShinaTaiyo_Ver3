@@ -28,7 +28,7 @@
 class CGame : public CScene
 {
 public:
-	CGame(bool bUseGamePad);                                                               //コンストラクタ
+	CGame(bool bUseGamePad);                                               //コンストラクタ
 	~CGame() override;                                                     //デストラクタ
 	HRESULT Init() override;                                               //初期化処理
 	void Uninit() override;                                                //終了処理
@@ -40,7 +40,7 @@ public:
 	static CStageManager* GetStageManager() { return m_pStageManager; }    //ステージマネージャーを取得する
 	static CTutorial* GetTutorial() { return m_pTutorial; }                //チュートリアル
 private:
-	static constexpr bool s_bUSETUTORIAL = true;                          //チュートリアルを使用するかどうか
+	static constexpr bool s_bUSETUTORIAL = true;                           //チュートリアルを使用するかどうか
 	static CPlayer* m_pPlayer;                                             //プレイヤー
 	static CStageManager* m_pStageManager;                                 //ステージマネージャー
 	static CPhaseManager* m_pPhaseManager;                                 //フェーズマネージャー

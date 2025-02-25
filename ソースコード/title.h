@@ -34,7 +34,7 @@ public:
 	static CPlayer* GetPlayer() { return m_pPlayer; }
 private:
 	static CPlayer* m_pPlayer;                   //プレイヤー
-	static CBg3D* m_pBg3D;       
+	static CBg3D* m_pBg3D;                       //3D背景
 
 	CUi* m_pTitleLogo;                           //タイトルロゴ
 	bool m_bMoveSwitch;                          //移動スイッチ
@@ -42,6 +42,6 @@ private:
     //====================================
 	//プロトタイプ宣言
 	//====================================
-	void PlayerProcess();//プレイヤーの処理
+	void PlayerProcess();                        //プレイヤーの処理
 };
 #endif

@@ -34,11 +34,10 @@ public:
 	void SetHeight(float fHeight) { m_fHeight = fHeight; }                 //高さ
 	void SetRot(D3DXVECTOR3 Rot) { m_Rot = Rot; }                          //向き
 	void SetPos(D3DXVECTOR3 Pos) { m_Pos = Pos; }                          //位置を設定
-	void SetTextureIndex(int nIdx) { m_nTextureIndex = nIdx; }//テクスチャ番号をセットする
-	int GetTextureIndex() { return m_nTextureIndex; }         //テクスチャ番号を取得する
+	void SetTextureIndex(int nIdx) { m_nTextureIndex = nIdx; }             //テクスチャ番号をセットする
+	int GetTextureIndex() { return m_nTextureIndex; }                      //テクスチャ番号を取得する
 
 private:
-	static const int m_nMAX_MAT = 50;                                      //マテリアルの最大数
 	LPDIRECT3DVERTEXBUFFER9 m_pVtxBuff;                                    //頂点バッファへのポインタ!
 	LPDIRECT3DTEXTURE9 m_pTexture;                                         //テクスチャへのポインタ"!
 	D3DXVECTOR3 m_Pos;                                                     //位置!
@@ -46,7 +45,7 @@ private:
 	D3DXMATRIX m_mtxWorld;                                                 //ワールド変換行列!
 	float m_fWidth;                                                        //横幅!
 	float m_fHeight;                                                       //高さ!
-	int m_nTextureIndex;                 //テクスチャ番号（全てのオブジェクト3D派生クラスが持っている）!
+	int m_nTextureIndex;                                                   //テクスチャ番号（全てのオブジェクト3D派生クラスが持っている）!
 };
 //===================================================================================
 

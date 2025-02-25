@@ -22,7 +22,7 @@ class CAttack : public CObjectX
 {
 public:
 	enum class ATTACKTYPE
-	{
+	{//種類
 		BULLET = 0,
 		EXPLOSION,
 		MAGICSWORD,
@@ -30,7 +30,7 @@ public:
 	};
 
 	enum class COLLISIONTYPE
-	{
+	{//判定の種類
 		NONE = 0,
 		SQUARE,
 		RECTANGLE_XZ,
@@ -38,7 +38,7 @@ public:
 	};
 
 	enum class TARGETTYPE
-	{
+	{//狙うオブジェクト
 		NONE = 0,
 		PLAYER,
 		ENEMY,
@@ -77,13 +77,13 @@ public:
 	void Update() override;     //更新処理
 	void Draw() override;       //描画処理
 	void SetDeath() override;   //死亡フラグを設定
-	void SetCollisionRelease(bool bUse) { m_bCollisionRelease = bUse; }
-	const HitStop & GetHitStop() const { return m_HitStop; }
-	const int& GetPower() const { return m_nPower; }
-	const bool& GetCollisionRelease() const{ return m_bCollisionRelease; }
+	void SetCollisionRelease(bool bUse) { m_bCollisionRelease = bUse; }//当たった時にオブジェクトを消すかどうか
+	const HitStop & GetHitStop() const { return m_HitStop; }//無敵状態情報を取得する
+	const int& GetPower() const { return m_nPower; }//威力を取得する
+	const bool& GetCollisionRelease() const{ return m_bCollisionRelease; }//当たった時に消すかどうかを取得する
 
 	//判定タイプを設定する
-	void SetCollisionType(COLLISIONTYPE Type) { m_CollisionType = Type; }
+	void SetCollisionType(COLLISIONTYPE Type) { m_CollisionType = Type; }//当たり判定の種類を設定する
 	const COLLISIONTYPE GetCollisionType() const { return m_CollisionType; }
 
 	//ターゲットタイプを設定する
@@ -111,7 +111,7 @@ protected:
 	void SetAttackType(ATTACKTYPE AttackType) { m_Type = AttackType;}//攻撃の種類を設定する
 	const ATTACKTYPE & GetAttackType() const { return m_Type; }      //攻撃の種類を取得する
 	static const string ATTACK_FILENAME[static_cast<int>(ATTACKTYPE::MAX)];//攻撃モデルのファイル名 
-	const bool& GetCollisionSuccess() const { return m_bCollisionSuccess; }
+	const bool& GetCollisionSuccess() const { return m_bCollisionSuccess; }//当たり判定が成功したかどうかを取得
 private:
 
 	//================================================
@@ -139,7 +139,7 @@ private:
 	//プロトタイプ宣言
 	//================================================
 	void Collision();//当たり判定を行う処理
-	void CollisionProcess(bool& bCollision,bool & bNowCollision,CObjectX * pObjX);
+	void CollisionProcess(bool& bCollision,bool & bNowCollision,CObjectX * pObjX);//当たり判定の処理を行う
 	void HitOtherCollisionProcess();//他のオブジェクトとも判定する処理
 	void ExtrusionCollisionProcess();//他のオブジェクトとの押し出し判定を行う処理
 	//==========================================================================================

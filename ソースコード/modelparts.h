@@ -29,7 +29,7 @@ public:
 	void SetDeath() override;          //死亡フラグ設定処理
 	static CModelParts* Create(string String);//生成処理
 
-	void SetPartsIdx(int nIdx) { m_nPartsIdx = nIdx; }
+	void SetPartsIdx(int nIdx) { m_nPartsIdx = nIdx; }//パーツ番号を設定する
 private:
 	int m_nPartsIdx;//インデックス
 };

@@ -26,7 +26,7 @@ class CCamera;          //カメラクラスを前方宣言
 class CLight;           //ライトクラスを前方宣言
 class CTexture;         //テクスチャクラスを前方宣言
 class CObjectXInfo;     //オブジェクトXクラスを前方宣言
-class CSceneFade;            //フェードクラスを前方宣言
+class CSceneFade;       //フェードクラスを前方宣言
 class CInputMouse;      //マウス
 class CDebugText;       //デバッグ文字クラス
 //==========================================

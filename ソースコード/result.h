@@ -21,8 +21,8 @@
 class CResult : public CScene
 {
 public:
-	CResult();                           //コンストラクタ
-	~CResult() override;                 //デストラクタ
+	CResult();                          //コンストラクタ
+	~CResult() override;                //デストラクタ
 	HRESULT Init() override;            //初期化処理
 	void Uninit() override;             //終了処理
 	void Update() override;             //更新処理

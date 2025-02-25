@@ -29,10 +29,9 @@ int CEventManager::s_nNumEventManager = 0;//イベントマネージャーの総数をカウント
 //=====================================================================
 //コンストラクタ
 //=====================================================================
-CEventManager::CEventManager(CNowEvent* pNowEvent, int nPri, bool bUseintPri, CObject::TYPE type, CObject::OBJECTTYPE ObjType) : CObject(nPri,bUseintPri,type,ObjType),m_pNowEvent(pNowEvent), m_EventProgressInfo({})
+CEventManager::CEventManager(CNowEvent* pNowEvent, int nPri, bool bUseintPri, CObject::TYPE type, CObject::OBJECTTYPE ObjType) : CObject(nPri,bUseintPri,type,ObjType),m_pNowEvent(pNowEvent), m_EventProgressInfo()
 {
-	s_nNumEventManager++;
-   
+	s_nNumEventManager++;//イベントマネージャーの総数をカウント
 }
 //======================================================================================================================================
 
@@ -41,7 +40,7 @@ CEventManager::CEventManager(CNowEvent* pNowEvent, int nPri, bool bUseintPri, CO
 //=====================================================================
 CEventManager::~CEventManager()
 {
-	s_nNumEventManager--;
+	s_nNumEventManager--;//イベントマネージャーの総数をデクリメント
 }
 //======================================================================================================================================
 
@@ -50,7 +49,7 @@ CEventManager::~CEventManager()
 //=====================================================================
 HRESULT CEventManager::Init()
 {
-	CObject::Init();
+	CObject::Init();//初期化処理
 	return S_OK;
 }
 //======================================================================================================================================
@@ -60,7 +59,7 @@ HRESULT CEventManager::Init()
 //=====================================================================
 void CEventManager::Uninit()
 {
-	CObject::Uninit();
+	CObject::Uninit();//終了処理
 }
 //======================================================================================================================================
 
@@ -76,7 +75,7 @@ void CEventManager::Update()
 	{
 		m_pNowEvent->Process(this);//それぞれのイベントの処理を呼ぶ
 	}
-	CObject::Update();
+	CObject::Update();//更新処理
 }
 //======================================================================================================================================
 
@@ -85,7 +84,7 @@ void CEventManager::Update()
 //=====================================================================
 void CEventManager::Draw()
 {
-	CObject::Draw();
+	CObject::Draw();//描画処理
 }
 //======================================================================================================================================
 
@@ -95,15 +94,15 @@ void CEventManager::Draw()
 void CEventManager::SetDeath()
 {
 	if (GetUseDeath() == true)
-	{
+	{//死亡フラグを設定する
 		if (m_pNowEvent != nullptr)
-		{
-			delete m_pNowEvent;
-			m_pNowEvent = nullptr;
+		{//イベントが存在していたら
+			delete m_pNowEvent;   //イベントを破棄
+			m_pNowEvent = nullptr;//イベントのポインタを初期化
 		}
 	}
 
-	CObject::SetDeath();
+	CObject::SetDeath();//死亡フラグを設定する
 }
 //======================================================================================================================================
 
@@ -114,7 +113,7 @@ void CEventManager::SetDeath()
 void CEventManager::ChengeEvent(CNowEvent* pNowEvent)
 {
 	if (m_pNowEvent != nullptr)
-	{
+	{//現在のイベントが存在していたら
 		//破棄
 		delete m_pNowEvent;
 		m_pNowEvent = nullptr;
@@ -130,10 +129,10 @@ void CEventManager::ChengeEvent(CNowEvent* pNowEvent)
 //=====================================================================
 CEventManager* CEventManager::Create(CNowEvent* pNowEvent)
 {
-	CEventManager* pEventManager = DBG_NEW CEventManager(pNowEvent);
+	CEventManager* pEventManager = DBG_NEW CEventManager(pNowEvent);//生成処理
 
-	pEventManager->Init();//初期化処理
-	pEventManager->SetUseDeath(true);
+	pEventManager->Init();             //初期化処理
+	pEventManager->SetUseDeath(true);  //死亡フラグを使用する
 
 	return pEventManager;
 }
@@ -157,8 +156,8 @@ void CEventManager::SetEndEvent(bool bEnd)
 //=====================================================================
 void CEventManager::EventProgressInfo::NextPattern()
 {
-	nCntEventTime = 0;
-	nEventPattern++;
+	nCntEventTime = 0;//イベントパターン時間を初期化
+	nEventPattern++;  //イベントパターン番号をインクリメント
 }
 //======================================================================================================================================
 
@@ -167,10 +166,10 @@ void CEventManager::EventProgressInfo::NextPattern()
 //=====================================================================
 void CEventManager::EventProgressInfo::ResetPattern()
 {
-	nCntEventTime = 0;
-	nEventPattern = 0;
-	bEventProgress = false;
-	EventType = EVENTTYPE::NONE;
+	nCntEventTime = 0;//イベントパターン時間を初期化
+	nEventPattern = 0;//イベントパターン番号を初期化
+	bEventProgress = false;//イベントをしない
+	EventType = EVENTTYPE::NONE;//イベントの種類をなしにする
 }
 //======================================================================================================================================
 
@@ -184,11 +183,11 @@ int CNowEvent_NextPhase::s_nNumNextPhaseEvent = 0;//次のフェーズに移行するイベン
 //=====================================================================
 CNowEvent_NextPhase::CNowEvent_NextPhase(CUi* pUI, int nPhaseNum, float fValueWidth, float fValueHeight) : m_PhaseText(nullptr)
 {
-	m_PhaseText = pUI;
-	m_PhaseText->SetNumericState(nPhaseNum, fValueWidth, fValueHeight);//数字状態にする
-	m_PhaseText->SetUseDeath(true);//死亡フラグをオフにする
+	m_PhaseText = pUI;                                                   //フェーズ文字UIのポインタを格納
+	m_PhaseText->SetNumericState(nPhaseNum, fValueWidth, fValueHeight);  //数字表示状態にする
+	m_PhaseText->SetUseDeath(true);                                      //死亡フラグをオフにする 
 
-	s_nNumNextPhaseEvent++;
+	s_nNumNextPhaseEvent++;                                              //フェーズイベントの数を増やす
 }
 //======================================================================================================================================
 
@@ -213,22 +212,23 @@ CNowEvent_NextPhase::~CNowEvent_NextPhase()
 //=====================================================================
 void CNowEvent_NextPhase::Process(CEventManager* pEventManager)
 {
-    CEventManager::EventProgressInfo& eventProgressInfo = pEventManager->GetEventProgressInfo();
+    CEventManager::EventProgressInfo& eventProgressInfo = pEventManager->GetEventProgressInfo();//イベント信仰情報を取得する
 
+	//デバッグ表示
 	CManager::GetDebugText()->PrintDebugText("UIの死亡フラグ：%d\n",m_PhaseText->GetUseDeath());
 	switch (eventProgressInfo.nEventPattern)
 	{
-	case 0:
+	case 0://イベントパターン０
 		if (m_PhaseText->GetPos().x >= SCREEN_WIDTH / 2 - 20.0f &&
 			m_PhaseText->GetPos().x <= SCREEN_WIDTH / 2 + 20.0f)
-		{
+		{//フェーズ文字UIが画面中央に来たら
 			m_PhaseText->SetMove(m_PhaseText->GetMove() * 0.1f);//速度を半減する
 			eventProgressInfo.NextPattern();//パターンを次に進める
 		}
 		break;
-	case 1:
+	case 1://速度を半減
 		if (eventProgressInfo.nCntEventTime == 120)
-		{
+		{//120フレームたったら
 			m_PhaseText->SetMove(m_PhaseText->GetMove() * 10.0f);//速度を戻す
 			eventProgressInfo.NextPattern();//パターンを次に進める
 		}

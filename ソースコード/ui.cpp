@@ -62,7 +62,7 @@ CUi::~CUi()
 //====================================================
 HRESULT CUi::Init()
 {
-	CObject2D::Init();
+	CObject2D::Init();//オブジェクト2D初期化処理
 	return S_OK;
 }
 //===================================================================================================
@@ -72,7 +72,7 @@ HRESULT CUi::Init()
 //====================================================
 void CUi::Uninit()
 {
-	CObject2D::Uninit();
+	CObject2D::Uninit();//オブジェクト2D終了処理
 }
 //===================================================================================================
 
@@ -81,16 +81,18 @@ void CUi::Uninit()
 //====================================================
 void CUi::Update()
 {
-	CObject2D::Update();
+	CObject2D::Update();//オブジェクト2D更新処理
 
 	if (m_bUseUiEffect == true)
-	{
+	{//UIにエフェクトをつけるなら
+
+		//生成
 		CUiEffect::Create(m_Type, GetPolygonType(), GetWidth(), GetHeight(), m_nSetUiEffectLife, GetPos(), D3DXVECTOR3(0.0f,0.0f,0.0f), GetRot(), m_SetUiEffectColor);
 	}
 
 
 	if (m_VecUiState.size() > 0)
-	{//UI状態の道程配列のデータがあれば
+	{//UI状態の動的配列のデータがあれば
 		for (auto it = m_VecUiState.begin(); it != m_VecUiState.end(); ++it)
 		{
 			(*it)->Process(this);//それぞれの状態の処理を開始する
@@ -116,7 +118,7 @@ void CUi::SetDeath()
 	if (GetUseDeath() == true)
 	{
 		for (auto it = m_VecUiState.begin(); it != m_VecUiState.end(); ++it)
-		{
+		{//それぞれ持たせた機能を解放する
 			if (*it != nullptr)
 			{//イテレータが指し示すUIステートへのポインタを破棄し、nullptrにする
 				delete* it;
@@ -127,7 +129,7 @@ void CUi::SetDeath()
 		m_VecUiState.clear();//メモリの中の情報をクリア
 		m_VecUiState.shrink_to_fit();//メモリを破棄
 	}
-	CObject::SetDeath();
+	CObject::SetDeath();//オブジェクト死亡フラグ設定処理
 }
 //===================================================================================================
 
@@ -136,41 +138,27 @@ void CUi::SetDeath()
 //====================================================
 CUi* CUi::Create(UITYPE type, CObject2D::POLYGONTYPE PolygonType, float fWidth, float fHeight, int nLife, bool bUseLife, D3DXVECTOR3 Pos, D3DXVECTOR3 Move, D3DXVECTOR3 Rot, D3DXCOLOR col)
 {
-	CUi* pUi = DBG_NEW CUi;   //弾を生成
-	bool bSuccess = pUi->CObject::GetCreateSuccess();
-	CTexture* pTextureClass = CManager::GetTexture();           //テクスチャクラスを取得
-	if (bSuccess == true)
-	{
-		if (pUi != nullptr)
-		{
-			pUi->SetUiType(type);                  //背景の種類を設定
-			pUi->SetUseLife(bUseLife, nLife, nLife);//体力設定
-			pUi->Init();                                                     //初期化処理
-			pUi->SetMove(Move);//移動量
-			pUi->SetRot(Rot);//向き
-			pUi->SetPos(Pos);//位置
-			pUi->SetSupportPos(Pos);//支点となる位置
-			pUi->SetUseScale(true);//拡大率を使用する
-			pUi->CObject2D::SetAnimInfo(1, 1,true);//ポリゴンとテクスチャ情報を設定
-			pUi->SetWidth(fWidth);
-			pUi->SetMaxWidth(fWidth);
-			pUi->SetHeight(fHeight);
-			pUi->SetMaxHeight(fHeight);
-			pUi->SetPolygonType(PolygonType);
-			pUi->SetColor(col,false,1.0f);
-			pUi->SetUseDeath(true);                 //死亡フラグを発動するかどうかを設定する
-			pUi->SetTextureIndex(pTextureClass->Regist(UI_FILENAME[int(type)]));
-			pUi->CObject2D::BindTexture(pTextureClass->GetAddress(pUi->GetTextureIndex()));
-			pUi->CObject::SetType(CObject::TYPE::UI);//オブジェクの種類を決める
-		}
-	}
-	else
-	{
-		delete pUi;
-		pUi = nullptr;
-		return nullptr;
-	}
-
+	CUi* pUi = DBG_NEW CUi;                                                          //UIを生成
+	CTexture* pTextureClass = CManager::GetTexture();                                //テクスチャクラスを取得
+	pUi->SetUiType(type);                                                            //UIの種類を設定
+	pUi->SetUseLife(bUseLife, nLife, nLife);                                         //体力設定
+	pUi->Init();                                                                     //初期化処理
+	pUi->SetMove(Move);                                                              //移動量
+	pUi->SetRot(Rot);                                                                //向き
+	pUi->SetPos(Pos);                                                                //位置
+	pUi->SetSupportPos(Pos);                                                         //支点となる位置
+	pUi->SetUseScale(true);                                                          //拡大率を使用する
+	pUi->CObject2D::SetAnimInfo(1, 1,true);                                          //ポリゴンとテクスチャ情報を設定
+	pUi->SetWidth(fWidth);                                                           //横幅を設定
+	pUi->SetMaxWidth(fWidth);                                                        //最大横幅を設定
+	pUi->SetHeight(fHeight);                                                         //高さを設定
+	pUi->SetMaxHeight(fHeight);                                                      //最大高さを設定
+	pUi->SetPolygonType(PolygonType);                                                //ポリゴンの種類を設定
+	pUi->SetColor(col,false,1.0f);                                                   //色合いを設定
+	pUi->SetUseDeath(true);                                                          //死亡フラグを発動するかどうかを設定する
+	pUi->SetTextureIndex(pTextureClass->Regist(UI_FILENAME[int(type)]));             //テクスチャを登録し、テクスチャ番号を取得する
+	pUi->CObject2D::BindTexture(pTextureClass->GetAddress(pUi->GetTextureIndex()));  //テクスチャを割り当てる
+	pUi->CObject::SetType(CObject::TYPE::UI);                                        //オブジェクの種類を決める
 	return pUi;
 }
 //===================================================================================================
@@ -180,10 +168,10 @@ CUi* CUi::Create(UITYPE type, CObject2D::POLYGONTYPE PolygonType, float fWidth, 
 //====================================================
 void CUi::SetUiType(UITYPE type)
 {
-	m_Type = type;
-	CTexture* pTextureClass = CManager::GetTexture();           //テクスチャクラスを取得
-    SetTextureIndex(pTextureClass->Regist(UI_FILENAME[int(type)]));
-    CObject2D::BindTexture(pTextureClass->GetAddress(GetTextureIndex()));
+	m_Type = type;//種類を変更
+	CTexture* pTextureClass = CManager::GetTexture();                     //テクスチャクラスを取得
+    SetTextureIndex(pTextureClass->Regist(UI_FILENAME[int(type)]));       //テクスチャを登録し、テクスチャ番号を設定
+    CObject2D::BindTexture(pTextureClass->GetAddress(GetTextureIndex())); //テクスチャを割り当てる
 
 }
 //===================================================================================================
@@ -194,12 +182,13 @@ void CUi::SetUiType(UITYPE type)
 void CUi::SetNumericState(int nValue, float fWidth, float fHeight)
 {
 	for (auto it = m_VecUiState.begin(); it != m_VecUiState.end(); ++it)
-	{
+	{//今まで持たせた機能の中にすでに数字があれば保存しない
 		if (CUiState::UISTATE::NUMERIC == (*it)->GetUiState())
 		{
 			return;//既に情報が存在しているので、保存せずに終了する
 		}
 	}
+	//まだ数字の機能がなかったので保存する
 	m_VecUiState.push_back(DBG_NEW CUiState_Numeric(this, nValue, fWidth, fHeight));
 }
 //===================================================================================================
@@ -216,7 +205,7 @@ CUiState* CUi::GetUiState(CUiState::UISTATE UiState)
 			return *it;
 		}
 	}
-	return nullptr;
+	return nullptr;//存在していないのでnullptrを返す
 }
 //===================================================================================================
 
@@ -245,7 +234,7 @@ CUiEffect::~CUiEffect()
 //====================================================
 HRESULT CUiEffect::Init()
 {
-	CUi::Init();
+	CUi::Init();//UI初期化処理
 	return S_OK;
 }
 //===================================================================================================
@@ -255,7 +244,7 @@ HRESULT CUiEffect::Init()
 //====================================================
 void CUiEffect::Uninit()
 {
-	CUi::Uninit();
+	CUi::Uninit();//UI終了処理
 }
 //===================================================================================================
 
@@ -264,7 +253,7 @@ void CUiEffect::Uninit()
 //====================================================
 void CUiEffect::Update()
 {
-	CUi::Update();
+	CUi::Update();//UI更新処理
 }
 //===================================================================================================
 
@@ -273,12 +262,12 @@ void CUiEffect::Update()
 //====================================================
 void CUiEffect::Draw()
 {
-	LPDIRECT3DDEVICE9 pDevice = CManager::GetRenderer()->GetDevice();
+	LPDIRECT3DDEVICE9 pDevice = CManager::GetRenderer()->GetDevice();//デバイスを取得
 	//aブレンディングを加算合成に設定
 	pDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
 	pDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
 	pDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
-	CUi::Draw();
+	CUi::Draw();//UIの描画処理
 	//aブレンディングを元に戻す
 	pDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
 	pDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
@@ -291,7 +280,7 @@ void CUiEffect::Draw()
 //====================================================
 void CUiEffect::SetDeath()
 {
-	CUi::SetDeath();
+	CUi::SetDeath();//UIの死亡フラグ設定処理
 }
 //===================================================================================================
 
@@ -300,42 +289,28 @@ void CUiEffect::SetDeath()
 //====================================================
 CUiEffect* CUiEffect::Create(UITYPE type, CObject2D::POLYGONTYPE PolygonType, float fWidth, float fHeight, int nLife, D3DXVECTOR3 Pos, D3DXVECTOR3 Move, D3DXVECTOR3 Rot, D3DXCOLOR col)
 {
-	CUiEffect* pUiEffect = DBG_NEW CUiEffect;   //弾を生成
-	bool bSuccess = pUiEffect->CObject::GetCreateSuccess();
-	CTexture* pTextureClass = CManager::GetTexture();           //テクスチャクラスを取得
-	if (bSuccess == true)
-	{
-		if (pUiEffect != nullptr)
-		{
-			pUiEffect->SetUiType(type);                  //背景の種類を設定
-			pUiEffect->Init();                                                     //初期化処理
-			pUiEffect->SetMove(Move);//移動量
-			pUiEffect->SetRot(Rot);//向き
-			pUiEffect->SetPos(Pos);//位置
-			pUiEffect->SetUseLife(true, nLife, nLife);//体力を使用する
-			pUiEffect->SetSupportPos(Pos);//支点となる位置
-			pUiEffect->SetUseLifeRatioColor(true);//体力に応じて色合いを変える
-			pUiEffect->SetUseScale(true);//拡大率を使用する
-			pUiEffect->CObject2D::SetAnimInfo(1, 1,false);//ポリゴンとテクスチャ情報を設定
-			pUiEffect->SetWidth(fWidth);
-			pUiEffect->SetMaxWidth(fWidth);
-			pUiEffect->SetHeight(fHeight);
-			pUiEffect->SetMaxHeight(fHeight);
-			pUiEffect->SetPolygonType(PolygonType);
-			pUiEffect->SetColor(col, false, 1.0f);
-			pUiEffect->SetUseDeath(true);                 //死亡フラグを発動するかどうかを設定する
-			pUiEffect->SetTextureIndex(pTextureClass->Regist(UI_FILENAME[int(type)]));
-			pUiEffect->CObject2D::BindTexture(pTextureClass->GetAddress(pUiEffect->GetTextureIndex()));
-			pUiEffect->CObject::SetType(CObject::TYPE::UI);//オブジェクの種類を決める
-		}
-	}
-	else
-	{
-		delete pUiEffect;
-		pUiEffect = nullptr;
-		return nullptr;
-	}
-
+	CUiEffect* pUiEffect = DBG_NEW CUiEffect;                                                   //UIを生成
+	CTexture* pTextureClass = CManager::GetTexture();                                           //テクスチャクラスを取得
+	pUiEffect->SetUiType(type);                                                                 //背景の種類を設定
+	pUiEffect->Init();                                                                          //初期化処理
+	pUiEffect->SetMove(Move);                                                                   //移動量
+	pUiEffect->SetRot(Rot);                                                                     //向き
+	pUiEffect->SetPos(Pos);                                                                     //位置
+	pUiEffect->SetUseLife(true, nLife, nLife);                                                  //体力を使用する
+	pUiEffect->SetSupportPos(Pos);                                                              //支点となる位置
+	pUiEffect->SetUseLifeRatioColor(true);                                                      //体力に応じて色合いを変える
+	pUiEffect->SetUseScale(true);                                                               //拡大率を使用する
+	pUiEffect->CObject2D::SetAnimInfo(1, 1,false);                                              //ポリゴンとテクスチャ情報を設定
+	pUiEffect->SetWidth(fWidth);                                                                //横幅を設定
+	pUiEffect->SetMaxWidth(fWidth);			                                                    //最大横幅を設定
+	pUiEffect->SetHeight(fHeight);			                                                    //高さを設定
+	pUiEffect->SetMaxHeight(fHeight);		                                                    //最大高さを設定
+	pUiEffect->SetPolygonType(PolygonType);	                                                    //ポリゴンの種類を設定
+	pUiEffect->SetColor(col, false, 1.0f);	                                                    //色合いを設定
+	pUiEffect->SetUseDeath(true);                                                               //死亡フラグを使用する
+	pUiEffect->SetTextureIndex(pTextureClass->Regist(UI_FILENAME[int(type)]));                  //テクスチャを登録し、テクスチャ番号を設定
+	pUiEffect->CObject2D::BindTexture(pTextureClass->GetAddress(pUiEffect->GetTextureIndex())); //テクスチャを割り当てる
+	pUiEffect->CObject::SetType(CObject::TYPE::UI);                                             //オブジェクトの種類を決める
 	return pUiEffect;
 }
 //===================================================================================================
@@ -380,22 +355,22 @@ void CUiState::Process(CUi* pUi)
 //====================================================
 CUiState_Numeric::CUiState_Numeric(CUi* pUi, int nValue, float fWidth, float fHeight)
 {
-	SetUiState(CUiState::UISTATE::NUMERIC);
-	m_nValue = nValue;
-	m_fWidth = fWidth;//横幅の基準値
-	m_fHeight = fHeight;//高さの基準値
-	int nDigit = CCalculation::CalculationDigit(m_nValue);
+	SetUiState(CUiState::UISTATE::NUMERIC);                  //数字の機能を使う
+	m_nValue = nValue;                                       //数字を割り当てる
+	m_fWidth = fWidth;                                       //横幅の基準値
+	m_fHeight = fHeight;                                     //高さの基準値
+	int nDigit = CCalculation::CalculationDigit(m_nValue);   //桁数を取得
 	if (m_nValue == 0)
 	{//桁数を０にするわけにはいかないので、桁数を１とする
 		nDigit = 1;
 	}
 	for (int nCnt = 0; nCnt < nDigit; nCnt++)
 	{
-		CNumber* pNumber = CNumber::Create(pUi->GetPos(), fWidth, fHeight);
-		int nNum = CCalculation::getDigit(m_nValue, nCnt);
-		pNumber->SetAnim(nNum);//指定した桁の数値を取得する
-		pNumber->SetUseDeath(false);//死亡フラグを発動させない
-		m_VecNum.push_back(pNumber);//Vectorに保存
+		CNumber* pNumber = CNumber::Create(pUi->GetPos(), fWidth, fHeight);//数字を生成
+		int nNum = CCalculation::getDigit(m_nValue, nCnt);                 //桁数を取得
+		pNumber->SetAnim(nNum);                                            //指定した桁の数値を取得する
+		pNumber->SetUseDeath(false);                                       //死亡フラグを発動させない
+		m_VecNum.push_back(pNumber);                                       //数字の動的配列に保存
 	}
 }
 //===================================================================================================
@@ -409,14 +384,14 @@ CUiState_Numeric::~CUiState_Numeric()
 	{
 		if (it != nullptr)
 		{
-			it->SetUseDeath(true);
-			it->SetDeath();
-			it = nullptr;
+			it->SetUseDeath(true);//死亡フラグを使用する
+			it->SetDeath();       //死亡フラグを設定
+			it = nullptr;         //ポインタを初期化
 		}
 	}
 
-	m_VecNum.clear();
-	m_VecNum.shrink_to_fit();
+	m_VecNum.clear();             //クリアする
+	m_VecNum.shrink_to_fit();     //メモリを解放
 }
 //===================================================================================================
 
@@ -425,7 +400,7 @@ CUiState_Numeric::~CUiState_Numeric()
 //====================================================
 void CUiState_Numeric::Process(CUi* pUi)
 {
-	int nSize = m_VecNum.size();
+	int nSize = m_VecNum.size();//桁数を取得
 	int nCnt = 0;
 	for (auto it = m_VecNum.begin();it != m_VecNum.end();it++,nCnt++)
 	{//数字を横に並べ続ける
@@ -441,7 +416,7 @@ void CUiState_Numeric::SetValue(int nValue,CUi * pUi)
 {
 	//数値の動的配列の中身を全て破棄
 	for (auto it = m_VecNum.begin(); it != m_VecNum.end(); ++it)
-	{
+	{//数字を全部破棄
 		if ((*it) != nullptr)
 		{
 			(*it)->SetUseDeath(true);
@@ -460,7 +435,7 @@ void CUiState_Numeric::SetValue(int nValue,CUi * pUi)
 		nDigit = 1;
 	}
 
-	//桁数分数値の表示を生成し動的配列に格納する
+	//再び桁数分数値の表示を生成し動的配列に格納する
 	for (int nCnt = 0; nCnt < nDigit; nCnt++)
 	{
 		CNumber* pNumber = CNumber::Create(pUi->GetPos(),m_fWidth,m_fHeight);
@@ -481,11 +456,11 @@ void CUiState_Numeric::SetValue(int nValue,CUi * pUi)
 //====================================================
 CUiState_Gauge::CUiState_Gauge(D3DXVECTOR3 GaugePos, D3DXCOLOR Col, CObject2D::POLYGONTYPE PolygonType, CGauge::GAUGETYPE GaugeType, float fMaxWidth, float fMaxHeight, int nValue, int nMaxValue)
 {
-	SetUiState(CUiState::UISTATE::GAUGE);//UIの状態を設定
+	SetUiState(CUiState::UISTATE::GAUGE);                                            //UIにゲージを持たせる
 	m_pGauge = CGauge::Create(GaugeType, nMaxValue, fMaxWidth, fMaxHeight, GaugePos);//生成
-	m_pGauge->SetPolygonType(PolygonType);//ポリゴンの種類（中心点）を設定
-	m_pGauge->SetParam(nValue);//パラメータを設定
-	m_pGauge->SetColor(Col,false, 1.0f);//色合い
+	m_pGauge->SetPolygonType(PolygonType);                                           //ポリゴンの種類（中心点）を設定
+	m_pGauge->SetParam(nValue);                                                      //パラメータを設定
+	m_pGauge->SetColor(Col,false, 1.0f);                                             //色合い
 }
 //===================================================================================================
 
@@ -496,9 +471,9 @@ CUiState_Gauge::~CUiState_Gauge()
 {
 	if (m_pGauge != nullptr)
 	{//死亡フラグを設定する
-		m_pGauge->SetUseDeath(true);
-		m_pGauge->SetDeath();
-		m_pGauge = nullptr;
+		m_pGauge->SetUseDeath(true);//死亡フラグを使用する
+		m_pGauge->SetDeath();       //死亡フラグを設定する
+		m_pGauge = nullptr;         //ポインタを初期化
 	}
 }
 //===================================================================================================

@@ -55,23 +55,23 @@ public:
 	//================================
 	//回転系
 	//================================
-	D3DXVECTOR3& GetRot() { return m_rot; }          //向きを取得
+	D3DXVECTOR3& GetRot() { return m_rot; }                                 //向きを取得
 	void SetRot(D3DXVECTOR3 Rot) { m_rot = Rot; }                           //向きを設定
-	void SetPolygonRotSpeed(float fSpeed) { m_fPolygonRotSpeed = fSpeed; }//回転速度を設定
-	float& GetPolygonRotSpeed() { return m_fPolygonRotSpeed; }     //回転速度
+	void SetPolygonRotSpeed(float fSpeed) { m_fPolygonRotSpeed = fSpeed; }  //回転速度を設定
+	float& GetPolygonRotSpeed() { return m_fPolygonRotSpeed; }              //回転速度
 	//========================================================================================================
 
 
 	//===============
 	//取得系
 	//===============
-	D3DXVECTOR3& GetPos() { return m_pos; }          //位置取得用
+	D3DXVECTOR3& GetPos() { return m_pos; }             //位置取得用
 	D3DXVECTOR3 GetSupportPos() { return m_SupportPos; }//召喚位置を取得
-	float GetWidth() { return m_fWidth; }           //横幅を取得
-	float GetMaxWidth() { return m_fMaxWidth; }     //最大横幅を取得
-	float GetHeight() { return m_fHeight; }         //高さを取得
-	float GetMaxHeight() { return m_fMaxHeight; }   //最大高さを取得する
-	D3DXCOLOR GetColor() { return m_col; }          //色合いを取得する
+	float GetWidth() { return m_fWidth; }               //横幅を取得
+	float GetMaxWidth() { return m_fMaxWidth; }         //最大横幅を取得
+	float GetHeight() { return m_fHeight; }             //高さを取得
+	float GetMaxHeight() { return m_fMaxHeight; }       //最大高さを取得する
+	D3DXCOLOR GetColor() { return m_col; }              //色合いを取得する
 	//=======================================================================================================
 
 	//===============
@@ -79,10 +79,10 @@ public:
 	//===============
 	void SetUseFloating(float fFloatingRot,float fFloatingAddSpeed,float fLimitSpeed,bool bUseFloating)
 	{
-		m_fFloatingRot = fFloatingRot;//浮く向き
+		m_fFloatingRot = fFloatingRot;          //浮く向き
 		m_fFloatingAddSpeed = fFloatingAddSpeed;//加算する速度
 		m_fFloatingLimitSpeed = fLimitSpeed;    //浮遊速度のリミット
-		m_bUseFloating = bUseFloating;//浮遊を使用するかどうか
+		m_bUseFloating = bUseFloating;          //浮遊を使用するかどうか
 	}
 	//=======================================================================================================
 
@@ -90,32 +90,36 @@ public:
 	D3DXVECTOR3& GetMove() { return m_Move; }
 	void SetMove(D3DXVECTOR3 move) { m_Move = move; }
 
-	POLYGONTYPE GetPolygonType() { return m_PolygonType; }//ポリゴンの種類を取得する
+	//ポリゴンの種類
+	POLYGONTYPE GetPolygonType() { return m_PolygonType; }
 	void SetPolygonType(POLYGONTYPE Type) { m_PolygonType = Type; }
+
 	//===============
 	//サイズ系
 	//===============
-	void SetScale(D3DXVECTOR2 Scale) { m_Scale = Scale; }
-	void SetUseScale(bool bUse) { m_bUseScale = bUse; }//拡大率を使用するかどうか
+	void SetScale(D3DXVECTOR2 Scale) { m_Scale = Scale; }      //拡大率を設定する
+	void SetUseScale(bool bUse) { m_bUseScale = bUse; }        //拡大率を使用するかどうか
+
+	//拡大率の加算量設定
 	void SetUseAddScale(D3DXVECTOR2 AddScale, bool bUse) { m_AddScale = AddScale; m_bUseAddScale = bUse; m_bUseScale = true; }
-	const D3DXVECTOR2& GetAddScale() const { return m_AddScale; }
-	D3DXVECTOR2& GetScale() { return m_Scale; }//拡大率
+	const D3DXVECTOR2& GetAddScale() const { return m_AddScale; }//拡大率の加算量を取得
+	D3DXVECTOR2& GetScale() { return m_Scale; }//拡大率を取得
 	//=======================================================================================================
 
 	//===============
 	//座標系
 	//===============
-	void SetPos(D3DXVECTOR3 pos) { m_pos = pos;}                            //位置を設定
-	void SetSupportPos(D3DXVECTOR3 pos) { m_SupportPos = pos; }             //召喚位置を設定
-	void SetWidth(float fWidth) { m_fWidth = fWidth; }                      //横幅を設定
-	void SetMaxWidth(float fWidth) { m_fMaxWidth = fWidth; }                //最大横幅を設定
-	void SetHeight(float fHeight) { m_fHeight = fHeight; }                  //高さを設定
-	void SetMaxHeight(float fHeight) { m_fMaxHeight = fHeight; }            //最大高さを設定
-	void SetColor(D3DXCOLOR col, bool bAlphaOnly,float fAlpha);             //色を設定
-	void SetAnimInfo(int nMaxAnimationPattern, int nAnimationChange,bool bAnim);//アニメーション関係の設定
-	void SetAnim(int nAnim) { m_nAnimaionPattern = nAnim; }   //アニメーション番号を設定
-	void SetTextureIndex(int nIdx) { m_nTextureIndex = nIdx; }//テクスチャ番号をセットする
-	int GetTextureIndex() { return m_nTextureIndex; }         //テクスチャ番号を取得する
+	void SetPos(D3DXVECTOR3 pos) { m_pos = pos;}                                 //位置を設定
+	void SetSupportPos(D3DXVECTOR3 pos) { m_SupportPos = pos; }                  //召喚位置を設定
+	void SetWidth(float fWidth) { m_fWidth = fWidth; }                           //横幅を設定
+	void SetMaxWidth(float fWidth) { m_fMaxWidth = fWidth; }                     //最大横幅を設定
+	void SetHeight(float fHeight) { m_fHeight = fHeight; }                       //高さを設定
+	void SetMaxHeight(float fHeight) { m_fMaxHeight = fHeight; }                 //最大高さを設定
+	void SetColor(D3DXCOLOR col, bool bAlphaOnly,float fAlpha);                  //色を設定
+	void SetAnimInfo(int nMaxAnimationPattern, int nAnimationChange,bool bAnim); //アニメーション関係の設定
+	void SetAnim(int nAnim) { m_nAnimaionPattern = nAnim; }                      //アニメーション番号を設定
+	void SetTextureIndex(int nIdx) { m_nTextureIndex = nIdx; }                   //テクスチャ番号をセットする
+	int GetTextureIndex() { return m_nTextureIndex; }                            //テクスチャ番号を取得する
     //==============================================================================================================================================================
 
 	//==============================
@@ -128,17 +132,17 @@ public:
 		m_nMaxLife = nMaxLife;
 	}//体力を使用するかどうか
 
-	int& GetLife() { return m_nLife; }
-	int& GetMaxLife() { return m_nMaxLife; }
-	float& GetRatioLife() { return m_fRatioLife; }
+	int& GetLife() { return m_nLife; }//体力を取得
+	int& GetMaxLife() { return m_nMaxLife; }//最大体力を取得
+	float& GetRatioLife() { return m_fRatioLife; }//体力の割合
 	//==============================================================================================================================================================
 
 	//==============================
 	//点滅関係
 	//==============================
 	void SetUseBlinking(bool bUse, int nMaxBlinkingFrame,float fLimitBlinkingRatio) {
-		m_bUseBlinking = bUse;//点滅を使用するかどうか
-		m_nMaxBlinkingFrame = nMaxBlinkingFrame;//点滅最大フレーム
+		m_bUseBlinking = bUse;                      //点滅を使用するかどうか
+		m_nMaxBlinkingFrame = nMaxBlinkingFrame;    //点滅最大フレーム
 		m_fLimitBlinkingRatio = fLimitBlinkingRatio;//点滅させる濃さのリミット
 	}
 	//==============================================================================================================================================================
@@ -152,7 +156,8 @@ public:
 	//================================
 	//描画系
 	//================================
-	void SetUseDraw(bool bUse) { m_bUseDraw = bUse; }//描画するかどうかを設定
+	//描画するかどうか設定、取得
+	void SetUseDraw(bool bUse) { m_bUseDraw = bUse; }
 	const bool& GetUseDraw() const { return m_bUseDraw; }
 	//==============================================================================================================================================================
 protected:
@@ -236,7 +241,7 @@ private:
 	//================================
 	//描画系
 	//================================
-	bool m_bUseDraw;//!
+	bool m_bUseDraw;//描画するかどうか
 	//==============================================================================================================================================================
 
 };

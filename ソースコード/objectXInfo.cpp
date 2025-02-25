@@ -57,19 +57,19 @@ void CObjectXInfo::Unload()
     for (int nCntInfo = 0; nCntInfo < m_nMAX_INFO; nCntInfo++)
     {
         if (m_apObjectXList[nCntInfo].pMesh != nullptr)
-        {
+        {//頂点情報の破棄
             m_apObjectXList[nCntInfo].pMesh->Release();
             m_apObjectXList[nCntInfo].pMesh = nullptr;
         }
 
         if (m_apObjectXList[nCntInfo].pBuffMat != nullptr)
-        {
+        {//マテリアル情報の破棄
             m_apObjectXList[nCntInfo].pBuffMat->Release();
             m_apObjectXList[nCntInfo].pBuffMat = nullptr;
         }
 
         for (int nCntMat = 0; nCntMat < m_nMAX_MAT; nCntMat++)
-        {
+        {//テクスチャ情報の破棄
             if (m_apObjectXList[nCntInfo].pTexture[nCntMat] != nullptr)
             {
                 m_apObjectXList[nCntInfo].pTexture[nCntMat]->Release();
@@ -95,7 +95,7 @@ int CObjectXInfo::Regist(std::string pTextureName)
             D3DXMATERIAL* pMat;                                               //マテリアルへのポインタ
 
             //============================
-            //モデル情報を取得6
+            //モデル情報を取得
             //============================
             D3DXLoadMeshFromX(pTextureName.c_str(),
                 D3DXMESH_SYSTEMMEM,

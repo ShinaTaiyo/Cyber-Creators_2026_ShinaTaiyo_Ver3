@@ -40,7 +40,7 @@ bool CCamera::s_bCAMERACONTROLLMOUSE = false; //デバッグ時にカメラをマウスで動か
 CCamera::CCamera() : m_SupportPos(D3DXVECTOR3(0.0f,0.0f,0.0f)),m_fLength(s_fINITIAL_LENGTH), m_fTurningRotSpeed(0.0f),m_fTurningSpeedY(0.0f),m_PosV(D3DXVECTOR3(0.0f,0.0f,0.0f)),
 m_PosR(D3DXVECTOR3(0.0f,0.0f,0.0f)),m_VecU(D3DXVECTOR3(0.0f,0.0f,0.0f)),m_Rot(D3DXVECTOR3(0.0f,0.0f,0.0f)),m_mtxProjection(),m_mtxView(),m_CameraType(CAMERATYPE_BIRD),m_DifferenceLength(D3DXVECTOR3(0.0f,0.0f,0.0f)),
 m_ZoomSpeed(D3DXVECTOR3(0.0f,0.0f,0.0f)),m_nShakeFrame(0),m_ModeTime(0),m_fShakePower(0.0f),m_fAddLength(0.0f),m_AddPosR(D3DXVECTOR3(0.0f,0.0f,0.0f)),m_AddPosV(D3DXVECTOR3(0.0f,0.0f,0.0f))
-,m_bCustom(false),m_State(CAMERASTATE::NORMAL),m_pCameraState(DBG_NEW CCameraState_Normal()),m_pCameraLengthState(DBG_NEW CCameraLengthState())
+,m_State(CAMERASTATE::NORMAL),m_pCameraState(DBG_NEW CCameraState_Normal()),m_pCameraLengthState(DBG_NEW CCameraLengthState())
 {
 #ifdef _DEBUG
 	if (s_bDEBUGCAMERACONTROLLMOUSE)
@@ -48,7 +48,7 @@ m_ZoomSpeed(D3DXVECTOR3(0.0f,0.0f,0.0f)),m_nShakeFrame(0),m_ModeTime(0),m_fShake
 		s_bCAMERACONTROLLMOUSE = true;
 	}
 	else
-	{
+	{//リリース時は必ずカメラをマウスで操作できるようにする
 		s_bCAMERACONTROLLMOUSE = false;
 	}
 #else
@@ -73,18 +73,18 @@ CCamera::~CCamera()
 //====================================================================
 HRESULT CCamera::Init()
 {
-	m_PosV = D3DXVECTOR3(0.0f, 200.0f,-350.0f);     //支点
-	m_PosR = D3DXVECTOR3(0.0f,0.0f,0.0f);                          //注視点
-	m_VecU = D3DXVECTOR3(0.0f, 1.0f, 0.0f);         //上方向ベクトル（法線）
-	m_Rot = D3DXVECTOR3(-D3DX_PI * 0.5f,0.0f,0.0f);                           //向き
-	m_mtxProjection = {};                           //プロジェクションマトリックス
-	m_mtxView = {};                                 //ビューマトリックス
-	m_CameraType = CAMERATYPE_BIRD;                 //カメラモードの種類
-	m_nShakeFrame = 0;                              //カメラを揺らすフレーム数
-	m_fShakePower = 0.0f;                           //カメラを揺らす力
-	m_DifferenceLength = D3DXVECTOR3(0.0f,0.0f,0.0f);              //対象との距離
-	m_ModeTime = 0;                                 //モードの時間
-	m_ZoomSpeed = D3DXVECTOR3(0.0f,0.0f,0.0f);                     //ズームする速さ
+	m_PosV = D3DXVECTOR3(0.0f, 200.0f,-350.0f);       //支点
+	m_PosR = D3DXVECTOR3(0.0f,0.0f,0.0f);             //注視点
+	m_VecU = D3DXVECTOR3(0.0f, 1.0f, 0.0f);           //上方向ベクトル（法線）
+	m_Rot = D3DXVECTOR3(-D3DX_PI * 0.5f,0.0f,0.0f);   //向き
+	m_mtxProjection = {};                             //プロジェクションマトリックス
+	m_mtxView = {};                                   //ビューマトリックス
+	m_CameraType = CAMERATYPE_BIRD;                   //カメラモードの種類
+	m_nShakeFrame = 0;                                //カメラを揺らすフレーム数
+	m_fShakePower = 0.0f;                             //カメラを揺らす力
+	m_DifferenceLength = D3DXVECTOR3(0.0f,0.0f,0.0f); //対象との距離
+	m_ModeTime = 0;                                   //モードの時間
+	m_ZoomSpeed = D3DXVECTOR3(0.0f,0.0f,0.0f);        //ズームする速さ
 	return S_OK;
 }
 //====================================================================================================
@@ -95,13 +95,13 @@ HRESULT CCamera::Init()
 void CCamera::Uninit()
 {
 	if (m_pCameraState != nullptr)
-	{
+	{//カメラの状態機械を破棄
 		delete m_pCameraState;
 		m_pCameraState = nullptr;
 	}
 
 	if (m_pCameraLengthState != nullptr)
-	{
+	{//カメラの距離の状態機械を破棄
 		delete m_pCameraLengthState;
 		m_pCameraLengthState = nullptr;
 	}
@@ -116,9 +116,8 @@ void CCamera::Update()
 {
 	m_pCameraState->Process(this);      //カメラの角度に関する処理
 	m_pCameraLengthState->Process(this);//カメラの距離に関する処理
-	//========================================
-	//カメラの向きを補正する
-	//========================================
+
+	//Pitchは前側に範囲を制限
 	if (m_Rot.x < -D3DX_PI + 0.01f)
 	{
 		m_Rot.x = -D3DX_PI + 0.01f;
@@ -128,11 +127,14 @@ void CCamera::Update()
 		m_Rot.x = -0.01f;
 	}
 
-	//向きが3.14と-3.14の境界をまたぐときの補正
+	//ジンバルロックを回避する
 	m_Rot.x = CCalculation::CorrectionRot(m_Rot.x);
 	m_Rot.y = CCalculation::CorrectionRot(m_Rot.y);
 	m_Rot.z = CCalculation::CorrectionRot(m_Rot.z);
 
+	//===============================================================================
+
+	//デバッグ表示
 	CManager::GetDebugText()->PrintDebugText("カメラの向き：%f %f %f\n", m_Rot.x, m_Rot.y, m_Rot.z);
 	CManager::GetDebugText()->PrintDebugText("カメラの視点：%f %f %f\n", m_PosV.x, m_PosV.y, m_PosV.z);
 	CManager::GetDebugText()->PrintDebugText("カメラの注視点：%f %f %f\n", m_PosR.x, m_PosR.y, m_PosR.z);
@@ -142,13 +144,13 @@ void CCamera::Update()
 	NormalCameraMove();
 
 	if (CScene::GetMode() == CScene::MODE_GAME)
-	{
+	{//シーンがゲームの時のみ行う処理
 		if (m_PosV.y < 0.0f)
 		{//視点が０以下なら全ての影を描画しない
 			CObjectX::SetCommonDraw(false);
 		}
 		else
-		{
+		{//それ以外なら全ての影を描画
 			CObjectX::SetCommonDraw(true);
 		}
 	}
@@ -182,7 +184,7 @@ void CCamera::SetCamera()
 	}
 	else if (m_CameraType == CAMERATYPE_SIDE)
 	{
-		//平行東映（正射影）
+		//平行投影（正射影）
 		D3DXMatrixOrthoLH(
 			&m_mtxProjection,
 			(float)SCREEN_WIDTH / 2,
@@ -204,7 +206,9 @@ void CCamera::SetCamera()
 	D3DXVECTOR3 ResultPosR = m_PosR;//結果的な注視点
 	if (m_nShakeFrame > 0)
 	{
-		m_nShakeFrame--;
+		m_nShakeFrame--;//設定されたカメラを揺らすフレーム数分揺らす
+
+		//カメラを揺らす力が大きいほど強く揺らす
 		adjust.x += (float)(rand() % 100 - 50) * m_fShakePower;
 		adjust.y += (float)(rand() % 100 - 50) * m_fShakePower;
 
@@ -229,8 +233,8 @@ void CCamera::SetCamera()
 //====================================================================
 void CCamera::SetShake(int nShakeFrame, float fShakePower)
 {
-	m_nShakeFrame = nShakeFrame;
-	m_fShakePower = fShakePower;
+	m_nShakeFrame = nShakeFrame;//カメラを揺らすフレーム数
+	m_fShakePower = fShakePower;//カメラを揺らす力
 }
 //====================================================================================================
 
@@ -239,8 +243,8 @@ void CCamera::SetShake(int nShakeFrame, float fShakePower)
 //====================================================================
 void CCamera::ChengeState(CCameraState* pCameraState)
 {
-	delete m_pCameraState;
-	m_pCameraState = pCameraState;
+	delete m_pCameraState;//カメラの状態を破棄
+	m_pCameraState = pCameraState;//新しいカメラの状態
 }
 //====================================================================================================
 
@@ -249,8 +253,8 @@ void CCamera::ChengeState(CCameraState* pCameraState)
 //====================================================================
 void CCamera::ChengeLengthState(CCameraLengthState* pCameraLengthState)
 {
-	delete m_pCameraLengthState;
-	m_pCameraLengthState = pCameraLengthState;
+	delete m_pCameraLengthState;//カメラの距離の状態を破棄
+	m_pCameraLengthState = pCameraLengthState;//新しいカメラの距離の状態
 }
 //====================================================================================================
 
@@ -259,23 +263,22 @@ void CCamera::ChengeLengthState(CCameraLengthState* pCameraLengthState)
 //====================================================================
 void CCamera::NormalCameraMove()
 {
-	CObject* pManagerObject = nullptr;
 	D3DXVECTOR3 RotVec = CCalculation::RadToVec(m_Rot);
 	switch (CScene::GetMode())
 	{
-	case CScene::MODE_TITLE:
-		m_PosR = CTitle::GetPlayer()->GetPosInfo().GetPos() + D3DXVECTOR3(100.0f,75.0f,0.0f);
-		m_PosV = m_PosR + RotVec * m_fLength;
+	case CScene::MODE_TITLE://シーンがタイトルなら
+		m_PosR = CTitle::GetPlayer()->GetPosInfo().GetPos() + D3DXVECTOR3(100.0f,75.0f,0.0f);//プレイヤーを左側に設定するためにカメラをプレイヤーの右側に設定
+		m_PosV = m_PosR + RotVec * m_fLength;//注視点からの向きのベクトルに距離をかけて視点を設定
 		break;
 	case CScene::MODE_GAME://通常はプレイヤーの位置を軸に動く(カメラの向きを使い旋回する）
 		if (CGame::GetPlayer() != nullptr)
 		{
-			m_PosR = CGame::GetPlayer()->GetPosInfo().GetPos() + D3DXVECTOR3(sinf(m_Rot.y + D3DX_PI * 0.5f) * 30.0f, 60.0f,cosf(m_Rot.y + D3DX_PI * 0.5f) * 30.0f) + m_AddPosR;
-			m_PosV = m_PosR + RotVec * m_fLength;
+			m_PosR = CGame::GetPlayer()->GetPosInfo().GetPos() + D3DXVECTOR3(sinf(m_Rot.y + D3DX_PI * 0.5f) * 30.0f, 60.0f,cosf(m_Rot.y + D3DX_PI * 0.5f) * 30.0f) + m_AddPosR;//FPS風にカメラから見たキャラクターの位置を左にずらすため値を加算する
+			m_PosV = m_PosR + RotVec * m_fLength;//注視点からの向きのベクトルに距離をかけて視点を設定
 		}
 		break;
-	case CScene::MODE_EDIT:
-		m_PosV = m_PosR + RotVec * (m_fLength);
+	case CScene::MODE_EDIT://シーンがエディットだったら
+		m_PosV = m_PosR + RotVec * (m_fLength);//注視点からの向きのベクトルに距離をかけて視点を設定
 		break;
 	default:
 		break;
@@ -289,25 +292,26 @@ void CCamera::NormalCameraMove()
 void CCamera::MakeTransparent()
 {
 	if (CScene::GetMode() != CScene::MODE_EDIT)
-	{
-		D3DXVECTOR3 Ray = m_PosR - m_PosV;
-		D3DXVec3Normalize(&Ray, &Ray);
-		D3DXVECTOR3 RayCollisionPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-		float fLength = 0.0f;//レイが当たった場所の距離
+	{//シーンが「エディット」なら
+		D3DXVECTOR3 Ray = m_PosR - m_PosV;                          //注視点と支店のベクトルを取り、レイとする
+		D3DXVec3Normalize(&Ray, &Ray);                              //上記で求めたレイを正規化する
+		D3DXVECTOR3 RayCollisionPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);//レイが当たった位置代入用
+		float fLength = 0.0f;                                       //レイが当たった場所の距離
 		for (int nCntPri = 0; nCntPri < CObject::m_nMAXPRIORITY; nCntPri++)
-		{
-			CObject* pObj = CObject::GetTopObject(nCntPri);
+		{//オブジェクトリストを検索する
+			CObject* pObj = CObject::GetTopObject(nCntPri);//各リストの先頭オブジェクトを取得する
 
 			while (pObj != nullptr)
-			{
-				CObject* pNext = pObj->GetNextObject();
-				CObject::TYPE Type = pObj->GetType();
+			{//オブジェクトがnullptrになるまで検索する
+				CObject* pNext = pObj->GetNextObject();//次のオブジェクトを取得する
+				CObject::TYPE Type = pObj->GetType();//オブジェクトの種類を取得する
 				if (Type == CObject::TYPE::BGMODEL || Type == CObject::TYPE::BLOCK)
 				{
-					CObjectX* pObjX = static_cast<CObjectX*>(pObj);//オブジェクトXの機能を使う
+					CObjectX* pObjX = static_cast<CObjectX*>(pObj);//オブジェクトXにキャストする
 					if (CCollision::RayIntersectsAABBCollisionPos(m_PosV, Ray, pObjX->GetPosInfo().GetPos() + pObjX->GetSizeInfo().GetVtxMin(), pObjX->GetPosInfo().GetPos() + pObjX->GetSizeInfo().GetVtxMax(), RayCollisionPos))
-					{
-						fLength = CCalculation::CalculationLength(m_PosV, RayCollisionPos);
+					{//レイが当たっていたら
+
+						fLength = CCalculation::CalculationLength(m_PosV, RayCollisionPos);//レイが当たった位置と距離を求める
 
 						if (m_fLength > fLength)
 						{//カメラの距離よりもオブジェクトとレイが当たった位置が近い場合は透明にする
@@ -322,35 +326,6 @@ void CCamera::MakeTransparent()
 	}
 }
 //====================================================================================================
-
-//====================================================================
-//ボスを倒したときのカメラの処理を行う
-//====================================================================
-void CCamera::BossDefeatCameraProcess()
-{
-
-}
-//====================================================================================================
-
-//====================================================================
-//カメラの旋回処理を行う
-//====================================================================
-void CCamera::TurningCameraProcess()
-{
-	////旋回向き
-	//m_Rot.y += m_fTurningRotSpeed;
-
-	////支点Yの位置
-	//m_PosV.y += m_fTurningSpeedY;
-
-	////距離を更新する
-	//m_fLength += m_fAddLength;
-
-	////カメラの旋回処理
-	//m_PosV.x = sinf(m_Rot.y) * m_fLength + m_PosR.x;
-	//m_PosV.z = cosf(m_Rot.y) * m_fLength + m_PosR.z;
-}
-//===================================================================================================================================================
 
 //※以降ステートクラス
 
@@ -381,27 +356,32 @@ CCameraState_TurnAround::~CCameraState_TurnAround()
 //=================================================================
 void CCameraState_TurnAround::Process(CCamera* pCamera)
 {
-	const D3DXVECTOR3 & NowRot = pCamera->GetRot();
+	const D3DXVECTOR3 & NowRot = pCamera->GetRot();//カメラの向きを取得する
 
 	//向きの差分を求める
 	float fRotDiffX = m_AimRot.x - NowRot.x;
 	float fRotDiffY = m_AimRot.y - NowRot.y;
 
+	//向きの差分を補正（ジンバルロックを回避)
 	fRotDiffX = CCalculation::CorrectionRot(fRotDiffX);
 	fRotDiffY = CCalculation::CorrectionRot(fRotDiffY);
 
-	CManager::GetDebugText()->PrintDebugText("カメラの向きの差分:%f\n");
+	CManager::GetDebugText()->PrintDebugText("カメラの向きの差分:%f\n");//デバッグ表示
 
 	//加算する向きの量を補正して求める
 	float fAddRotX = fRotDiffX * m_fAdjustTurnSpeed;
 	float fAddRotY = fRotDiffY * m_fAdjustTurnSpeed;
+
+	//ジンバルロックを回避
 	fAddRotX = CCalculation::CorrectionRot(fAddRotX);
 	fAddRotY = CCalculation::CorrectionRot(fAddRotY);
+
+	//向きを設定する
 	pCamera->SetRot(D3DXVECTOR3(pCamera->GetRot().x + fAddRotX, pCamera->GetRot().y + fAddRotY, pCamera->GetRot().z));
 
 	//差分の絶対値が0.01f以下なら
 	if (fabsf(fAddRotX) < 0.005f && fabsf(fAddRotY) < 0.005f)//YawとPitchの向き加算量が0.01f以下になったらステートを戻す
-	{
+	{//YawもPitchの加算する値がどちらも0.005f以下なら向きが変わり切ったと仮定し、状態を普通に戻す
 		pCamera->ChengeState(DBG_NEW CCameraState_Normal());
 	}
 }
@@ -444,30 +424,30 @@ void CCameraState_Normal::Process(CCamera* pCamera)
 	//========================================
     //カメラの向きを変える
     //========================================
-	if (CScene::GetMode() != CScene::MODE_TITLE || CScene::GetMode() != CScene::MODE_RESULT)
-	{
+	if (CScene::GetMode() != CScene::MODE_TITLE && CScene::GetMode() != CScene::MODE_RESULT)
+	{//シーンがタイトルとリザルト以外なら
 		if (CManager::GetInputKeyboard()->GetPress(DIK_Q))
-		{
+		{//カメラを徐々に右に向かせる
 			pCamera->SetRot(pCamera->GetRot() + D3DXVECTOR3(0.0f, -s_fNORMAL_AROUNDROTSPEED, 0.0f));
 		}
 		if (CManager::GetInputKeyboard()->GetPress(DIK_E))
-		{
+		{//カメラを徐々に左に向かせる
 			if (CManager::GetInputKeyboard()->GetPress(DIK_LSHIFT))
-			{
+			{//LSHIFTを押しながらEキーを押すとYawをリセット
 				pCamera->SetRot(D3DXVECTOR3(pCamera->GetRot().x, 0.0f, pCamera->GetRot().z));
 			}
 			else
-			{
+			{//普通にカメラを徐々に左に向かせる
 				pCamera->SetRot(pCamera->GetRot() + D3DXVECTOR3(0.0f, s_fNORMAL_AROUNDROTSPEED, 0.0f));
 			}
 		}
 
 		if (CManager::GetInputJoypad()->GetPress(CInputJoypad::JOYKEY::LB))
-		{
+		{//コントローラーのLBボタンを押していたら
 			pCamera->SetRot(pCamera->GetRot() + D3DXVECTOR3(0.0f, -s_fNORMAL_AROUNDROTSPEED, 0.0f));
 		}
 		if (CManager::GetInputJoypad()->GetPress(CInputJoypad::JOYKEY::RB))
-		{
+		{//コントローラーのRBボタンを押していたら
 			pCamera->SetRot(pCamera->GetRot() + D3DXVECTOR3(0.0f, s_fNORMAL_AROUNDROTSPEED, 0.0f));
 		}
 
@@ -477,12 +457,12 @@ void CCameraState_Normal::Process(CCamera* pCamera)
 		if (CManager::GetInputKeyboard()->GetPress(DIK_LSHIFT) == true)
 		{//シフトキーを押しながら・・・
 			if (CManager::GetInputKeyboard()->GetPress(DIK_X) == true)
-			{
+			{//注視点の加算量を減らす
 				pCamera->SetAddPosR(pCamera->GetAddPosR() + D3DXVECTOR3(0.0f, -5.0f, 0.0f));
 			}
 		}
 		else if (CManager::GetInputKeyboard()->GetPress(DIK_X) == true)
-		{
+		{//注視点の加算量を増やす
 			pCamera->SetAddPosR(pCamera->GetAddPosR() + D3DXVECTOR3(0.0f, 5.0f, 0.0f));
 		}
 
@@ -490,62 +470,66 @@ void CCameraState_Normal::Process(CCamera* pCamera)
 		//ゲームパッド、又はマウスでカメラの向きを変える
 		//=================================================
 		if (CManager::GetInputJoypad()->GetRStickPress(16) == true)
-		{
+		{//右スティックを入力していたら
 			if (CScene::GetMode() == CScene::MODE::MODE_GAME)
-			{
+			{//シーンが「ゲーム」だったら
 				CGame::GetTutorial()->SetSuccessCheck(CTutorial::CHECK::CAMERACONTROLL);
 			}
 
+			//スティックを押した方向にカメラの向きを向かせる
 			CManager::GetCamera()->SetRot(pCamera->GetRot() + D3DXVECTOR3(cosf(CManager::GetInputJoypad()->GetRStickAimRot() + D3DX_PI) * 0.04f,
 				sinf(CManager::GetInputJoypad()->GetRStickAimRot()) * 0.04f, 0.0f));
 		}
 
 		if (CCamera::GetUseCameraControllMouse())
-		{
-			float fAngle = 0.0f;
-			float fAddYaw = 0.0f;
-			float fAddPitch = 0.0f;
+		{//マウスでもカメラを操作するなら
+			float fAngle = 0.0f;    //角度
+			float fAddYaw = 0.0f;   //Yaw
+			float fAddPitch = 0.0f; //Pitch
 			if (CScene::GetMode() == CScene::MODE_GAME || CScene::GetMode() == CScene::MODE_EDIT)
 			{//ゲームモードとエディットモードの時だけマウスを固定
 				if (CManager::GetInputMouse()->GetMouseMoveAngle(fAddYaw, fAddPitch, 0.005f))
-				{
+				{//マウスが移動した方向からYawとPitchの加算量を取得する。マウスが動いていたらtrue
 					if (CScene::GetMode() == CScene::MODE::MODE_GAME)
-					{
-						CGame::GetTutorial()->SetSuccessCheck(CTutorial::CHECK::CAMERACONTROLL);
+					{//シーンが「ゲーム」だったら
+						CGame::GetTutorial()->SetSuccessCheck(CTutorial::CHECK::CAMERACONTROLL);//カメラを動かすチュートリアルを完了
 					}
+
+					//向きを加算する
 					CManager::GetCamera()->SetRot(pCamera->GetRot() + D3DXVECTOR3(fAddPitch,
 						fAddYaw, 0.0f));
 				}
 			}
 		}
+
 		//===========================
 		//Cボタンを押していたら
 		//===========================
 		if (CManager::GetInputKeyboard()->GetPress(DIK_LSHIFT) == true)
 		{//シフトキーを押しながら・・・
 			if (CManager::GetInputKeyboard()->GetPress(DIK_C) == true)
-			{
-				pCamera->SetAddPosV(pCamera->GetAddPosV() + D3DXVECTOR3(0.0f, -5.0f, 0.0f));
+			{//Cキーを教えいたｒ
+				pCamera->SetAddPosV(pCamera->GetAddPosV() + D3DXVECTOR3(0.0f, -5.0f, 0.0f));//視点の位置の加算量を減らす
 			}
 		}
 		else if (CManager::GetInputKeyboard()->GetPress(DIK_C) == true)
-		{
-			pCamera->SetAddPosV(pCamera->GetAddPosV() + D3DXVECTOR3(0.0f, 5.0f, 0.0f));
+		{//シフトキーを押していなくてCキーを押していたら
+			pCamera->SetAddPosV(pCamera->GetAddPosV() + D3DXVECTOR3(0.0f, 5.0f, 0.0f));//視点の位置の加算量を増やす
 		}
 
 		//===========================
 		//Vボタンを押していたら
 		//===========================
 		if (CManager::GetInputKeyboard()->GetPress(DIK_LSHIFT) == true)
-		{//シフトキーを押しながら・・・
+		{//左シフトキーを押しながら・・・
 			if (CManager::GetInputKeyboard()->GetPress(DIK_V) == true)
-			{
-				pCamera->SetLength(pCamera->GetLength() - 5.0f);
+			{//Vキーを押していたら
+				pCamera->SetLength(pCamera->GetLength() - 5.0f);//視点と注視点の距離を減らす
 			}
 		}
 		else if (CManager::GetInputKeyboard()->GetPress(DIK_V) == true)
-		{
-			pCamera->SetLength(pCamera->GetLength() + 5.0f);
+		{//左シフトキーをおしていなく、Vキーを押していたら
+			pCamera->SetLength(pCamera->GetLength() + 5.0f);//視点と注視点の距離を増やす
 		}
 
 
@@ -553,20 +537,20 @@ void CCameraState_Normal::Process(CCamera* pCamera)
 		//カメラを揺らす
 		//========================================
 		if (CManager::GetInputKeyboard()->GetTrigger(DIK_F1) == true)
-		{
-			pCamera->SetShake(50, 0.2f);
+		{//F1キーを押していたら
+			pCamera->SetShake(50, 0.2f);//カメラを揺らす
 		}
 
 		//========================================
 		//後ろを向く
 		//========================================
 		if (CScene::GetMode() == CScene::MODE::MODE_GAME)
-		{
+		{//シーンが「ゲーム」だったら
 			if (CManager::GetInputJoypad()->GetTrigger(CInputJoypad::JOYKEY::Y) || CManager::GetInputKeyboard()->GetTrigger(DIK_LCONTROL))
-			{
-				CGame::GetTutorial()->SetSuccessCheck(CTutorial::CHECK::TURNAROUND);
+			{//コントローラーのYキーを押したかLコントロールキーを押していたら
+				CGame::GetTutorial()->SetSuccessCheck(CTutorial::CHECK::TURNAROUND);//後ろを向くチュートリアルを完了
 
-				pCamera->ChengeState(DBG_NEW CCameraState_TurnAround(pCamera->GetRot() + D3DXVECTOR3(0.0f, D3DX_PI, 0.0f), 0.15f));
+				pCamera->ChengeState(DBG_NEW CCameraState_TurnAround(pCamera->GetRot() + D3DXVECTOR3(0.0f, D3DX_PI, 0.0f), 0.15f));//指定した向きを徐々に向く状態にし、現在の向きの後ろに設定
 			}
 		}
 	}
@@ -633,15 +617,15 @@ CCameraLengthState_Gradually::~CCameraLengthState_Gradually()
 void CCameraLengthState_Gradually::Process(CCamera* pCamera)
 {
 	if (m_bNowAddLength == true)
-	{
+	{//現在距離を加算しているなら
 		AddLengthProcess(pCamera);//カメラとの距離を増やす処理
 	}
 	else
-	{
+	{//現在距離を加算していないなら
 		MaintainLengthFrameCntProcess();//距離を維持する時間をカウントする処理
 	}
 	if (m_bStartReturnLength == true)
-	{
+	{//カメラとの距離を戻すなら
 		ReturnLengthProcess(pCamera);//カメラとの距離と状態を戻す処理
 	}
 }
@@ -652,12 +636,12 @@ void CCameraLengthState_Gradually::Process(CCamera* pCamera)
 //=================================================================
 void CCameraLengthState_Gradually::AddLengthProcess(CCamera* pCamera)
 {
-	float fLengthDiff = m_fAimLength - pCamera->GetLength();
-	float fAddLength = fLengthDiff * m_fAdjustAddSpeed;//加算する距離を求める
-	pCamera->SetLength(pCamera->GetLength() + fAddLength);//距離を加算する
+	float fLengthDiff = m_fAimLength - pCamera->GetLength();//目的の距離と現在のカメラの視点と注視点の距離の差分を求める
+	float fAddLength = fLengthDiff * m_fAdjustAddSpeed;     //加算する距離を求める
+	pCamera->SetLength(pCamera->GetLength() + fAddLength); //距離を加算する
 
 	if (fLengthDiff < 1.0f)
-	{
+	{//距離の差分が1.0f以下なら
 		m_bNowAddLength = false;//距離を増やす状態をオフにする
 	}
 }
@@ -668,11 +652,11 @@ void CCameraLengthState_Gradually::AddLengthProcess(CCamera* pCamera)
 //=================================================================
 void CCameraLengthState_Gradually::MaintainLengthFrameCntProcess()
 {
-	m_nChengeFrameCnt++;
+	m_nChengeFrameCnt++;//変えたカメラの距離を維持するフレーム数をカウントする
 
 	if (m_nChengeFrameCnt > m_nChengeLengthFrame)
 	{//距離を維持する時間を超えたら
-		m_bStartReturnLength = true;
+		m_bStartReturnLength = true;//カメラの距離を戻すフラグをtrueにする
 	}
 }
 //===================================================================================================================================================
@@ -682,9 +666,9 @@ void CCameraLengthState_Gradually::MaintainLengthFrameCntProcess()
 //=================================================================
 void CCameraLengthState_Gradually::ReturnLengthProcess(CCamera* pCamera)
 {
-	float fLengthDiff = CCamera::GetInitialLength() - pCamera->GetLength();
-	float fSubLength = fLengthDiff * 0.1f;//加算する距離を求める
-	pCamera->SetLength(pCamera->GetLength() + fSubLength);//距離を加算する
+	float fLengthDiff = CCamera::GetInitialLength() - pCamera->GetLength();//カメラの最初の距離と現在のカメラの距離の差分を求める
+	float fSubLength = fLengthDiff * 0.1f;                                 //差分の0.1f倍減らす
+	pCamera->SetLength(pCamera->GetLength() + fSubLength);                 //距離を加算する
 
 	if (fabsf(fLengthDiff) < 1.0f)//距離が絶対値で1.0fより下回ったら状態を戻す
 	{//距離が元に戻ったので状態を解除

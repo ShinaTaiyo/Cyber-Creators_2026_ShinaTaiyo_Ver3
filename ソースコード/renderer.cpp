@@ -68,12 +68,6 @@ HRESULT CRenderer::Init(HWND hWnd, BOOL bWindow)
 	{
 		return E_FAIL;
 	}
-	////現在のディスプレイモードを取得
-	//if (FAILED(g_pD3D->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &d3ddm)))
-	//{
-	//	return E_FAIL;
-	//}
-
 	//デバイスのプレゼンテーションパラメータの設定
 	ZeroMemory(&d3dpp, sizeof(d3dpp));//パラメータのゼロクリア
 	d3dpp.BackBufferWidth = SCREEN_WIDTH;//ゲーム画面サイズ（幅）
@@ -140,20 +134,7 @@ HRESULT CRenderer::Init(HWND hWnd, BOOL bWindow)
 		OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH,
 		"terminal", &m_pFont);
 
-	////キーボードの初期化処理
-	//if(FAILED(InitKeyboard(hInstance,hWnd)))
-	//{
-	//	return E_FAIL;
-	//}
-
-	////ジョイパッドをの初期化処理
-	//if (FAILED(InitJoypad()))
-	//{
-	//	return E_FAIL;
-	//}
-
 	srand((unsigned int)time(NULL));//ゲームを開始した時間毎に乱数の種を設定
-
 
 	////モードの設定
 	SetMode(m_mode);
@@ -209,27 +190,28 @@ void CRenderer::Draw()
 		(D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER),
 		D3DCOLOR_RGBA(255,255,255,255), 1.0f, 0);
 
- 	CCamera* pCamera = CManager::GetCamera();                   //カメラの取得
+ 	CCamera* pCamera = CManager::GetCamera();//カメラへのポインタ
 	
 	//描画開始
 	if (SUCCEEDED(m_pD3DDevice->BeginScene()))
 	{//描画開始が成功した場合
 
-		//カメラの設定
+		//カメラの描画
 		pCamera->SetCamera();
 
 		//FPSの表示
 		CObject::DrawAll();//全てのオブジェクトの描画処理
 
-				//デバッグ表示
+		//デバッグ表示
 		CManager::GetDebugText()->Draw();
 
-//#ifdef _DEBUG
+		//FPS表示
 		DrawFPS();
-//#endif 
+
 		//描画終了
 		m_pD3DDevice->EndScene();
 	}
+
 	//バックバッファとフロントバッファの入れ替え
 	m_pD3DDevice->Present(NULL, NULL, NULL, NULL);
 
@@ -266,75 +248,6 @@ void CRenderer::DrawFPS()
 	CManager::GetDebugText()->PrintDebugText("【デバッグ表示】【F1】【FPS】 %d\n", GetFPS());
 	CManager::GetDebugText()->PrintDebugText("現在のモード：%s\n",&aMode[0]);
 	CManager::GetDebugText()->PrintDebugText("現在のオブジェクト総数：%d\n", nNumObject);
-
-
-	//}
-
-	//if (CScene::GetMode() == CScene::MODE_GAME)
-	//{
-	//	wsprintf(&aStr[8][0], "\n\n\n\n\n\n\n\n\n現在のマップ番号：%d",CGame::GetStageManager()->GetMapIndex());
-	//}
-	//else if (CScene::GetMode() == CScene::MODE_EDIT)
-	//{
-	//	wsprintf(&aStr[8][0], "\n\n\n\n\n\n\n\n\n現在のマップ番号：%d", CEdit::GetStageManager()->GetMapIndex());
-	//}
-
-	//if (CScene::GetMode() == CScene::MODE_GAME)
-	//{
-	//	wsprintf(&aStr[9][0], "\n\n\n\n\n\n\n\n\n\n現在のワープ先：%d", CGame::GetStageManager()->GetWarpMapNum());
-	//}
-	//else if (CScene::GetMode() == CScene::MODE_EDIT)
-	//{
-	//	wsprintf(&aStr[9][0], "\n\n\n\n\n\n\n\n\n\n現在のワープ先：%d", CEdit::GetStageManager()->GetWarpMapNum());
-	//}
-
-	//if (CScene::GetMode() == CScene::MODE_GAME)
-	//{
-	//	wsprintf(&aStr[10][0], "\n\n\n\n\n\n\n\n\n\n\nステージマネージャーの体力：%d", CGame::GetStageManager()->GetLife());
-	//}
-	//else if (CScene::GetMode() == CScene::MODE_EDIT)
-	//{
-	//	wsprintf(&aStr[10][0], "\n\n\n\n\n\n\n\n\n\n\nステージマネージャーの体力：%d", CEdit::GetStageManager()->GetLife());
-	//}
-
-	//
-	//snprintf(&aStr[11][0], 256, "\n\n\n\n\n\n\n\n\n\n\n\nカメラの視点の位置:%.3f %.3f %.3f",CManager::GetCamera()->GetPosV().x, CManager::GetCamera()->GetPosV().y,
-	//	CManager::GetCamera()->GetPosV().z);
-	//snprintf(&aStr[12][0], 256, "\n\n\n\n\n\n\n\n\n\n\n\n\nカメラの注視点の位置:%.3f %.3f %.3f", CManager::GetCamera()->GetPosR().x, CManager::GetCamera()->GetPosR().y,
-	//	CManager::GetCamera()->GetPosR().z);
-
-	//wsprintf(&aStr[13][0], "\n\n\n\n\n\n\n\n\n\n\n\n\n\n回避：J");
-
-	//if (CScene::GetMode() == CScene::MODE_GAME)
-	//{
-	//	snprintf(&aStr[14][0], 256, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nプレイヤーの向き:%.3f %.3f %.3f", CGame::GetPlayer()->GetRot().x, CGame::GetPlayer()->GetRot().y
-	//		, CGame::GetPlayer()->GetRot().z);
-	//}
-	//else if (CScene::GetMode() == CScene::MODE_EDIT)
-	//{
-	//	snprintf(&aStr[14][0], 256, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nプレイヤーの向き:%.3f %.3f %.3f", CEdit::GetPlayer()->GetRot().x, CEdit::GetPlayer()->GetRot().y
-	//		, CEdit::GetPlayer()->GetRot().z);
-
-	//}
-
-	//if (CScene::GetMode() == CScene::MODE_GAME)
-	//{
-	//	wsprintf(&aStr[15][0], "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n現在のステージマネージャーのサブタイプ：%d", CGame::GetStageManager()->GetSubType());
-	//}
-	//else if (CScene::GetMode() == CScene::MODE_EDIT)
-	//{
-	//	wsprintf(&aStr[15][0], "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n現在のステージマネージャーのサブタイプ：%d", CEdit::GetStageManager()->GetSubType());
-	//}
-
-	//wsprintf(&aStr[16][0], "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nFPS：%d",GetFPS());
-
-	////テキストの描画
-	//for (nCount = 0; nCount < 17; nCount++)
-	//{
-	//	m_pFont->DrawText(NULL, &aStr[nCount][0], -1, &rect, DT_LEFT,
-	//		D3DCOLOR_RGBA(0, 0, 0,255));
-	//}
-
 }
 //=========================================================================================================
 

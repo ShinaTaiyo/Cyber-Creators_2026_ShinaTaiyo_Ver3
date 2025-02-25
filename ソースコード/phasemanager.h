@@ -28,14 +28,14 @@ class CPhaseManager : public CObject
 {
 public:
 	CPhaseManager(int nNumStage,int nPri = 0, bool bUseintPri = false, CObject::TYPE type = CObject::TYPE::PHASEMANAGER, CObject::OBJECTTYPE ObjType = CObject::OBJECTTYPE::OBJECTTYPE_NONE);  //コンストラクタ
-	~CPhaseManager(); //デストラクタ
-	HRESULT Init() override;   //初期化処理
-	void Uninit() override;     //終了処理
-	void Update() override;    //更新処理
-	void Draw() override;      //描画処理
-	void SetDeath() override;  //死亡フラグを設定
+	~CPhaseManager();                          //デストラクタ
+	HRESULT Init() override;                   //初期化処理
+	void Uninit() override;                    //終了処理
+	void Update() override;                    //更新処理
+	void Draw() override;                      //描画処理
+	void SetDeath() override;                  //死亡フラグを設定
 	static CPhaseManager * Create();           //生成処理
-	void PushPhaseInfo(D3DXVECTOR3 Pos, D3DXVECTOR3 Rot, D3DXVECTOR3 Scale, int nLife, int nEnemyType, int nTypeNum, int nPhaseNum,float fNormalSpeed,float fSensingRange,int nNumDivision, vector<CEnemy::MoveAiInfo> VecMoveAi);        //生成処理
+	void PushPhaseInfo(D3DXVECTOR3 Pos, D3DXVECTOR3 Rot, D3DXVECTOR3 Scale, int nLife, int nEnemyType, int nTypeNum, int nPhaseNum,float fNormalSpeed,float fSensingRange,int nNumDivision, vector<CEnemy::MoveAiInfo> VecMoveAi);//フェーズ情報を設定
 private:
 	struct PhaseSaveInfo
 	{
@@ -51,11 +51,11 @@ private:
 		vector<CEnemy::MoveAiInfo> VecMoveAi; //移動AIのVector
 		int nNumDivision;                     //分裂回数
 	};
-	static list<PhaseSaveInfo>s_PhaseList;  //フェーズ情報のリスト
-	static int s_MaxPhase;                  //フェーズの最大数
-	static int s_nNowPhase;                 //現在のフェーズ番号
-	static bool s_bStartFade;               //フェードを開始する
-	static int s_nNowStage;                 //現在のステージ番号
-	void AdvancePhase();//次のフェーズに移行する処理
+	static list<PhaseSaveInfo>s_PhaseList;    //フェーズ情報のリスト
+	static int s_MaxPhase;                    //フェーズの最大数
+	static int s_nNowPhase;                   //現在のフェーズ番号
+	static bool s_bStartFade;                 //フェードを開始する
+	static int s_nNowStage;                   //現在のステージ番号
+	void AdvancePhase();                      //次のフェーズに移行する処理
 };
 #endif

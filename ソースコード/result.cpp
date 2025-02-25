@@ -41,26 +41,24 @@ CResult::~CResult()
 //=============================================================
 HRESULT CResult::Init()
 {
-	CScene::Init();//シーン初期化処理
-	//============================
-	//各オブジェクト生成処理
-	//============================
+	CScene::Init();             //シーン初期化処理
 	CBg::Create(CBg::BG_RESULT);//リザルト背景を生成	
-	//======================================================
-	CUi* pUi = nullptr;//UIへのポインタ
+	CUi* pUi = nullptr;         //UIへのポインタ
 	if (CGame::GetGameClear() == true)
-	{
+	{//ゲームをクリアしていたら
+		//「ゲームクリア」のUIを生成
 		pUi = CUi::Create(CUi::UITYPE::GAMECLEAR_000, CObject2D::POLYGONTYPE::SENTERROLLING, 600.0f, 600.0f, 10, false, D3DXVECTOR3(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 0.0f),
 			D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
-		pUi->SetUseBlinking(true, 30, 0.0f);
-		pUi->SetUseDeath(true);
+		pUi->SetUseBlinking(true, 30, 0.0f);//点滅させる
+		pUi->SetUseDeath(true);             //死亡フラグを使用する
 	}
 	else
-	{
+	{//ゲームに負けていたら
+		//「負け」のUIを生成
 		pUi = CUi::Create(CUi::UITYPE::LOSE_000, CObject2D::POLYGONTYPE::SENTERROLLING, 600.0f, 600.0f, 10, false, D3DXVECTOR3(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 0.0f),
 			D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
-		pUi->SetUseBlinking(true, 30, 0.0f);
-		pUi->SetUseDeath(true);
+		pUi->SetUseBlinking(true, 30, 0.0f);//点滅させる
+		pUi->SetUseDeath(true);             //死亡フラグを使用する
 	}
 	return S_OK;
 }
@@ -81,16 +79,17 @@ void CResult::Uninit()
 void CResult::Update()
 {
 	CScene::Update();//シーン更新処理
-
+	CInputKeyboard* pInputKeyboard = CManager::GetInputKeyboard();//キー入力情報へのポインタ
+	CInputJoypad* pInputJoypad = CManager::GetInputJoypad();      //ジョイパッド入力情報へのポインタ
 #ifdef _DEBUG
-	if (CManager::GetInputKeyboard()->GetTrigger(DIK_RETURN) == true || CManager::GetInputJoypad()->GetTrigger(CInputJoypad::JOYKEY::START) == true)
-	{
-		CManager::GetSceneFade()->SetSceneFade(CFade::FADEMODE_IN, CScene::MODE_EDIT);
+	if (pInputKeyboard->GetTrigger(DIK_RETURN) == true || pInputJoypad->GetTrigger(CInputJoypad::JOYKEY::START) == true)
+	{//ENTERキー又はジョイパッドのスタートボタンを押していたら
+		CManager::GetSceneFade()->SetSceneFade(CFade::FADEMODE_IN, CScene::MODE_EDIT);//エディットモードにする
 	}
 #else
 	if (CManager::GetInputKeyboard()->GetTrigger(DIK_RETURN) == true || CManager::GetInputJoypad()->GetTrigger(CInputJoypad::JOYKEY::START) == true)
-	{
-		CManager::GetSceneFade()->SetSceneFade(CFade::FADEMODE_IN, CScene::MODE_TITLE);
+	{//ENTERキー又はジョイパッドのスタートボタンを押していたら
+		CManager::GetSceneFade()->SetSceneFade(CFade::FADEMODE_IN, CScene::MODE_TITLE);//タイトルモードにする
 	}
 #endif // _DEBUG
 }
