@@ -1,0 +1,43 @@
+#================================================
+#
+# モデルのセット
+# Author :Shina Taiyo
+#
+#================================================
+
+MODELSET
+TYPE = 0
+POS = 158.627  0.000  -270.627
+ROT = 0.000  4.712  0.000
+SCALE = 1.000  1.000  1.000
+ENDMODELSET
+
+MODELSET
+TYPE = 0
+POS = 381.823  0.000  -191.431
+ROT = 0.000  3.927  0.000
+SCALE = 1.000  1.000  1.000
+ENDMODELSET
+
+MODELSET
+TYPE = 0
+POS = 347.882  0.000  89.706
+ROT = 0.000  2.356  0.000
+SCALE = 1.000  1.000  1.000
+ENDMODELSET
+
+MODELSET
+TYPE = 0
+POS = -20.284  0.000  185.872
+ROT = 0.000  1.571  0.000
+SCALE = 1.000  1.000  1.000
+ENDMODELSET
+
+MODELSET
+TYPE = 0
+POS = -240.902  0.000  -66.745
+ROT = 0.000  5.940  0.000
+SCALE = 1.000  1.000  1.000
+ENDMODELSET
+
+ENDSCRIPT
