@@ -1,0 +1,21 @@
+#-------------------------------------------
+#
+#アイテムを読み込む
+#Author:ShinaTaiyo
+#
+#-------------------------------------------
+
+#-------------------------------------------
+#読み込む敵の種類数
+#-------------------------------------------
+NUM_ITEM 4
+
+#-------------------------------------------
+#モデルのパス
+#-------------------------------------------
+ITEM_FILENAME data//MODEL//Item00_HealHart.x        #[0]ヒールハート
+ITEM_FILENAME data//MODEL//Item01_EnergyBoost.x        #[1]エナジーブースト
+ITEM_FILENAME data//MODEL//Item02_PowerFullSword.x        #[2]パワフルソード
+ITEM_FILENAME data//MODEL//Item03_CapsulBarrier.x        #[3]カプセルバリア
+
+ENDSCRIPT #この行は絶対消さない！

@@ -1,0 +1,45 @@
+//頂点座標の設定（初期位置）
+	pVtx[0].pos = D3DXVECTOR3(-MESHFIELDSCALE, 0.0f, MESHFIELDSCALE);
+	pVtx[1].pos = D3DXVECTOR3(0.0f, 0.0f, MESHFIELDSCALE);
+	pVtx[2].pos = D3DXVECTOR3(MESHFIELDSCALE, 0.0f,MESHFIELDSCALE);
+	pVtx[3].pos = D3DXVECTOR3(-MESHFIELDSCALE, 0.0f,0.0f);
+	pVtx[4].pos = D3DXVECTOR3(0.0f,0.0f, 0.0f);
+	pVtx[5].pos = D3DXVECTOR3(MESHFIELDSCALE, 0.0f, 0.0f);
+	pVtx[6].pos = D3DXVECTOR3(-MESHFIELDSCALE, 0.0f,-MESHFIELDSCALE);
+	pVtx[7].pos = D3DXVECTOR3(0.0f, 0.0f, -MESHFIELDSCALE);
+	pVtx[8].pos = D3DXVECTOR3(MESHFIELDSCALE, 0.0f, -MESHFIELDSCALE);
+
+	//norの設定（初期設定）
+	pVtx[0].nor = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+	pVtx[1].nor = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+	pVtx[2].nor = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+	pVtx[3].nor = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+	pVtx[4].nor = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+	pVtx[5].nor = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+	pVtx[6].nor = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+	pVtx[7].nor = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+	pVtx[8].nor = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+
+
+
+	//頂点カラーの設定
+	pVtx[0].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+	pVtx[1].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+	pVtx[2].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+	pVtx[3].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+	pVtx[4].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+	pVtx[5].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+	pVtx[6].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+	pVtx[7].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+	pVtx[8].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+
+	//テクスチャ座標の設定（初期設定）
+	pVtx[0].tex = D3DXVECTOR2(0.0f, 0.0f);
+	pVtx[1].tex = D3DXVECTOR2(0.5f, 0.0f);
+	pVtx[2].tex = D3DXVECTOR2(1.0f, 0.0f);
+	pVtx[3].tex = D3DXVECTOR2(0.0f, 0.5f);
+	pVtx[4].tex = D3DXVECTOR2(0.5f, 0.5f);
+	pVtx[5].tex = D3DXVECTOR2(1.0f, 0.5f);
+	pVtx[6].tex = D3DXVECTOR2(0.0f, 1.0f);
+	pVtx[7].tex = D3DXVECTOR2(0.5f, 1.0f);
+	pVtx[8].tex = D3DXVECTOR2(1.0f, 1.0f);

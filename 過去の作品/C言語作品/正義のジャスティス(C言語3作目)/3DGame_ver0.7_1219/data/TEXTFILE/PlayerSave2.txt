@@ -1,0 +1,59 @@
+LPDIRECT3DDEVICE9 pDevice = GetDevice();;//デバイスへのポインタと取得
+
+
+	for (int nCntPlayer = 0; nCntPlayer < MAX_PLAYERPARTS; nCntPlayer++)
+	{
+		if (g_aPlayer.aModel[nCntPlayer].bUse == true)
+		{
+			D3DXMATRIX mtxRot, mtxTrans;//計算用マトリックス
+
+			D3DMATERIAL9 matDef;//現在のマテリアル保存用
+
+			D3DXMATERIAL* pMat;//マテリアルデータへのポインタ
+
+			//ワールドマトリックスの初期化
+			D3DXMatrixIdentity(&g_mtxWorldPlayer);
+
+			//向きを反映
+			D3DXMatrixRotationYawPitchRoll(&mtxRot, g_aPlayer.aModel[nCntPlayer].rot.y, g_aPlayer.aModel[nCntPlayer].rot.x, g_aPlayer.aModel[nCntPlayer].rot.z);
+
+			D3DXMatrixMultiply(&g_mtxWorldPlayer, &g_mtxWorldPlayer, &mtxRot);
+
+			//位置を反映
+			D3DXMatrixTranslation(&mtxTrans, g_aPlayer.aModel[nCntPlayer].pos.x, g_aPlayer.aModel[nCntPlayer].pos.y, g_aPlayer.aModel[nCntPlayer].pos.z);
+			D3DXMatrixMultiply(&g_mtxWorldPlayer, &g_mtxWorldPlayer, &mtxTrans);
+
+			//ワールドマトリックスの設定
+			pDevice->SetTransform(D3DTS_WORLD, &g_mtxWorldPlayer);
+
+			//現在のマテリアルを取得
+			pDevice->GetMaterial(&matDef);
+
+			for (int nCntPlayerSet = 0; nCntPlayerSet < g_nNumPlayerModel; nCntPlayerSet++)
+			{//読み込むモデルの種類数分for分を回し、同じタイプのマテリアルのポインタや、、
+			//パーツの描画、マテリアルの設定をする。
+				if (g_aPlayer.aModel[nCntPlayer].nIdxModelParent == nCntPlayerSet)
+				{
+					//マテリアルへのポインタを取得（セットしたモデルと同じタイプ）
+					pMat = (D3DXMATERIAL*)g_aPlayer.aModel[nCntPlayerSet].pBuffMat->GetBufferPointer();
+
+					//セットされたモデルとタイプが同じもののモデルのマテリアルの数分読み込む。
+					for (int nCntMat = 0; nCntMat < (int)g_aPlayer.aModel[nCntPlayerSet].dwNumMatPlayer; nCntMat++)
+					{
+						//マテリアルの設定
+						pDevice->SetMaterial(&pMat[nCntMat].MatD3D);
+
+						//テクスチャの設定
+						pDevice->SetTexture(0, NULL/*g_aPlayerMat[nCntPlayerSet].apTexturePlayer*/);
+
+						//モデル（パーツ）の描画
+						g_aPlayer.aModel[nCntPlayerSet].pMesh->DrawSubset(nCntMat);
+					}
+					break;
+				}
+			}
+
+			//保存していたマテリアルを戻す
+			pDevice->SetMaterial(&matDef);
+		}
+	}
