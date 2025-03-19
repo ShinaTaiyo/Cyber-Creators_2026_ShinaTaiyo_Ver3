@@ -435,6 +435,11 @@ bool CCalculation::CalcMatchRay(D3DXVECTOR3 AimPos, float fSx, float fSy, int nS
 int CCalculation::CalculationDigit(int nNum)
 {
 	int nDigit = 0;
+	if (nNum == 0)
+	{//数値がないので1桁
+		return 1;
+	}
+
 	while (nNum != 0) {//intを10で割って値が０になるまで繰り返し、桁数を計算する
 		nNum /= 10;
 		nDigit++;

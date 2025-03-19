@@ -184,7 +184,7 @@ int CNowEvent_NextPhase::s_nNumNextPhaseEvent = 0;//次のフェーズに移行するイベン
 CNowEvent_NextPhase::CNowEvent_NextPhase(CUi* pUI, int nPhaseNum, float fValueWidth, float fValueHeight) : m_PhaseText(nullptr)
 {
 	m_PhaseText = pUI;                                                   //フェーズ文字UIのポインタを格納
-	m_PhaseText->SetNumericState(nPhaseNum, fValueWidth, fValueHeight);  //数字表示状態にする
+	m_PhaseText->GetUiCompositeContainer()->Add(DBG_NEW CUIComposite_Numeric(m_PhaseText,nPhaseNum, fValueWidth, fValueHeight));  //数字表示状態にする
 	m_PhaseText->SetUseDeath(true);                                      //死亡フラグをオフにする 
 
 	s_nNumNextPhaseEvent++;                                              //フェーズイベントの数を増やす

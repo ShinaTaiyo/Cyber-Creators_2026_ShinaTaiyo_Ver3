@@ -427,14 +427,24 @@ void CAttackPlayer::BulletCollisionProcess()
 			//パーティクルを衝突位置に召喚する
 			if (GetCollisionObjType() == CObject::TYPE::ENEMY)
 			{//敵に当たっていたら
-				CUiState_Gauge* pUiState_Gauge = dynamic_cast<CUiState_Gauge*>(CGame::GetPlayer()->GetDiveGaugeFrame()->GetUiState(CUiState::UISTATE::GAUGE));//UIのゲージ情報を取得
-				if (pUiState_Gauge != nullptr)
+				CPlayer* pPlayer = CGame::GetPlayer();//プレイヤーへのポインタを取得
+				CUi* pDiveGaugeFrameUi = pPlayer->GetDiveGaugeFrame();//ダイブゲージフレームへのポインタ
+				//ダイブゲージの機能の取得
+				CUIComposite_Container* pDiveGaugeFrameUiCompositeContainer = pDiveGaugeFrameUi->GetUiCompositeContainer();                //ゲージフレームのコンポジットパターンのコンテナを取得する
+				CUIComposite_Gauge* pDiveGaugeUi_CompositeGauge = pDiveGaugeFrameUiCompositeContainer->GetChildren<CUIComposite_Gauge>();  //ゲージの機能を取得する
+				if (pDiveGaugeUi_CompositeGauge != nullptr)
 				{
-					CGauge* pDiveGauge = pUiState_Gauge->GetGauge();//ダイブゲージを取得する
-					CUiState_Numeric* pUiState_Numeric = dynamic_cast<CUiState_Numeric*>(CGame::GetPlayer()->GetDivePossibleNum()->GetUiState(CUiState::UISTATE::NUMERIC));//ダイブ可能階数のUIの数値（ダイブ可能回数)を取得
-					if (pUiState_Numeric != nullptr)
+					CGauge* pDiveGauge = pDiveGaugeUi_CompositeGauge->GetGauge();//ダイブゲージを取得する
+
+					CUi* pDivePossibleNum = pPlayer->GetDivePossibleNum();//ダイブ可能回数のUIを取得
+
+					//ダイブ可能回数のUIのコンポジットパターンから機能を取得
+					CUIComposite_Container* pDivePossibleNumCompositeContainer = pDivePossibleNum->GetUiCompositeContainer();//ダイブ可能回数のコンポジットパターンのコンテナを取得する
+					CUIComposite_Numeric* pDivePossibleNum_Numeric = pDivePossibleNumCompositeContainer->GetChildren<CUIComposite_Numeric>();//ダイブ可能回数の数値表示機能を取得する
+
+					if (pDivePossibleNum_Numeric != nullptr)
 					{//取得したUIの機能が数字だったら
-						if (pUiState_Numeric->GetValue() < CPlayer::GetMaxDiveNum())
+						if (pDivePossibleNum_Numeric->GetValue() < CPlayer::GetMaxDiveNum())
 						{//最大ダイブ可能回数に達していない場合はダイブ可能回数を＋１する
 							pDiveGauge->SetParam(pDiveGauge->GetParam() + 1);
 						}

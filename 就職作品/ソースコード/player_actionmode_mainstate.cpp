@@ -195,13 +195,16 @@ CPlayerActionMode_WireShot::CPlayerActionMode_WireShot(CPlayer* pPlayer)
 	//正規化したベクトルをもとにYawとPitchを求める
 	float fYaw = atan2f(MathRot.x, MathRot.z);//Zを軸にする
 	float fPitch = atan2f(MathRot.y, sqrtf(powf(MathRot.x, 2) + powf(MathRot.z, 2)));//XZ平面の長さを軸にして求める
-	fPitch *= -1.0f;//ピッチを前側に
+	//fPitch *= -1.0f;//ピッチを奥側に（右手座標、手前側に傾くので、奥側に)
 
 	WireHeadMoveInfo.SetMove(CCalculation::Calculation3DVec(WireHeadPos, LockOnRayCollisionPos, s_fWIREHEAD_SHOTSPEED));//ワイヤーの頭をロックオンのレイの衝突位置に発射する
 	pWireHead->ResetCoolTime();                                                                                         //ワイヤーの頭が当たるまでのクールタイムをリセット
 	WireHeadMoveInfo.SetUseInteria(false, CObjectX::GetNormalInertia());                                                //ワイヤーの頭の慣性をオフにする
 	WireHeadMoveInfo.SetUseGravity(false, 1.0f);                                                                        //ワイヤーの頭の重力をオフにする
-	WireHeadRotInfo.SetRot(D3DXVECTOR3(D3DX_PI * 0.5f + fPitch, fYaw, 0.0f));                                           //前を基準にpitchを調整
+	WireHeadRotInfo.SetRot(D3DXVECTOR3(D3DX_PI * 0.5f - fPitch, fYaw, 0.0f));                                           //前を基準にpitchを調整（０の時上を向いており、前を向いた時を０と仮定するため、
+	                                                                                                                    //上記の処理でPitchを求めるとき、値を足しているのですでに上を向くターンが終わって
+																														// これ以上値を増やすと下を向き始めるのでPitchを逆にし、向いた方向を向くようにする
+	                                                                                                                    //+ D3DX_PI * 0.5f、Yawは奥側基準なのでそのままで大丈夫
 	WireHeadDrawInfo.SetUseDraw(true);                                                                                  //ワイヤーの頭の描画を復活させる
 
 	//ワイヤー

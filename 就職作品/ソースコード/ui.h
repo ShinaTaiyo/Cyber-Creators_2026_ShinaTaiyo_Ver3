@@ -14,72 +14,9 @@
 #include "main.h"
 #include "object2d.h"
 #include "number.h"
+#include "ui_composite.h"
 #include "gauge.h"
 //==========================================
-
-//======================
-//前方宣言
-//======================
-class CObject2D;
-class CUi;
-
-//==========================================
-//UIステート
-//==========================================
-class CUiState
-{
-public:
-	//UIの状態列挙型
-	enum class UISTATE
-	{
-		NONE = 0,//なし
-		NUMERIC, //数字保持
-		GAUGE,   //ゲージ保持
-		MAX
-	};
-	CUiState();                                                   //コンストラクタ
-	virtual ~CUiState();                                          //デストラクタ
-	virtual void Process(CUi* pUi);                               //処理      
-	void SetUiState(UISTATE pUiState) { m_pUiState = pUiState; }  //UIの機能を追加
-	UISTATE GetUiState() { return m_pUiState; }                   //UIの状態を取得する
-private:
-	UISTATE m_pUiState = UISTATE::NONE;                           //UIの状態を格納
-};
-//=======================================================================================
-
-//==========================================
-//UIステート：数字保持
-//==========================================
-class CUiState_Numeric : public CUiState
-{
-public:
-	CUiState_Numeric(CUi* pUi, int nValue, float fWidth, float fHeight);//コンストラクタ
-	~CUiState_Numeric() override;                                       //デストラクタ
-	void Process(CUi* pUi) override;                                    //処理
-	void SetValue(int nValue,CUi * pUi);                                //数値を設定する
-	int GetValue() { return m_nValue; };                                //数値を取得する
-private:
-	vector<CNumber*> m_VecNum;                                          //数字の動的配列
-	int m_nValue = 0;                                                   //数値
-	float m_fWidth = 0.0f;                                              //横幅基準値
-	float m_fHeight = 0.0f;                                             //高さ基準値
-};
-//=======================================================================================
-
-//==========================================
-//UIステート：ゲージ保持
-//==========================================
-class CUiState_Gauge : public CUiState
-{
-public:
-	CUiState_Gauge(D3DXVECTOR3 GaugePos,D3DXCOLOR Col,CObject2D::POLYGONTYPE PolygonType,CGauge::GAUGETYPE GaugeType,float fMaxWidth, float fMaxHeight, int nValue, int nMaxValue);//コンストラクタ
-	~CUiState_Gauge() override;            //デストラクタ
-	void Process(CUi* pUi);                //処理
-	CGauge* GetGauge() { return m_pGauge;} //ゲージを取得
-private:
-	CGauge* m_pGauge = nullptr;            //ゲージ
-};
-//=======================================================================================
 
 //==========================================
 //UIクラス
@@ -104,6 +41,7 @@ public:
 		DIVEGAUGEFRAME_000,     //ダイブゲージのフレーム
 		GAMECLEAR_000,          //ゲームクリアの文字のテクスチャ
 		LOSE_000,               //負けの文字のテクスチャ
+		COMBOTEXT_000,          //コンボの文字のテクスチャ
 		MAX
 	};
 
@@ -125,10 +63,7 @@ public:
 	void SetUiType(UITYPE type);//UIの種類を設定
 	void SetUseUiEffect(bool bUse, int nSetEffectLife, D3DXCOLOR col) { m_bUseUiEffect = bUse; m_nSetUiEffectLife = nSetEffectLife; m_SetUiEffectColor = col; }//UIにエフェクトを設定
 	UITYPE GetUiType() { return m_Type; }                                    //UIの種類を取得
-	void SetNumericState(int nValue, float fWidth, float fHeight);           //数字状態を設定する
-																             
-	CUiState* GetUiState(CUiState::UISTATE UiState);                         //指定したUIの状態を取得する
-	void PushUiState(CUiState* pUiState) { m_VecUiState.push_back(pUiState);}//新しいUIの状態を動的配列に格納
+	CUIComposite_Container* GetUiCompositeContainer() { return m_pUiCompositeContainer; }//UIの機能を取得
 protected:
 	static const string UI_FILENAME[int(UITYPE::MAX)];                       //UIのテクスチャファイル名
 private:
@@ -138,25 +73,8 @@ private:
 								                                             
 	D3DXCOLOR m_SetUiEffectColor;                                            //UIで出すエフェクトの色合い設定用
 	int m_nSetUiEffectLife;                                                  //UIのエフェクトの体力設定用
-	vector<CUiState*> m_VecUiState;                                          //UIの状態構造体
-};
-//=======================================================================================
 
-//==========================================
-//UIエフェクトクラス
-//==========================================
-class CUiEffect : public CUi
-{
-public:
-	CUiEffect();                                                 //コンストラクタ
-	virtual ~CUiEffect();                                        //デストラクタ
-	HRESULT Init() override;                                     //初期化処理
-	void Uninit() override;                                      //終了処理
-	void Update() override;                                      //更新処理
-	void Draw() override;                                        //描画処理
-	void SetDeath() override;                                    //死亡フラグを設定
-	static CUiEffect* Create(UITYPE type, CObject2D::POLYGONTYPE PolygonType, float fWidth, float fHeight,int nLife,D3DXVECTOR3 Pos, D3DXVECTOR3 Move, D3DXVECTOR3 Rot, D3DXCOLOR col);//背景の生成
-private:
+	CUIComposite_Container * m_pUiCompositeContainer;                           //UIの機能を持っているコンポジットパターン
 };
 //=======================================================================================
 #endif

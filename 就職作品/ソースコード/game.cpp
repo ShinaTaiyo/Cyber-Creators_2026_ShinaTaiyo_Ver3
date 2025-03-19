@@ -33,6 +33,8 @@ CStageManager* CGame::m_pStageManager = nullptr; //ƒXƒe[ƒWƒ}ƒl[ƒWƒƒ[‚Ö‚Ìƒ|ƒCƒ
 CPhaseManager* CGame::m_pPhaseManager = nullptr; //ƒtƒF[ƒYƒ}ƒl[ƒWƒƒ[‚Ö‚Ìƒ|ƒCƒ“ƒ^
 CTutorial* CGame::m_pTutorial = nullptr;         //ƒ`ƒ…[ƒgƒŠƒAƒ‹‚Ö‚Ìƒ|ƒCƒ“ƒ^
 int CGame::s_nPhaseNum = 0;                      //ƒtƒF[ƒY”Ô†
+CScore* CGame::s_pSCORE = nullptr;               //ƒXƒRƒA‚Ö‚Ìƒ|ƒCƒ“ƒ^
+CCombo* CGame::s_pCOMBO = nullptr;               //ƒRƒ“ƒ{‚Ö‚Ìƒ|ƒCƒ“ƒ^
 bool CGame::s_bGameClear = false;                //ƒQ[ƒ€‚ðƒNƒŠƒA‚µ‚½‚©‚Ç‚¤‚©
 //=========================================================================================================================
 
@@ -45,6 +47,8 @@ CGame::CGame(bool bUseGamePad)
 	m_pStageManager = nullptr;  //ƒXƒe[ƒWƒ}ƒl[ƒWƒƒ[‚Ö‚Ìƒ|ƒCƒ“ƒ^‚ð‰Šú‰»
 	m_pPhaseManager = nullptr;  //ƒtƒF[ƒYƒ}ƒl[ƒWƒƒ[‚Ö‚Ìƒ|ƒCƒ“ƒ^‚ð‰Šú‰»
 	m_pTutorial = nullptr;      //ƒ`ƒ…[ƒgƒŠƒAƒ‹‚Ö‚Ìƒ|ƒCƒ“ƒ^‚ð‰Šú‰»
+	s_pSCORE = nullptr;         //ƒXƒRƒA‚Ö‚Ìƒ|ƒCƒ“ƒ^‚ð‰Šú‰»
+	s_pCOMBO = nullptr;         //ƒRƒ“ƒ{‚Ö‚Ìƒ|ƒCƒ“ƒ^‚ð‰Šú‰»
 	s_nPhaseNum = 0;            //ƒtƒF[ƒY”Ô†‚ð‰Šú‰»
 	s_bGameClear = false;       //ƒQ[ƒ€‚ðƒNƒŠƒA‚µ‚½‚©‚Ç‚¤‚©i‰ŠúÝ’è‚ÍƒNƒŠƒA‚µ‚Ä‚¢‚È‚¢ó‘Ôj
 }
@@ -78,11 +82,16 @@ HRESULT CGame::Init()
 
 	m_pStageManager = CStageManager::Create();//ƒXƒe[ƒWƒ}ƒl[ƒWƒƒ[‚ð¶¬
 	m_pStageManager->SetUseDeath(false);      //Ž€–Sƒtƒ‰ƒO‚ðŽg—p‚µ‚È‚¢
-
 	m_pStageManager->LoadMapTxt(0);           //ƒ}ƒbƒv‚O‚ð“Ç‚Ýž‚Þ
 
 	m_pTutorial = CTutorial::Create();        //ƒ`ƒ…[ƒgƒŠƒAƒ‹‚ð¶¬
 	m_pTutorial->SetUseDeath(false);          //Ž€–Sƒtƒ‰ƒO‚ðŽg—p‚µ‚È‚¢
+
+	s_pSCORE = CScore::Create(D3DXVECTOR3(SCREEN_WIDTH - CScore::GetNumberWidth(),CScore::GetNumberHeight(), 0.0f)); //ƒXƒRƒA‚Ì¶¬
+	s_pSCORE->SetUseDeath(false);                                                      //Ž€–Sƒtƒ‰ƒO‚ðŽg—p‚µ‚È‚¢
+
+	s_pCOMBO = CCombo::Create(D3DXVECTOR3(0.0f, 0.0f, 0.0f));//ƒRƒ“ƒ{‚ð¶¬
+	s_pCOMBO->SetUseDeath(false);//Ž€–Sƒtƒ‰ƒO‚ðŽg—p‚µ‚È‚¢
 
 	if (s_bUSETUTORIAL == false)
 	{//ƒ`ƒ…[ƒgƒŠƒAƒ‹‚ðŽg—p‚µ‚È‚¢‚È‚ç
@@ -149,6 +158,28 @@ void CGame::Uninit()
 		m_pTutorial->SetUseDeath(true);//Ž€–Sƒtƒ‰ƒO‚ðŽg—p‚·‚é
 		m_pTutorial->SetDeath();       //Ž€–Sƒtƒ‰ƒO‚ðÝ’è‚·‚é
 		m_pTutorial = nullptr;         //ƒ`ƒ…[ƒgƒŠƒAƒ‹‚Ö‚Ìƒ|ƒCƒ“ƒ^‚ð‰Šú‰»
+	}
+	//=====================================================================
+
+	//============================================
+	//ƒXƒRƒA‚Ì”jŠü
+	//============================================
+	if (s_pSCORE != nullptr)
+	{
+		s_pSCORE->SetUseDeath(true); //Ž€–Sƒtƒ‰ƒO‚ðŽg—p‚·‚é
+		s_pSCORE->SetDeath();        //Ž€–Sƒtƒ‰ƒO‚ðÝ’è‚·‚é
+		s_pSCORE = nullptr;          //ƒXƒRƒA‚Ö‚Ìƒ|ƒCƒ“ƒ^‚ð‰Šú‰»
+	}
+	//=====================================================================
+	
+	//============================================
+	//ƒRƒ“ƒ{‚Ì”jŠü
+	//============================================
+	if (s_pCOMBO != nullptr)
+	{
+		s_pCOMBO->SetUseDeath(true); //Ž€–Sƒtƒ‰ƒO‚ðŽg—p‚·‚é
+		s_pCOMBO->SetDeath();        //Ž€–Sƒtƒ‰ƒO‚ðÝ’è‚·‚é
+		s_pCOMBO = nullptr;          //ƒXƒRƒA‚Ö‚Ìƒ|ƒCƒ“ƒ^‚ð‰Šú‰»
 	}
 	//=====================================================================
 

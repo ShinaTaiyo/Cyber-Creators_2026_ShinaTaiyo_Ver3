@@ -26,6 +26,7 @@
 #include "tutorial.h"
 #include "particle.h"
 #include "sound.h"
+#include "score.h"
 #include "wire_head.h"
 #include "camera.h"
 //===================================================================================================================
@@ -392,25 +393,33 @@ CPlayerAttack_Dive::~CPlayerAttack_Dive()
 //=====================================================================================================
 void CPlayerAttack_Dive::AttackProcess(CPlayer* pPlayer)
 {
-	CUiState_Gauge* pUiState_Gauge = dynamic_cast<CUiState_Gauge*>(CGame::GetPlayer()->GetDiveGaugeFrame()->GetUiState(CUiState::UISTATE::GAUGE));//UIのゲージ情報を取得
-	if (pUiState_Gauge != nullptr)
+	CUi* pDivePossibleUi = pPlayer->GetDivePossibleNum();//ダイブ可能回数表示へのポインタ
+	CUi* pDiveGaugeFrameUi = pPlayer->GetDiveGaugeFrame();//ダイブゲージフレームへのポインタ
+
+	//ダイブゲージの機能の取得
+	CUIComposite_Container* pDiveGaugeFrameUiCompositeContainer = pDiveGaugeFrameUi->GetUiCompositeContainer();                //ゲージフレームのコンポジットパターンのコンテナを取得する
+	CUIComposite_Gauge* pDiveGaugeUi_CompositeGauge = pDiveGaugeFrameUiCompositeContainer->GetChildren<CUIComposite_Gauge>();  //ゲージの機能を取得する
+
+	//ダイブ可能回数の機能の取得
+	CUIComposite_Container* pDivePossibleUiCompositeContainer = pDivePossibleUi->GetUiCompositeContainer();                           //ダイブ可能回数のUIのコンポジットパターンのコンテナを取得する
+	CUIComposite_Numeric* pDivePossibleUiComposite_Numeric = pDivePossibleUiCompositeContainer->GetChildren<CUIComposite_Numeric>();  //数字表示の機能を取得する
+
+	if (pDiveGaugeUi_CompositeGauge != nullptr)
 	{//ゲージ情報が存在していたら
-		CGauge* pDiveGauge = pUiState_Gauge->GetGauge();         //ダイブゲージへのポインタ
-		CSound* pSound = CManager::GetSound();                   //サウンド情報へのポインタ
-		CUi* pDivePossibleNum = pPlayer->GetDivePossibleNum();   //ダイブ可能回数のUIへのポインタ
-		CWireHead* pWireHead = pPlayer->GetWire()->GetWireHead();//ワイヤーの頭へのポインタ
-		CUiState_Numeric* pUiState_Numeric = dynamic_cast<CUiState_Numeric*>(pDivePossibleNum->GetUiState(CUiState::UISTATE::NUMERIC));//UIの数字情報へのポインタ
-		if (pUiState_Numeric->GetValue() > 0)
+		CGauge* pDiveGauge = pDiveGaugeUi_CompositeGauge->GetGauge();         //ダイブゲージフレームのゲージへのポインタ
+		CSound* pSound = CManager::GetSound();                                //サウンド情報へのポインタ
+		CWireHead* pWireHead = pPlayer->GetWire()->GetWireHead();             //ワイヤーの頭へのポインタ
+		if (pDivePossibleUiComposite_Numeric->GetValue() > 0)
 		{//ダイブゲージがたまっていたら爆発攻撃を発動
 			//爆発攻撃を生成
 			CAttackPlayer* pAttackPlayer = CAttackPlayer::Create(CAttack::ATTACKTYPE::EXPLOSION, CAttack::TARGETTYPE::ENEMY, CAttack::COLLISIONTYPE::SQUARE, false, true, 50, 30, 100, pPlayer->GetPosInfo().GetPos(), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.1f, 0.1f, 0.1f),
 				D3DXVECTOR3(1.0f, 1.0f, 1.0f));
-			pAttackPlayer->GetSizeInfo().SetUseAddScale(D3DXVECTOR3(0.4f, 0.4f, 0.4f), true);  //拡大率の加算をする
-			pAttackPlayer->SetColor(D3DXCOLOR(1.0f, 1.0f, 0.0f, 1.0f), 2, false, false, false);//色合いを設定
-			pAttackPlayer->GetLifeInfo().SetUseRatioLifeAlpha(true);                           //体力割合に応じて透明度を変更
-			pAttackPlayer->SetCollisionRelease(false);                                         //衝突したときに破棄しない
-			CGame::GetTutorial()->SetSuccessCheck(CTutorial::CHECK::TAKEDIVE);                 //ダイブ攻撃のチュートリアルを完了
-			pUiState_Numeric->SetValue(pUiState_Numeric->GetValue() - 1, pDivePossibleNum);    //ダイブ可能回数を減らす
+			pAttackPlayer->GetSizeInfo().SetUseAddScale(D3DXVECTOR3(0.4f, 0.4f, 0.4f), true);                                 //拡大率の加算をする
+			pAttackPlayer->SetColor(D3DXCOLOR(1.0f, 1.0f, 0.0f, 1.0f), 2, false, false, false);                               //色合いを設定
+			pAttackPlayer->GetLifeInfo().SetUseRatioLifeAlpha(true);                                                          //体力割合に応じて透明度を変更
+			pAttackPlayer->SetCollisionRelease(false);                                                                        //衝突したときに破棄しない
+			CGame::GetTutorial()->SetSuccessCheck(CTutorial::CHECK::TAKEDIVE);                                                //ダイブ攻撃のチュートリアルを完了
+			pDivePossibleUiComposite_Numeric->SetValue(pDivePossibleUiComposite_Numeric->GetValue() - 1, pDivePossibleUi);    //ダイブ可能回数を減らす
 			CManager::GetSound()->PlaySoundB(CSound::SOUND_LABEL::SE_EXPLOSION_000);
 
 			//目的の向きまで少しづつ動かす（カメラの前は-D3DX_PI * 0.5f,プレイヤーはデフォルトの向きが異なるので、Rot.y + D3DX_PI)

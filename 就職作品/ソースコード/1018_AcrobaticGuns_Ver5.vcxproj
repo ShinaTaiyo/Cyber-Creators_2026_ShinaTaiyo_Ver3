@@ -156,6 +156,7 @@
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="character.cpp" />
     <ClCompile Include="collision.cpp" />
+    <ClCompile Include="combo.cpp" />
     <ClCompile Include="damage.cpp" />
     <ClCompile Include="debugtext.cpp" />
     <ClCompile Include="edit.cpp" />
@@ -190,6 +191,7 @@
     <ClCompile Include="renderer.cpp" />
     <ClCompile Include="result.cpp" />
     <ClCompile Include="scene.cpp" />
+    <ClCompile Include="score.cpp" />
     <ClCompile Include="sound.cpp" />
     <ClCompile Include="stagemanager.cpp" />
     <ClCompile Include="texture.cpp" />
@@ -197,6 +199,7 @@
     <ClCompile Include="tutorial.cpp" />
     <ClCompile Include="ui.cpp" />
     <ClCompile Include="ui3d.cpp" />
+    <ClCompile Include="ui_composite.cpp" />
     <ClCompile Include="wire.cpp" />
     <ClCompile Include="wire_head.cpp" />
   </ItemGroup>
@@ -212,6 +215,7 @@
     <ClInclude Include="camera.h" />
     <ClInclude Include="character.h" />
     <ClInclude Include="collision.h" />
+    <ClInclude Include="combo.h" />
     <ClInclude Include="damage.h" />
     <ClInclude Include="debugtext.h" />
     <ClInclude Include="edit.h" />
@@ -246,6 +250,7 @@
     <ClInclude Include="renderer.h" />
     <ClInclude Include="result.h" />
     <ClInclude Include="scene.h" />
+    <ClInclude Include="score.h" />
     <ClInclude Include="sound.h" />
     <ClInclude Include="stagemanager.h" />
     <ClInclude Include="texture.h" />
@@ -253,6 +258,7 @@
     <ClInclude Include="tutorial.h" />
     <ClInclude Include="ui.h" />
     <ClInclude Include="ui3d.h" />
+    <ClInclude Include="ui_composite.h" />
     <ClInclude Include="wire.h" />
     <ClInclude Include="wire_head.h" />
   </ItemGroup>

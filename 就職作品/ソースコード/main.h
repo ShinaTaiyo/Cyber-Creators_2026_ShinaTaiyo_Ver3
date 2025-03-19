@@ -97,6 +97,5 @@ typedef struct
 	D3DCOLOR col;//頂点カラー
 	D3DXVECTOR2 tex;//テクスチャ座標
 }VERTEX_3D;
-
 int GetFPS();
 #endif

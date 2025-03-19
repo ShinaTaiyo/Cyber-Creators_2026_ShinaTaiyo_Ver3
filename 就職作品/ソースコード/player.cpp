@@ -89,14 +89,15 @@ HRESULT CPlayer::Init()
         m_pDiveGaugeFrame = CUi::Create(CUi::UITYPE::DIVEGAUGEFRAME_000, CObject2D::POLYGONTYPE::SENTERROLLING, 450.0f, 100.0f, 1, false, D3DXVECTOR3(SCREEN_WIDTH - 250.0f, 100.0f, 0.0f),
             D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
         m_pDiveGaugeFrame->SetUseDeath(false);//死亡フラグを使用しない
+
         //ゲージの機能を持たせる
-        m_pDiveGaugeFrame->PushUiState(DBG_NEW CUiState_Gauge(D3DXVECTOR3(SCREEN_WIDTH - 390.0f, 106.5f, 0.0f),D3DXCOLOR(1.0f,1.0f,0.0f,1.0f),CObject2D::POLYGONTYPE::LEFT, CGauge::GAUGETYPE::DIVE, 350.0f, 19.6f, 0, 20));//ゲージ保持の状態を付与する
+        m_pDiveGaugeFrame->GetUiCompositeContainer()->Add(DBG_NEW CUIComposite_Gauge(m_pDiveGaugeFrame,D3DXVECTOR3(SCREEN_WIDTH - 390.0f, 106.5f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 0.0f, 1.0f), CObject2D::POLYGONTYPE::LEFT, CGauge::GAUGETYPE::DIVE, 350.0f, 19.6f, 0, 20));
 
         //*ダイブ可能回数のUIを生成
         m_pDivePossibleNum = CUi::Create(CUi::UITYPE::POSSIBLEDIVENUMTEXT_000, CObject2D::POLYGONTYPE::SENTERROLLING, 200.0f, 100.0f, 1, false, D3DXVECTOR3(200.0f, 100.0f, 0.0f),
             D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 61.0f, 1.0f, 1.0f));
-        m_pDivePossibleNum->SetNumericState(0, 50.0f, 50.0f);//数字の機能を持たせる
-        m_pDivePossibleNum->SetUseDeath(false);              //死亡フラグを使用しない
+        m_pDivePossibleNum->GetUiCompositeContainer()->Add(DBG_NEW CUIComposite_Numeric(m_pDivePossibleNum, 0, 50.0f, 50.0f));//数字の機能をコンポジットパターンのコンテナに格納
+        m_pDivePossibleNum->SetUseDeath(false);                                                                               //死亡フラグを使用しない
 
         //*ワイヤーを生成
         m_pWire = CWire::Create(CWire::WIRETYPE::ROPE, D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), 5.0f, 20.0f, 4, 5);
@@ -161,7 +162,8 @@ void CPlayer::Update()
 
     if (CScene::GetMode() == CScene::MODE_GAME)
     {//ゲームシーンなら
-        CUiState_Numeric* pUiState_Numeric = dynamic_cast<CUiState_Numeric*>(m_pDivePossibleNum->GetUiState(CUiState::UISTATE::NUMERIC));//UIの数字情報取得
+        CUIComposite_Container* pDivePossibleUiCompositeContainer = m_pDivePossibleNum->GetUiCompositeContainer();//ダイブ可能回数のコンポジットパターンのコンテナを取得
+        CUIComposite_Numeric* pDivePossibleUiNumeric = pDivePossibleUiCompositeContainer->GetChildren<CUIComposite_Numeric>();//数字の機能を取得
         if (m_pAttack != nullptr)
         {//攻撃ステート
             m_pAttack->AttackProcess(this);//現在のアクションモードの攻撃処理を実装
@@ -169,7 +171,7 @@ void CPlayer::Update()
 
         DiveGaugeMaxEffect();//ダイブゲージがマックスになった時の演出
 
-        if (pUiState_Numeric->GetValue() == s_nMaxDiveNum)
+        if (pDivePossibleUiNumeric->GetValue() == s_nMaxDiveNum)
         {//ダイブ可能回数が最大に達したら点滅をさせる
             m_pDivePossibleNum->SetUseBlinking(true, 20, 0.0f);//点滅させる
         }
@@ -372,29 +374,42 @@ void CPlayer::ActionModeChengeProcess()
 void CPlayer::DiveGaugeMaxEffect()
 {
     CDebugText* pDebugText = CManager::GetDebugText();//デバッグ情報
-    CUiState_Numeric* pUiState_Numeric = dynamic_cast<CUiState_Numeric*>(m_pDivePossibleNum->GetUiState(CUiState::UISTATE::NUMERIC));//UIの数字機能を取得
-    CUiState_Gauge* pUiState_Gauge = dynamic_cast<CUiState_Gauge*>(m_pDiveGaugeFrame->GetUiState(CUiState::UISTATE::GAUGE));//UIのゲージ情報を取得
-    if (pUiState_Gauge != nullptr)
+    
+    //=======================================================
+    //ダイブゲージの機能の取得
+    //=======================================================
+    CUIComposite_Container* pDiveGaugeFrameUiCompositeContainer = m_pDiveGaugeFrame->GetUiCompositeContainer();                //ゲージフレームのコンポジットパターンのコンテナを取得する
+    CUIComposite_Gauge* pDiveGaugeUi_CompositeGauge = pDiveGaugeFrameUiCompositeContainer->GetChildren<CUIComposite_Gauge>();  //ゲージの機能を取得する
+    //=========================================================================================================-
+    
+    //=======================================================
+    //ダイブ可能回数の数字表示機能の取得
+    //=======================================================
+    CUIComposite_Container* pDivePossibleUiCompositeContainer = m_pDivePossibleNum->GetUiCompositeContainer();                         //ダイブ可能回数のUIのコンポジットパターンのコンテナを取得する
+    CUIComposite_Numeric * pDivePossibleUiComposite_Numeric = pDivePossibleUiCompositeContainer->GetChildren<CUIComposite_Numeric>();  //数字表示の機能を取得する
+    //=========================================================================================================-
+
+    if (pDiveGaugeUi_CompositeGauge != nullptr)
     {
-        CGauge* pDiveGauge = pUiState_Gauge->GetGauge();//ダイブゲージを取得する
-        if (pUiState_Numeric != nullptr)
+        CGauge* pDiveGauge = pDiveGaugeUi_CompositeGauge->GetGauge();//ダイブゲージを取得する
+        if (pDivePossibleUiComposite_Numeric != nullptr)
         {
             //デバッグ表示
-            pDebugText->PrintDebugText("ダイブ可能回数：%d\n", pUiState_Numeric->GetValue());
+            pDebugText->PrintDebugText("ダイブ可能回数：%d\n", pDivePossibleUiComposite_Numeric->GetValue());
             if (pDiveGauge->GetFullGaugeFlag() == true)
             {//ゲージがマックスになった「瞬間」にフラグを発動＆＆最大ダイブ可能回数に達していなかったら
                 //生成処理
                 CGauge* pGauge = CGauge::Create(CGauge::GAUGETYPE::PLAYERHP, pDiveGauge->GetParam(), pDiveGauge->GetWidth(), pDiveGauge->GetHeight(), pDiveGauge->GetPos());
-                pGauge->SetUseLife(true, 50, 50);//体力を使用する
-                pGauge->SetPolygonType(pDiveGauge->GetPolygonType());//ポリゴンの種類を設定
-                pGauge->SetColor(pDiveGauge->GetColor(), false, 1.0f);//色合いを設定
-                pGauge->SetUseLifeRatioColor(true);                   //体力の割合で色合いを変える
-                pGauge->SetUseDeath(true);                            //死亡フラグ設定処理
-                pGauge->SetUseAddScale(D3DXVECTOR2(0.3f, 0.3f), true);//拡大率の加算を使用する
-                pGauge->SetUseScale(true);                            //拡大率を使用する
-                pGauge->SetScale(D3DXVECTOR2(1.0f, 1.0f));            //拡大率を設定
-                pDiveGauge->SetParam(0);                              //ダイブゲージをリセット
-                pUiState_Numeric->SetValue(pUiState_Numeric->GetValue() + 1, m_pDivePossibleNum);//ダイブ可能回数を増やす
+                pGauge->SetUseLife(true, 50, 50);                                                                                  //体力を使用する
+                pGauge->SetPolygonType(pDiveGauge->GetPolygonType());                                                              //ポリゴンの種類を設定
+                pGauge->SetColor(pDiveGauge->GetColor(), false, 1.0f);                                                             //色合いを設定
+                pGauge->SetUseLifeRatioColor(true);                                                                                //体力の割合で色合いを変える
+                pGauge->SetUseDeath(true);                                                                                         //死亡フラグ設定処理
+                pGauge->SetUseAddScale(D3DXVECTOR2(0.3f, 0.3f), true);                                                             //拡大率の加算を使用する
+                pGauge->SetUseScale(true);                                                                                         //拡大率を使用する
+                pGauge->SetScale(D3DXVECTOR2(1.0f, 1.0f));                                                                         //拡大率を設定
+                pDiveGauge->SetParam(0);                                                                                           //ダイブゲージをリセット
+                pDivePossibleUiComposite_Numeric->SetValue(pDivePossibleUiComposite_Numeric->GetValue() + 1, m_pDivePossibleNum);  //ダイブ可能回数を増やす
             }
         }
     }
@@ -555,7 +570,7 @@ void CPlayer::SetDamage(int nDamage, int nHitStopTime)
     {//ヒットストップ状態じゃなければ処理を実行する
         CCharacter::SetDamage(nDamage, nHitStopTime);                    //キャラクターのダメージ処理
         CSound* pSound = CManager::GetSound();                           //サウンド情報
-                                                                         
+        CCombo* pCombo = CGame::GetCombo();                              //コンボへのポインタ
         m_pHpGauge->SetParam(GetLifeInfo().GetLife());                   //体力ゲージのパラメータを設定（キャラクターのダメージ処理で体力が変動)
         m_pHpGauge->SetShake(5.0f * nDamage, 30);                        //体力ゲージを振動させる
 
@@ -570,6 +585,7 @@ void CPlayer::SetDamage(int nDamage, int nHitStopTime)
         pGauge->SetScale(D3DXVECTOR2(1.0f, 1.0f));                       //拡大率を設定する
 
         pSound->PlaySoundB(CSound::SOUND_LABEL::SE_DAMAGE_000);          //ダメージサウンドを呼ぶ
+        pCombo->ResetCombo();                                            //コンボ数をリセットする
 
         m_bDamage = true;                                                //ダメージを受けた状態を明示的に示す
         SetNextMotion(2);                                                //ダメージモーションにする

@@ -291,6 +291,11 @@ void CManager::Uninit()
 
 	//最後に残ったオブジェクトをここで全部破棄
 	CObject::ReleaseProcess();//リストの破棄をする処理
+
+	CObject::ReleaseAll();    //オブジェクトの開放
+
+	//最後に残ったオブジェクトをここで全部破棄
+	CObject::ReleaseProcess();//リストの破棄をする処理
 }
 //===================================================
 
