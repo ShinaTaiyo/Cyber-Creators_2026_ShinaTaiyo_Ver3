@@ -27,6 +27,7 @@
 #include <cassert>
 #include <stdio.h>
 #include <stdlib.h>
+#include <map>    //マップ型を使う
 using namespace std;
 
 //==============================

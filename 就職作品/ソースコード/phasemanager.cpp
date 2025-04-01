@@ -61,7 +61,7 @@ HRESULT CPhaseManager::Init()
 	CObject::Init();//オブジェクトの初期化処理
 
 	//フェーズ移行イベントを生成
-	CEventManager::Create(DBG_NEW CNowEvent_NextPhase(CUi::Create(CUi::UITYPE::STAGETEXT, CObject2D::POLYGONTYPE::SENTERROLLING, 200.0f, 100.0f, 100, false,
+	CEventManager::Create(DBG_NEW CNowEvent_NextPhase(CUi::Create(CUi::UITYPE::STAGETEXT,false, CObject2D::POLYGONTYPE::SENTERROLLING, 200.0f, 100.0f, 100, false,
 		D3DXVECTOR3(SCREEN_WIDTH, SCREEN_HEIGHT / 2 - 180.0f, 0.0f), D3DXVECTOR3(sinf(D3DX_PI * -0.5f) * 15.0f, cosf(D3DX_PI * -0.5f) * 15.0f, 0.0f),
 		D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f)), s_nNowStage, 80.0f, 80.0f));
 	return S_OK;
@@ -203,7 +203,7 @@ void CPhaseManager::AdvancePhase()
 			s_nNowPhase++;//現在のフェーズ番号を次に進める                                    
 			if (s_nNowPhase <= s_MaxPhase)
 			{//フェーズ数が最大を超えていなければフェーズ移行イベントを生成
-				CEventManager::Create(DBG_NEW CNowEvent_NextPhase(CUi::Create(CUi::UITYPE::PHASETEXT, CObject2D::POLYGONTYPE::SENTERROLLING, 200.0f, 100.0f, 100, false,
+				CEventManager::Create(DBG_NEW CNowEvent_NextPhase(CUi::Create(CUi::UITYPE::PHASETEXT,false,CObject2D::POLYGONTYPE::SENTERROLLING, 200.0f, 100.0f, 100, false,
 					D3DXVECTOR3(SCREEN_WIDTH, SCREEN_HEIGHT / 2, 0.0f), D3DXVECTOR3(sinf(D3DX_PI * -0.5f) * 10.0f, cosf(D3DX_PI * -0.5f) * 10.0f, 0.0f),
 					D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f)), s_nNowPhase, 80.0f, 80.0f));
 			}
@@ -226,7 +226,7 @@ void CPhaseManager::AdvancePhase()
 			{//それ以外なら次のステージを呼ぶ
 				CGame::GetStageManager()->LoadMapTxt(s_nNowStage);//次のステージをロードする
 				CGame::GetPlayer()->GetPosInfo().SetPos(CGame::GetStageManager()->GetSpawnPoint());
-				CEventManager::Create(DBG_NEW CNowEvent_NextPhase(CUi::Create(CUi::UITYPE::STAGETEXT, CObject2D::POLYGONTYPE::SENTERROLLING, 200.0f, 100.0f, 100, false,
+				CEventManager::Create(DBG_NEW CNowEvent_NextPhase(CUi::Create(CUi::UITYPE::STAGETEXT,false,CObject2D::POLYGONTYPE::SENTERROLLING, 200.0f, 100.0f, 100, false,
 					D3DXVECTOR3(SCREEN_WIDTH, SCREEN_HEIGHT / 2 - 180.0f, 0.0f), D3DXVECTOR3(sinf(D3DX_PI * -0.5f) * 15.0f, cosf(D3DX_PI * -0.5f) * 15.0f, 0.0f),
 					D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f)), s_nNowStage, 80.0f, 80.0f));
 			}

@@ -59,8 +59,9 @@ public:
 	void Draw() override;     //描画処理
 	void SetDeath() override; //死亡フラグを設定
 	static CBlock * Create(BLOCKTYPE type, int nLife,D3DXVECTOR3 pos,D3DXVECTOR3 rot,D3DXVECTOR3 scale,bool bSwapVtxXZ);//ブロックを生成
-	BLOCKTYPE GetType();//ブロックの種類を取得する
+	void SetBlockType(BLOCKTYPE Type);                                                                                  //ブロックのタイプを設定する
 	static int GetNumFile() { return m_nNumFile; }                                                                      //ファイル数を取得する
+	BLOCKTYPE GetType();//ブロックの種類を取得する
 	BLOCKTYPE GetBlockType() { return m_type; }                                                                         //ブロックのタイプを取得する
 	bool GetbCollision() { return m_bCollision; }                                                                       //判定可能かどうかを取得する     
 
@@ -69,7 +70,7 @@ public:
 	//==========================================================
 	//関数
 	void SaveInfoTxt(fstream& WritingFile) override;                                                                    //テキストファイルに情報を保存するための関数
-	static void LoadInfoTxt(fstream& LoadingFile,list<CObject*>& listSaveManager,string & Buff);                        //テキストファイルから情報を読み込むための関数   
+	void LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff, CObject* pObj) override;        //テキストファイルから情報を読み込むための関数
 	CObject* ManagerChengeObject(bool bAim) override;                                                                   //ステージマネージャーに変更したオブジェクトを渡す
 	CObject* ManagerSaveObject() override;                                                                              //ステージマネージャーに今のオブジェクトを保存する
 	//=================================================================================================================

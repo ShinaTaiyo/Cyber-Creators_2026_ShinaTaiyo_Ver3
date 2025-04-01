@@ -32,12 +32,10 @@ public:
 		BLOCK,           //ブロック
 		BGMODEL,         //背景モデル
 		AIMODEL,         //AIモデル
-		WIREHEAD,        //ワイヤー頭
-		PLAYER,          //プレイヤー
-		ENEMY,           //敵
-		BULLET,          //弾
 		ATTACK,          //攻撃
-		MODELPARTS,      //モデルパーツ
+		ENEMY,           //敵
+		PLAYER,          //プレイヤー
+		WIREHEAD,        //ワイヤー頭
 		WIRE,            //ワイヤー
 		MESHORBIT,       //軌跡メッシュ
 		EFFECT,          //エフェクト
@@ -50,6 +48,7 @@ public:
 		LOCKON,          //ロックオン
 		UI,              //UI
 		GAUGE,           //ゲージ
+		UI_PAUSE,        //ポーズ用UI
 		PHASEINFO,       //フェーズ情報
 		STAGEMANAGER,    //ステージマネージャー
 		PHASEMANAGER,    //フェーズマネージャー
@@ -92,26 +91,22 @@ public:
 	//===========================================
 
 	CObject(int nPriority = 2,bool bUseintPriority = false,TYPE Type = TYPE::NONE,OBJECTTYPE ObjType = OBJECTTYPE::OBJECTTYPE_NONE);//描画優先設定(５月２８日New!：デフォルト引数（呼び出し時に引数設定しなければ３が代入されて処理される
-	virtual ~CObject();        //デストラクタ
-	virtual HRESULT Init() = 0;//初期化処理
-	virtual void Uninit() = 0; //終了処理
-	virtual void ExtraUninit();//別枠の終了処理
-	virtual void Update() = 0; //更新処理
-	virtual void Draw() = 0;   //描画処理
-	bool GetUseDeath() { return m_bUseDeath; }//死亡フラグを発動するか決めるフラグを取得
-	static void ReleaseAll();  //全オブジェクト開放
-	static void UpdateAll();   //全オブジェクト更新
-	static void DrawAll();     //全オブジェクト描画
-	virtual void SetDeath();                                              //死亡フラグを設定
-	//=====================
-	//取得系
-	//=====================
-	static int GetNumAll();                              //全オブジェクトの総数を取得する
-	bool GetCreateSuccess() { return m_bCreateSuccess; } //オブジェクトの生成に成功したかどうか
-	static CObject* GetCObject(int nIdx,int nPriority);  //オブジェクト取得
-	TYPE GetType();                                      //タイプ取得
-	//==============================================================================================
-	void SetType(TYPE type);                             //タイプ設定
+	virtual ~CObject();                                                               //デストラクタ
+	virtual HRESULT Init() = 0;                                                       //初期化処理
+	virtual void Uninit() = 0;                                                        //終了処理
+	virtual void ExtraUninit();                                                       //別枠の終了処理
+	virtual void Update() = 0;                                                        //更新処理
+	virtual void Draw() = 0;                                                          //描画処理
+	bool GetUseDeath() { return m_bUseDeath; }                                        //死亡フラグを発動するか決めるフラグを取得
+	static void ReleaseAll();                                                         //全オブジェクト開放
+	static void UpdateAll();                                                          //全オブジェクト更新
+	static void DrawAll();                                                            //全オブジェクト描画
+	virtual void SetDeath();                                                          //死亡フラグを設定
+	static int GetNumAll();                                                           //全オブジェクトの総数を取得する
+	bool GetCreateSuccess() { return m_bCreateSuccess; }                              //オブジェクトの生成に成功したかどうか
+	static CObject* GetCObject(int nIdx,int nPriority);                               //オブジェクト取得
+	TYPE GetType();                                                                   //タイプ取得
+	void SetType(TYPE type);                                                          //タイプ設定
 	static const int m_nMAXOBJECT = 1024;                                             //オブジェクト最大数
 	static const int m_nMAXPRIORITY = static_cast<int>(TYPE::MAX);                    //描画順最大数
 	static void ReleaseProcess();                                                     //リストの破棄をする処理
@@ -122,7 +117,8 @@ public:
 	OBJECTTYPE GetObjectType() { return m_ObjectType; }                               //オブジェクトの分類を取得する
 	CObject* GetNextObject() {return m_pNext; }                                       //次のオブジェクトを取得する
 	CObject* GetPrevObject() { return m_pPrev; }                                      //前のオブジェクトを取得する
-
+	void SetIsStopUpdatePause(bool bPause) { m_bIsStopUpdatePause = bPause; }         //ポーズ中に更新を止めるかどうかを設定する
+	const bool& GetIsStopUpdatePause() const { return m_bIsStopUpdatePause; }         //ポーズ中に更新を止めるかどうかを取得する
 	//==============================
 	//ステージマネージャー関係
 	//==============================
@@ -148,6 +144,7 @@ public:
 	//エディタ関係
 	//=================================================
 	virtual void SaveInfoTxt(fstream& WritingFile);   //テキストファイルに情報を保存するための関数
+	virtual void LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff,CObject * pObj);//テキストファイルから情報を読み込むための関数
 	virtual void ManagerChooseControlInfo();          //情報操作
 	virtual CObject * ManagerChengeObject(bool bAim); //ステージマネージャーに変更したオブジェクトを渡す
 	virtual CObject * ManagerSaveObject();            //ステージマネージャーに今のオブジェクトを保存する
@@ -156,6 +153,42 @@ protected:
 private:
 	static CObject* m_apObject[m_nMAXPRIORITY][m_nMAXOBJECT];//オブジェクト管理
 	static bool m_bActivationReleaseAll;                     //ReleaseAllを発動するかどうか
+
+    //描画プライオリティ
+	static constexpr int s_nDrawPriority[static_cast<int>(TYPE::MAX)] = 
+	{
+		static_cast<int>(TYPE::BG3D),         
+  		static_cast<int>(TYPE::FIELD),        
+		static_cast<int>(TYPE::BGMODEL),      
+		static_cast<int>(TYPE::BLOCK),        
+		static_cast<int>(TYPE::AIMODEL),      
+		static_cast<int>(TYPE::PLAYER),       
+		static_cast<int>(TYPE::WIREHEAD),     
+		static_cast<int>(TYPE::WIRE),         
+		static_cast<int>(TYPE::ATTACK),       
+		static_cast<int>(TYPE::ENEMY),        
+		static_cast<int>(TYPE::UI3D),         
+		static_cast<int>(TYPE::NUMBER3D),     
+		static_cast<int>(TYPE::BG),           
+		static_cast<int>(TYPE::PARTICLE),     
+		static_cast<int>(TYPE::MESHORBIT),    
+		static_cast<int>(TYPE::EFFECT),       
+		static_cast<int>(TYPE::PARTICLE2D),   
+		static_cast<int>(TYPE::LOCKON),       
+		static_cast<int>(TYPE::UI),           
+		static_cast<int>(TYPE::NUMBER),       
+		static_cast<int>(TYPE::GAUGE),        
+		static_cast<int>(TYPE::UI_PAUSE),        
+		static_cast<int>(TYPE::PHASEINFO),    
+		static_cast<int>(TYPE::STAGEMANAGER), 
+		static_cast<int>(TYPE::PHASEMANAGER), 
+		static_cast<int>(TYPE::EVENTMANAGER), 
+		static_cast<int>(TYPE::COMBO),        
+		static_cast<int>(TYPE::TUTORIAL),     
+		static_cast<int>(TYPE::SCORE),        
+		static_cast<int>(TYPE::FADE),         
+		static_cast<int>(TYPE::NONE),         
+	};//描画プライオリティ
 
 	//===============================================
 	//リスト管理
@@ -168,6 +201,7 @@ private:
 
 	bool m_bDeath;                                           //死亡フラグ!
 	bool m_bUseDeath;                                        //死亡フラグを発動するかどうか!
+	bool m_bIsStopUpdatePause;                                   //ポーズ中に更新を止めるかどうか
 	//===============================================================================================
 
 	//分類用

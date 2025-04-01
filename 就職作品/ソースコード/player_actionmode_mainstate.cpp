@@ -70,7 +70,7 @@ CPlayerActionMode_ShotMove::CPlayerActionMode_ShotMove(CPlayer* pPlayer)
 
 	pLockOn->ChengeTexture(CLockon::TYPE::SHOT);               //ターゲットのテクスチャを射撃仕様に変更
 
-	pPlayer->SetModeDisp(CUi::Create(CUi::UITYPE::ACTIONMODE_GUN, CObject2D::POLYGONTYPE::SENTERROLLING, 100.0f, 100.0f, 1, false, D3DXVECTOR3(50.0f, 50.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f),
+	pPlayer->SetModeDisp(CUi::Create(CUi::UITYPE::ACTIONMODE_GUN,false,CObject2D::POLYGONTYPE::SENTERROLLING,100.0f, 100.0f, 1, false, D3DXVECTOR3(50.0f, 50.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f),
 		D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f)));//モード表示を「射撃」に変える
 
 }
@@ -112,7 +112,7 @@ CPlayerActionMode_PrepDive::CPlayerActionMode_PrepDive(CPlayer* pPlayer)
 
 	pLockOn->ChengeTexture(CLockon::TYPE::DIVE);                //ターゲットのテクスチャを射撃仕様に変更
 
-	pPlayer->SetModeDisp(CUi::Create(CUi::UITYPE::ACTIONMODE_DIVE, CObject2D::POLYGONTYPE::SENTERROLLING, 100.0f, 100.0f, 1, false, D3DXVECTOR3(50.0f, 50.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f),
+	pPlayer->SetModeDisp(CUi::Create(CUi::UITYPE::ACTIONMODE_DIVE,false, CObject2D::POLYGONTYPE::SENTERROLLING, 100.0f, 100.0f, 1, false, D3DXVECTOR3(50.0f, 50.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f),
 		D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f)));//モード表示を「ダイブ」に変える
 }
 //=========================================================================================================================================================

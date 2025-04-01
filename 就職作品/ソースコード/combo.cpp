@@ -40,7 +40,7 @@ CCombo::~CCombo()
 //=====================================================================================================================
 HRESULT CCombo::Init()
 {
-	m_pComboDisp = CUi::Create(CUi::UITYPE::COMBOTEXT_000, CObject2D::POLYGONTYPE::SENTERROLLING,
+	m_pComboDisp = CUi::Create(CUi::UITYPE::COMBOTEXT_000,false, CObject2D::POLYGONTYPE::SENTERROLLING,
         s_fCOMBODISP_WIDTH,s_fCOMBODISP_HEIGHT, 1, false, s_COMBODISP_POS, D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f),
 		D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));//コンボ表示の生成
 	m_pComboDisp->SetUseDeath(false);      //死亡フラグを使用しない

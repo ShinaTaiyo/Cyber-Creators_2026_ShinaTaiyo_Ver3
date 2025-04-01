@@ -23,9 +23,9 @@ class CBg :  public CObject2D
 public:
 	typedef enum
 	{//背景の種類
-		BG_TITLE = 0,//タイトル背景
+		BG_TITLE = 0, //タイトル背景
 		BG_DIFFICULTY,//難易度選択背景
-		BG_RESULT,   //リザルト背景
+		BG_RESULT,    //リザルト背景
 		BG_MAX 
 	}BG;
 	CBg(int nPri = 0, bool bUseintPri = false, CObject::TYPE type = CObject::TYPE::BG, CObject::OBJECTTYPE ObjType = CObject::OBJECTTYPE::OBJECTTYPE_2D);//コンストラクタ

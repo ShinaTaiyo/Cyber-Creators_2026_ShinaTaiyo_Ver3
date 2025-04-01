@@ -50,14 +50,14 @@ public:
 	//エディタ関係
 	//==========================================================
 	//関数
-	void SaveInfoTxt(fstream& WritingFile) override;                                               //テキストファイルに情報を保存するための関数
-	static void LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff);  //テキストファイルから情報を読み込むための関数   
-	CObject* ManagerChengeObject(bool bAim) override;                                              //ステージマネージャーに変更したオブジェクトを渡す
-	CObject* ManagerSaveObject() override;                                                         //ステージマネージャーに今のオブジェクトを保存する
+	void SaveInfoTxt(fstream& WritingFile) override;                                                               //テキストファイルに情報を保存するための関数
+	void LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff, CObject* pObj) override; //テキストファイルから情報を読み込むための関数
+	CObject* ManagerChengeObject(bool bAim) override;                                                              //ステージマネージャーに変更したオブジェクトを渡す
+	CObject* ManagerSaveObject() override;                                                                         //ステージマネージャーに今のオブジェクトを保存する
 	//=================================================================================================================
 protected:
-	void SetBgModelType(BGMODELTYPE AttackType) { m_Type = AttackType; }                           //背景モデルの種類を設定する
-	const BGMODELTYPE& GetAttackType() const { return m_Type; }                                    //背景モデルの種類を取得する
+	void SetBgModelType(BGMODELTYPE Type);                                                         //背景モデルの種類を設定する
+	const BGMODELTYPE& GetBgModelType() const { return m_Type; }                                   //背景モデルの種類を取得する
 	static const string BGMODEL_FILENAME[static_cast<int>(BGMODELTYPE::MAX)];                      //背景モデルのファイル名 
 private:
 	BGMODELTYPE m_Type;                                                                            //背景モデルの種類

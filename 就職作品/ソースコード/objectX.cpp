@@ -40,6 +40,7 @@ m_nTypeNum(0), m_PosInfo({}), m_DrawInfo({}), m_RotInfo({}), m_SizeInfo({}), m_M
 m_bExtrusionCollisionSquareX(false),m_bExtrusionCollisionSquareY(false),m_bExtrusionCollisionSquareZ(false),m_bIsLanding(false)
 {
 	SetObjectType(CObject::OBJECTTYPE::OBJECTTYPE_X);//オブジェクトタイプ設定
+	D3DXMatrixIdentity(&m_DrawInfo.GetMatrixWorld());        //ワールドマトリックスを初期化
 }
 //================================================================================================================================================
 
@@ -112,7 +113,7 @@ void CObjectX::Update()
 	m_SizeInfo.DecideVtxMaxMinProcess();         //頂点の最大最小を決める処理
 										         
 	m_DrawInfo.ChengeColorProcess(this);         //色を変える処理
-	if (m_RotInfo.bUseAddRot == true)
+	if (m_RotInfo.GetUseAddRot() == true)
 	{//向きの加算処理
 		m_RotInfo.Rot += m_RotInfo.AddRot;
 	}
@@ -179,22 +180,27 @@ void CObjectX::Draw()
 	D3DXVECTOR3 PosZero = { 0.0f,0.0f,0.0f };
 	D3DXVec3TransformCoord(&m_PosInfo.WorldPos, &PosZero, &m_DrawInfo.mtxWorld);
 
+
 	//=======================================
 	//描画の調整
 	//=======================================
+	if (m_DrawInfo.Color.a < 1.0f)
+	{
+    	pDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);//TRUEだと透明度と背景のブレンドが行われる、FALSEだと完全に不透明な描画になる
+		pDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);     //描画するオブジェクトの色の影響度を決める,D3DBLEND_SRCALPHA：(R,G,B) * a(オブジェクトの透明度に応じた色)
+		pDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA); //すでに描画されている背景色の影響度を決める,D3DBLEND_INVSRCALPHA:(R,G,B)×(1 - a)<背景の色を残す割合>
+		pDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);             //奥行情報を書き込まない
+	}
+	else
+	{//不透明オブジェクトを通常通り描画する
 	//アルファテストを有効(アルファ値が０より大きい場合に描画する）
-	pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
-	pDevice->SetRenderState(D3DRS_ALPHAREF,0);
-	pDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATER);
+		pDevice->SetRenderState(D3DRS_ALPHAREF, 0);                     //透明度が0以上の時に描画
+		pDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATER);       //透明度が０より大きいピクセルのみ描画
+		pDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);              //Zバッファに書き込む
+	}
 
 	//法線の長さを１にする。（スケールなどを使った時は、必ず使う。)
 	pDevice->SetRenderState(D3DRS_NORMALIZENORMALS, TRUE);
-
-	if (m_DrawInfo.Color.a < 1.0f && CScene::GetMode() == CScene::MODE_GAME)
-	{
-		//Zバッファに書き込まない
-		pDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
-	}
 
 	if (m_DrawInfo.bUseCulling == true)
 	{
@@ -667,7 +673,7 @@ void CObjectX::ChengeEditPos()
 	}
 	else
 	{//XZ平面移動
-		CCalculation::CaluclationMove(false, Move, 5.0f, CCalculation::MOVEAIM_XZ, m_RotInfo.Rot.y);
+		CCalculation::CaluclationMove(false,m_PosInfo.Pos,Move,5.0f, CCalculation::MOVEAIM_XZ, m_RotInfo.Rot.y);
 	}
 
 	//支点も一緒に移動
@@ -676,6 +682,7 @@ void CObjectX::ChengeEditPos()
 
 	//デバッグ表示
 	CManager::GetDebugText()->PrintDebugText("支点位置(矢印キー) %f %f %f\n", m_PosInfo.SupportPos.x,m_PosInfo.SupportPos.y, m_PosInfo.SupportPos.z);
+	CManager::GetDebugText()->PrintDebugText("移動量 ： %f %f %f\n", Move.x, Move.y, Move.z);
 	CManager::GetDebugText()->PrintDebugText("向きZ(FGキー) %f\n", m_RotInfo.Rot.z);
 	CManager::GetCamera()->SetPosR(m_PosInfo.Pos);//注視点を現在操作しているモデルに固定
 	//================================================================================================================================================
@@ -761,6 +768,8 @@ void CObjectX::ManagerChooseControlInfo()
 //============================================================================
 void CObjectX::SaveInfoTxt(fstream & WritingFile)
 {
+	WritingFile << "SETOBJECTX" << endl;//読み込み開始用テキスト
+
 	WritingFile << "POS = " << fixed << setprecision(3)<< m_PosInfo.Pos.x << " " <<
 		fixed << setprecision(3) << m_PosInfo.Pos.y << " " << 
 		fixed << setprecision(3) << m_PosInfo.Pos.z << " " << endl;//位置（小数点３）まで
@@ -776,6 +785,101 @@ void CObjectX::SaveInfoTxt(fstream & WritingFile)
 	WritingFile << "LIFE = " << m_LifeInfo.nMaxLife << endl;//体力を設定
 
 	WritingFile << "SWAPVTXXZ = " << m_SizeInfo.bSwapVtxXZ << endl;//頂点のXZを変更するかどうか
+
+	WritingFile << "END_SETOBJECTX" << endl;//読み込み終了用テキスト
+}
+//================================================================================================================================================
+
+//============================================================================
+//テキストファイルから情報を読み込む
+//============================================================================
+void CObjectX::LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff, CObject* pObj)
+{
+	int nLife = 0;                                   //体力格納用
+	int nMaxLife = 0;                                //最大体力格納用
+	D3DXVECTOR3 Pos = { 0.0f,0.0f,0.0f };            //位置格納用
+	D3DXVECTOR3 Move = { 0.0f,0.0f,0.0f };           //移動量格納用
+	D3DXVECTOR3 Rot = { 0.0f,0.0f,0.0f };            //向き格納用
+	D3DXVECTOR3 Scale = { 0.0f,0.0f,0.0f };          //拡大率格納用
+	bool bSwapVtxXZ = false;                         //XZ座標を入れ替えるかどうか格納用
+
+	CObjectX* pObjX = dynamic_cast<CObjectX*>(pObj); //オブジェクトXんｋダウンキャスト
+
+	if (pObjX != nullptr)
+	{//オブジェクトXへのポインタが存在している
+
+		while (Buff != "END_SETOBJECTX")
+		{
+			LoadingFile >> Buff;           //単語を読み込む
+			if (Buff == "#")
+			{//行をスキップ
+				getline(LoadingFile, Buff);
+			}
+
+			else if (Buff == "LIFE")
+			{
+				LoadingFile >> Buff;       //イコール
+				LoadingFile >> nMaxLife;   //最大体力
+				nLife = nMaxLife;          //体力（初期値は最大体力と同じ)
+			}
+			else if (Buff == "MOVE")
+			{
+				LoadingFile >> Buff;       //イコール
+				LoadingFile >> Move.x;     //移動量X
+				LoadingFile >> Move.y;     //移動量Y
+				LoadingFile >> Move.z;     //移動量Z
+			}
+			else if (Buff == "POS")
+			{
+				LoadingFile >> Buff;       //イコール
+				LoadingFile >> Pos.x;      //位置X
+				LoadingFile >> Pos.y;      //位置Y
+				LoadingFile >> Pos.z;      //位置Z
+			}
+			else if (Buff == "ROT")
+			{
+				LoadingFile >> Buff;       //イコール
+				LoadingFile >> Rot.x;      //位置X
+				LoadingFile >> Rot.y;      //位置Y
+				LoadingFile >> Rot.z;      //位置Z
+			}
+			else if (Buff == "SCALE")
+			{
+				LoadingFile >> Buff;       //イコール
+				LoadingFile >> Scale.x;    //拡大率X
+				LoadingFile >> Scale.y;    //拡大率Y
+				LoadingFile >> Scale.z;    //拡大率Z
+			}
+			else if (Buff == "SWAPVTXXZ")
+			{
+				LoadingFile >> Buff;       //イコール
+				LoadingFile >> bSwapVtxXZ; //XZの頂点を入れ替えるかどうか
+			}
+		}
+
+		PosInfo& ObjXPosInfo = GetPosInfo();           //位置情報を取得
+		MoveInfo& ObjXMoveInfo = GetMoveInfo();        //移動情報を取得
+		RotInfo& ObjXRotInfo = GetRotInfo();           //向き情報を取得
+		SizeInfo& ObjXSizeInfo = GetSizeInfo();        //サイズ情報を取得
+		LifeInfo& ObjXLifeInfo = GetLifeInfo();        //体力情報を取得
+
+		ObjXPosInfo.SetPos(Pos);                       //位置を設定
+		ObjXPosInfo.SetSupportPos(Pos);                //最初の位置を設定
+
+		ObjXMoveInfo.SetMove(Move);                    //移動量を設定
+
+		ObjXRotInfo.SetRot(Rot);                       //向きを設定
+
+		ObjXSizeInfo.SetScale(Scale);                  //拡大率を設定
+		ObjXSizeInfo.SetUseSwapVtxXZ(bSwapVtxXZ);      //頂点のXZを入れ替えるかどうかを設定
+
+		ObjXLifeInfo.SetLife(nLife);                   //体力を設定
+		ObjXLifeInfo.SetMaxLife(nMaxLife);             //最大体力を設定
+	}
+	else
+	{//例外処理
+		assert("オブジェクトXへのポインタが存在していない");
+	}
 }
 //================================================================================================================================================
 

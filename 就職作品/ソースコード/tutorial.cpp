@@ -19,13 +19,13 @@ CTutorial::CTutorial(int nPri, bool bUseintPri, CObject::TYPE type, CObject::OBJ
 	m_bSuccess = false;//チュートリアルが成功したか同区吾
 
 	//チュートリアル用のテクスチャ生成
-	m_pTutorialTex = CUi::Create(CUi::UITYPE::TUTORIAL_TEX, CObject2D::POLYGONTYPE::SENTERROLLING, 300.0f, 300.0f, 1, false, D3DXVECTOR3(SCREEN_WIDTH - 150.0f, SCREEN_HEIGHT - 150.0f, 0.0f),
+	m_pTutorialTex = CUi::Create(CUi::UITYPE::TUTORIAL_TEX, false, CObject2D::POLYGONTYPE::SENTERROLLING, 300.0f, 300.0f, 1, false, D3DXVECTOR3(SCREEN_WIDTH - 150.0f, SCREEN_HEIGHT - 150.0f, 0.0f),
 		D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 	m_pTutorialTex->SetUseDeath(false);//死亡フラグを使用しない
 
 	for (int nCnt = 0; nCnt < static_cast<int>(CHECK::MAX); nCnt++)
 	{//それぞれのチュートリアルクリア状況のチェックマークのUIを生成
-		m_pCheckPoint[nCnt] = CUi::Create(CUi::UITYPE::CHECKMARK_000, CObject2D::POLYGONTYPE::SENTERROLLING, 30.0f, 30.0f, 1, false, 
+		m_pCheckPoint[nCnt] = CUi::Create(CUi::UITYPE::CHECKMARK_000, false, CObject2D::POLYGONTYPE::SENTERROLLING, 30.0f, 30.0f, 1, false,
 			D3DXVECTOR3(SCREEN_WIDTH - 20.0f, SCREEN_HEIGHT -225.0f + 27.0f * (nCnt), 0.0f),D3DXVECTOR3(0.0f, 0.0f, 0.0f), 
 			D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 

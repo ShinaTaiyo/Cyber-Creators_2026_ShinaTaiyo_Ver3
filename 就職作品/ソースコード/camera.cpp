@@ -31,7 +31,8 @@
 //====================================================================
 const float CCamera::m_BESIDECAMERALENGTH = 570.0f;//ビサイドビューのカメラの距離
 const float CCamera::s_fINITIAL_LENGTH = 200.0f;   //カメラとの最初の距離
-bool CCamera::s_bCAMERACONTROLLMOUSE = false; //デバッグ時にカメラをマウスで動かすかどうか
+bool CCamera::s_bCAMERACONTROLLMOUSE = false;      //デバッグ時にカメラをマウスで動かすかどうか
+int CCamera::s_nSENSITIVITYLEVEL = 10;              //カメラの感度レベル
 //====================================================================================================
 
 //====================================================================
@@ -85,6 +86,23 @@ HRESULT CCamera::Init()
 	m_DifferenceLength = D3DXVECTOR3(0.0f,0.0f,0.0f); //対象との距離
 	m_ModeTime = 0;                                   //モードの時間
 	m_ZoomSpeed = D3DXVECTOR3(0.0f,0.0f,0.0f);        //ズームする速さ
+
+	fstream ReadingFile;//ファイル
+	string ReadingBuff; //文字
+	ReadingFile.open("data\\TEXTFILE\\CameraSensitivity.txt");//カメラ感度調整のファイルを読み込む
+
+	if (ReadingFile.good())
+	{//ファイルが正常に開けていたら
+		while (ReadingFile >> ReadingBuff)
+		{//文字列の読み込みが失敗するまで
+			if (ReadingBuff == "CAMERASENSITIVITYLEVEL")
+			{
+				ReadingFile >> ReadingBuff;//イコール
+				ReadingFile >> s_nSENSITIVITYLEVEL;//感度レベルを読み込む
+			}
+		}
+	}
+	ReadingFile.close();//ファイルを閉じる
 	return S_OK;
 }
 //====================================================================================================
@@ -105,6 +123,16 @@ void CCamera::Uninit()
 		delete m_pCameraLengthState;
 		m_pCameraLengthState = nullptr;
 	}
+
+	fstream WritingFile;//書き出し用ファイル
+	WritingFile.open("data\\TEXTFILE\\CameraSensitivity.txt", ios::out);
+
+	if (WritingFile.good())
+	{//ファイルを正常に開けたら
+		WritingFile << "CAMERASENSITIVITYLEVEL = " << s_nSENSITIVITYLEVEL << endl;//カメラの感度レベルを書き出す
+	}
+
+	WritingFile.close();//ファイルを閉じる
 }
 //====================================================================================================
 
@@ -116,6 +144,18 @@ void CCamera::Update()
 {
 	m_pCameraState->Process(this);      //カメラの角度に関する処理
 	m_pCameraLengthState->Process(this);//カメラの距離に関する処理
+	CInputKeyboard* pInputKeyboard = CManager::GetInputKeyboard();//キー入力情報
+	CDebugText* pDebugText = CManager::GetDebugText();//デバッグ情報
+
+	pDebugText->PrintDebugText("カメラをマウスで操作するかどうか（Lシフトを押しながらM): %d\n", s_bCAMERACONTROLLMOUSE);
+
+	if (pInputKeyboard->GetPress(DIK_LSHIFT))
+	{
+		if (pInputKeyboard->GetTrigger(DIK_M))
+		{
+			s_bCAMERACONTROLLMOUSE = s_bCAMERACONTROLLMOUSE ? false : true;//カメラをマウスで操作するかのフラグのONOFFを変える
+		}
+	}
 
 	//Pitchは前側に範囲を制限
 	if (m_Rot.x < -D3DX_PI + 0.01f)
@@ -126,6 +166,8 @@ void CCamera::Update()
 	{
 		m_Rot.x = -0.01f;
 	}
+
+	
 
 	//ジンバルロックを回避する
 	m_Rot.x = CCalculation::CorrectionRot(m_Rot.x);
@@ -465,7 +507,8 @@ void CCameraState_Normal::Process(CCamera* pCamera)
 		{//注視点の加算量を増やす
 			pCamera->SetAddPosR(pCamera->GetAddPosR() + D3DXVECTOR3(0.0f, 5.0f, 0.0f));
 		}
-
+		float fMagnification = 1.0f / CCamera::GetMaxSensitivityLevel();//感度倍率を求める
+		float fResultSensitivity = 0.0f;//結果的な感度
 		//=================================================
 		//ゲームパッド、又はマウスでカメラの向きを変える
 		//=================================================
@@ -475,10 +518,10 @@ void CCameraState_Normal::Process(CCamera* pCamera)
 			{//シーンが「ゲーム」だったら
 				CGame::GetTutorial()->SetSuccessCheck(CTutorial::CHECK::CAMERACONTROLL);
 			}
-
+			fResultSensitivity = s_fMAX_STICKSENSITIVITY * (fMagnification * CCamera::GetSensitivityLevel());//感度レベルに応じて調整
 			//スティックを押した方向にカメラの向きを向かせる
-			CManager::GetCamera()->SetRot(pCamera->GetRot() + D3DXVECTOR3(cosf(CManager::GetInputJoypad()->GetRStickAimRot() + D3DX_PI) * 0.04f,
-				sinf(CManager::GetInputJoypad()->GetRStickAimRot()) * 0.04f, 0.0f));
+			CManager::GetCamera()->SetRot(pCamera->GetRot() + D3DXVECTOR3(cosf(CManager::GetInputJoypad()->GetRStickAimRot() + D3DX_PI) * fResultSensitivity,
+				sinf(CManager::GetInputJoypad()->GetRStickAimRot()) * fResultSensitivity, 0.0f));
 		}
 
 		if (CCamera::GetUseCameraControllMouse())
@@ -488,13 +531,13 @@ void CCameraState_Normal::Process(CCamera* pCamera)
 			float fAddPitch = 0.0f; //Pitch
 			if (CScene::GetMode() == CScene::MODE_GAME || CScene::GetMode() == CScene::MODE_EDIT)
 			{//ゲームモードとエディットモードの時だけマウスを固定
-				if (CManager::GetInputMouse()->GetMouseMoveAngle(fAddYaw, fAddPitch, 0.005f))
+				fResultSensitivity = s_fMAX_MOUSESENSITIVITY * (fMagnification * CCamera::GetSensitivityLevel());//感度レベルに応じて調整
+				if (CManager::GetInputMouse()->GetMouseMoveAngle(fAddYaw, fAddPitch, fResultSensitivity))
 				{//マウスが移動した方向からYawとPitchの加算量を取得する。マウスが動いていたらtrue
 					if (CScene::GetMode() == CScene::MODE::MODE_GAME)
 					{//シーンが「ゲーム」だったら
 						CGame::GetTutorial()->SetSuccessCheck(CTutorial::CHECK::CAMERACONTROLL);//カメラを動かすチュートリアルを完了
 					}
-
 					//向きを加算する
 					CManager::GetCamera()->SetRot(pCamera->GetRot() + D3DXVECTOR3(fAddPitch,
 						fAddYaw, 0.0f));

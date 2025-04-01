@@ -159,71 +159,11 @@ int CCharacter::RegistMotion(string String, CCharacter* pCharacter)
 //===================================================================================================================
 
 //=============================================================
-//モデルパーツのオフセットを元にキャラクターのサイズを設定する
+//キャラクターのサイズを設定する
 //=============================================================
 void CCharacter::SetSize()
 {
-    BYTE* pVtxBuff;//頂点バッファへのポインタ
-
-    int nModelPartsArraySize = m_VecModelParts.size();//モデルパーツの配列サイズを取得する
-    for (int nCnt = 0; nCnt < nModelPartsArraySize; nCnt++)
-    {
-        m_VecModelParts[nCnt]->Draw();//描画処理を呼び、マトリックスを更新する
-    }
-
-    for (int nCntModelParts = 0; nCntModelParts < nModelPartsArraySize; nCntModelParts++)
-    {
-        //頂点数の取得
-        int nNumVtx = m_VecModelParts[nCntModelParts]->GetObjectXInfo().pMesh->GetNumVertices();
-
-        //頂点フォーマットのサイズを取得
-        DWORD sizeFVF = D3DXGetFVFVertexSize(m_VecModelParts[nCntModelParts]->GetObjectXInfo().pMesh->GetFVF());
-
-        //頂点バッファのロック
-        m_VecModelParts[nCntModelParts]->GetObjectXInfo().pMesh->LockVertexBuffer(D3DLOCK_READONLY, (void**)&pVtxBuff);
-
-        //全てのモデルパーツの頂点情報とオフセットを元にキャラクターのサイズを設定する
-        for (int nCntVtx = 0; nCntVtx < nNumVtx; nCntVtx++)
-        {
-            //頂点座標の代入（オフセットも足す）
-            D3DXVECTOR3 vtx = *(D3DXVECTOR3*)pVtxBuff + m_VecModelParts[nCntModelParts]->GetPosInfo().GetWorldPos();
-
-            //====================================================
-            //頂点座標を比較してモデルの最小値最大値を取得
-            //====================================================
-            if (vtx.x > GetSizeInfo().OriginVtxMax.x)
-            {//今回読み込んだ頂点が、一番大きい頂点より大きい場合
-                GetSizeInfo().OriginVtxMax.x = vtx.x;
-            }
-            else if (vtx.y > GetSizeInfo().OriginVtxMax.y)
-            {//今回読み込んだ頂点が、一番大きい頂点より大きい場合
-                GetSizeInfo().OriginVtxMax.y = vtx.y;
-            }
-            else if (vtx.z > GetSizeInfo().OriginVtxMax.z)
-            {//今回読み込んだ頂点が、一番大きい頂点より大きい場合
-                GetSizeInfo().OriginVtxMax.z = vtx.z;
-            }
-            else if (vtx.x < GetSizeInfo().OriginVtxMin.x)
-            {//今回読み込んだ頂点が、一番小さい頂点より小さい場合
-                GetSizeInfo().OriginVtxMin.x = vtx.x;
-            }
-            else if (vtx.y < GetSizeInfo().OriginVtxMin.y)
-            {//今回読み込んだ頂点が、一番小さい頂点より小さい場合
-                GetSizeInfo().OriginVtxMin.y = vtx.y;
-            }
-            else if (vtx.z < GetSizeInfo().OriginVtxMin.z)
-            {//今回読み込んだ頂点が、一番小さい頂点より小さい場合
-                GetSizeInfo().OriginVtxMin.z = vtx.z;
-            }
-            //=============================================================================================================
-
-            //頂点フォーマットのサイズ文ポインタを進める
-            pVtxBuff += sizeFVF;
-
-        }
-        //頂点バッファのアンロック
-        m_VecModelParts[nCntModelParts]->GetObjectXInfo().pMesh->UnlockVertexBuffer();
-    }
+    CObjectX::SetSize();//サイズを設定 
 }
 //===================================================================================================================
 
@@ -548,7 +488,7 @@ void CCharacter::LoadModelParts(string MotionFileName, CCharacter* pCharacter)
         {//モデルパーツを読み込む
             ReadingFile >> Reading_Buff;//イコール
             ReadingFile >> Reading_Buff;//モデルパーツのパス
-            pCharacter->m_VecModelParts.push_back(CModelParts::Create(Reading_Buff));//モデルパーツ数を追加
+            pCharacter->m_VecModelParts.push_back(CModelParts::Create(Reading_Buff,pCharacter->GetType()));//モデルパーツ数を追加
         }
         else if (Reading_Buff == "CHARACTERSET")
         {//各モデルパーツの情報を設定する
@@ -631,7 +571,5 @@ void CCharacter::LoadModelParts(string MotionFileName, CCharacter* pCharacter)
     }
 
     ReadingFile.close();//ファイルを閉じる
-
-    pCharacter->SetSize();//キャラクターのサイズを設定する
 }
 //===================================================================================================================

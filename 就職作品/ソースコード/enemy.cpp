@@ -98,9 +98,11 @@ void CEnemy::Update()
 		m_nCntTime++;                                                             //時間をカウントする
 		m_nJumpCoolTime++;                                                        //ジャンプまでのクールタイムをカウントする
 		m_nAttackCoolTime++;                                                      //クールタイムをカウントする
+		CObjectX::CollisionInfo& CollisionInfo = GetCollisionInfo();              //当たり判定情報を取得する
+		CObjectX::CollisionInfo::State& CollisionState = CollisionInfo.GetState();//当たり判定状態を取得する
 
-		if (GetLanding() == true)
-		{//地面に乗る
+		if (CollisionState.GetLanding())
+		{
 			GetMoveInfo().SetMove(D3DXVECTOR3(GetMoveInfo().GetMove().x,0.0f, GetMoveInfo().GetMove().z));
 		}
 
@@ -121,7 +123,7 @@ void CEnemy::Update()
 
 	    CObjectX::Update();//オブジェクトX更新処理
 
-		if (GetLanding() == true && m_bStartLanding == false)
+		if (CollisionState.GetLanding() && m_bStartLanding == false)
 		{//地面に乗っているかつ、まだ地面に乗っていなかったら
 			m_bStartLanding = true;//地面に初めて乗ったフラグをtrueにする
 		}
@@ -195,6 +197,8 @@ void CEnemy::SetDeath()
 //====================================================================================
 void CEnemy::SaveInfoTxt(fstream& WritingFile)
 {
+	WritingFile << "SETENEMY" << endl;//読み込み開始用テキスト
+
 	WritingFile << "ENEMYTYPE = " << static_cast<int>(m_Type);//敵のタイプ番号を書き出す
 	switch (m_Type)
 	{//敵のタイプ番号に応じて文字でタイプ名を書き出す
@@ -243,73 +247,203 @@ void CEnemy::SaveInfoTxt(fstream& WritingFile)
 	WritingFile << "END_SETMOVEAI" << endl;//移動AIの情報の保存を終了する
 
 	CObjectX::SaveInfoTxt(WritingFile);//オブジェクトXの情報を書き出す
+
+	WritingFile << "END_SETENEMY" << endl;//読み込み開始用テキスト
 }
 //============================================================================================================================================
 
 //====================================================================================
 //テキストファイルから情報をロードする
 //====================================================================================
-void CEnemy::LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff)
+//void CEnemy::LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff)
+//{
+//	//int nType = 0;//種類
+//	//int nLife = 0;//体力
+//	//D3DXVECTOR3 Move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);  //移動量
+//	//D3DXVECTOR3 Pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);   //位置
+//	//D3DXVECTOR3 Scale = D3DXVECTOR3(0.0f, 0.0f, 0.0f); //拡大率
+//	//D3DXVECTOR3 Rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);   //向き
+//	//ENEMYTYPE Type = {};                               //ブロックの種類
+//	//while (Buff != "END_SETBLOCK")
+//	//{
+//	//	LoadingFile >> Buff;//単語を読み込む
+//	//	if (Buff == "#")
+//	//	{
+//	//		getline(LoadingFile, Buff);
+//	//	}
+//	//	else if (Buff == "TYPE")
+//	//	{
+//	//		LoadingFile >> Buff;//イコール
+//	//		LoadingFile >> nType;      //種類
+//	//	}
+//	//	else if (Buff == "LIFE")
+//	//	{
+//	//		LoadingFile >> Buff;//イコール
+//	//		LoadingFile >> nLife;      //体力
+//	//	}
+//	//	else if (Buff == "MOVE")
+//	//	{
+//	//		LoadingFile >> Buff;//イコール
+//	//		LoadingFile >> Move.x;      //移動量X
+//	//		LoadingFile >> Move.y;      //移動量Y
+//	//		LoadingFile >> Move.z;      //移動量Z
+//	//	}
+//	//	else if (Buff == "POS")
+//	//	{
+//	//		LoadingFile >> Buff;//イコール
+//	//		LoadingFile >> Pos.x;      //位置X
+//	//		LoadingFile >> Pos.y;      //位置Y
+//	//		LoadingFile >> Pos.z;      //位置Z
+//	//	}
+//	//	else if (Buff == "ROT")
+//	//	{
+//	//		LoadingFile >> Buff;//イコール
+//	//		LoadingFile >> Rot.x;      //位置X
+//	//		LoadingFile >> Rot.y;      //位置Y
+//	//		LoadingFile >> Rot.z;      //位置Z
+//	//	}
+//	//	else if (Buff == "SCALE")
+//	//	{
+//	//		LoadingFile >> Buff;//イコール
+//	//		LoadingFile >> Scale.x;      //拡大率X
+//	//		LoadingFile >> Scale.y;      //拡大率Y
+//	//		LoadingFile >> Scale.z;      //拡大率Z
+//	//	}
+//	//}
+//	//Type = static_cast<ENEMYTYPE>(nType);
+//
+//	//
+//
+//	//listSaveManager.push_back(CEnemy::Create(Type, nLife, Pos, Rot, Scale));//vectorに情報を保存する
+//
+//}
+////============================================================================================================================================
+
+//====================================================================================
+//テキストファイルから情報をロードする
+//====================================================================================
+void CEnemy::LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff, CObject* pObj)
 {
-	//int nType = 0;//種類
-	//int nLife = 0;//体力
-	//D3DXVECTOR3 Move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);  //移動量
-	//D3DXVECTOR3 Pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);   //位置
-	//D3DXVECTOR3 Scale = D3DXVECTOR3(0.0f, 0.0f, 0.0f); //拡大率
-	//D3DXVECTOR3 Rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);   //向き
-	//ENEMYTYPE Type = {};                               //ブロックの種類
-	//while (Buff != "END_SETBLOCK")
-	//{
-	//	LoadingFile >> Buff;//単語を読み込む
-	//	if (Buff == "#")
-	//	{
-	//		getline(LoadingFile, Buff);
-	//	}
-	//	else if (Buff == "TYPE")
-	//	{
-	//		LoadingFile >> Buff;//イコール
-	//		LoadingFile >> nType;      //種類
-	//	}
-	//	else if (Buff == "LIFE")
-	//	{
-	//		LoadingFile >> Buff;//イコール
-	//		LoadingFile >> nLife;      //体力
-	//	}
-	//	else if (Buff == "MOVE")
-	//	{
-	//		LoadingFile >> Buff;//イコール
-	//		LoadingFile >> Move.x;      //移動量X
-	//		LoadingFile >> Move.y;      //移動量Y
-	//		LoadingFile >> Move.z;      //移動量Z
-	//	}
-	//	else if (Buff == "POS")
-	//	{
-	//		LoadingFile >> Buff;//イコール
-	//		LoadingFile >> Pos.x;      //位置X
-	//		LoadingFile >> Pos.y;      //位置Y
-	//		LoadingFile >> Pos.z;      //位置Z
-	//	}
-	//	else if (Buff == "ROT")
-	//	{
-	//		LoadingFile >> Buff;//イコール
-	//		LoadingFile >> Rot.x;      //位置X
-	//		LoadingFile >> Rot.y;      //位置Y
-	//		LoadingFile >> Rot.z;      //位置Z
-	//	}
-	//	else if (Buff == "SCALE")
-	//	{
-	//		LoadingFile >> Buff;//イコール
-	//		LoadingFile >> Scale.x;      //拡大率X
-	//		LoadingFile >> Scale.y;      //拡大率Y
-	//		LoadingFile >> Scale.z;      //拡大率Z
-	//	}
-	//}
-	//Type = static_cast<ENEMYTYPE>(nType);
+	int nPhaseNum = 0;                                        //フェーズ番号
+	float fNormalSpeed = 0.0f;                                //通常速度
+	float fSensingRange = 0.0f;                               //索敵範囲
+	vector<CAIModel*> VecMoveAi = {};                         //移動AIの動的配列
+	vector<MoveAiInfo> VecMoveAiInfo = {};                    //移動AI情報の動的配列
+	int nEnemyType = 0;
+	ENEMYTYPE EnemyType = ENEMYTYPE::SHOTWEAK;                //敵タイプ
+	int nCntMoveAi = 0;                                       //移動AIの数をカウント
+	D3DXVECTOR3 MoveAiPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);    //移動AIの位置
+	D3DXVECTOR3 MoveAiRot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);    //移動AIの向き
+	D3DXVECTOR3 MoveAiScale = D3DXVECTOR3(0.0f, 0.0f, 0.0f);  //移動AIの拡大率
+	while (Buff != "END_SETENEMY")
+	{//文字列がEND_SETENEMYになるまで繰り返す
+		LoadingFile >> Buff;//単語を読み込む
+		if (Buff == "#")
+		{//#ならその行をスキップ
+			getline(LoadingFile, Buff);
+		}
+		else if (Buff == "ENEMYTYPE")
+		{//敵タイプ
+			LoadingFile >> Buff;                             //イコール
+			LoadingFile >> nEnemyType;                       //フェーズ番号
+			EnemyType = static_cast<ENEMYTYPE>(nEnemyType);  //敵タイプにキャスト
+			SetEnemyType(EnemyType);                         //敵タイプを設定
+		}
+		else if (Buff == "PHASENUM")
+		{//フェーズ番号
+			LoadingFile >> Buff;                             //イコール
+			LoadingFile >> nPhaseNum;                        //フェーズ番号
+			SetPhaseNum(nPhaseNum);                          //フェーズ番号設定
+		}
+		else if (Buff == "NORMALSPEED")
+		{//通常移動速度
+			LoadingFile >> Buff;                             //イコール
+			LoadingFile >> fNormalSpeed;                     //通常速度
+			SetNormalSpeed(fNormalSpeed);                    //通常速度設定
+		}
+		else if (Buff == "SENSINGRANGE")
+		{//索敵範囲
+			LoadingFile >> Buff;                             //イコール
+			LoadingFile >> fSensingRange;                    //索敵範囲
+			SetSensingRange(fSensingRange);                  //索敵範囲を設定
+		}
+		else if (Buff == "SETMOVEAI")
+		{//移動AI
+			while (1)
+			{
+				LoadingFile >> Buff;
+				if (Buff == "SETNUM")
+				{//何個目か
+					LoadingFile >> Buff;                     //イコール
+					LoadingFile >> nCntMoveAi;               //番号
+					while (1)
+					{
+						LoadingFile >> Buff;
 
-	//
+						if (Buff == "POS")
+						{
+							LoadingFile >> Buff;//イコール
+							LoadingFile >> MoveAiPos.x;      //位置X
+							LoadingFile >> MoveAiPos.y;      //位置Y
+							LoadingFile >> MoveAiPos.z;      //位置Z
+						}
+						else if (Buff == "ROT")
+						{
+							LoadingFile >> Buff;//イコール
+							LoadingFile >> MoveAiRot.x;      //位置X
+							LoadingFile >> MoveAiRot.y;      //位置Y
+							LoadingFile >> MoveAiRot.z;      //位置Z
+						}
+						else if (Buff == "SCALE")
+						{
+							LoadingFile >> Buff;//イコール
+							LoadingFile >> MoveAiScale.x;      //拡大率X
+							LoadingFile >> MoveAiScale.y;      //拡大率Y
+							LoadingFile >> MoveAiScale.z;      //拡大率Z
+						}
+						else if (Buff == "END_SETNUM")
+						{
+							if (CScene::GetMode() == CScene::MODE_EDIT)
+							{//エディットモードの時は普通に全ての移動AIを出したいため直接動的配列に格納
+								CAIModel* pAiModel = CAIModel::Create(CAIModel::AIMODELTYPE::MOVEPOINT, MoveAiPos, MoveAiRot, MoveAiScale, nullptr);//AIモデルの生成
+								pAiModel->GetDrawInfo().SetUseDraw(false);  //描画しない
+								pAiModel->GetDrawInfo().SetUseShadow(false);//影を描画しない
+								VecMoveAi.push_back(pAiModel);              //移動AIの動的配列に格納
+							}
+							else if (CScene::GetMode() == CScene::MODE_GAME)
+							{//ゲームモードのときはまだ呼ばれていない敵の場合、移動AI自体を存在させたくないだけデータだけを格納し、呼ばれたときにPhaseManagerに保存したデータを使用して移動AIを召喚する
+								MoveAiInfo Info = {};          //移動AI情報
+								Info.Pos = MoveAiPos;          //位置
+								Info.Rot = MoveAiRot;          //向き
+								Info.Scale = MoveAiScale;      //拡大率
+								VecMoveAiInfo.push_back(Info); //動的配列に格納
+							}
+							break;
+						}
+					}
+				}
+				else if (Buff == "END_SETMOVEAI")
+				{//移動AIの情報の書き出し終了
+					break;
+				}
+			}
+		}
+		else if (Buff == "SETOBJECTX")
+		{//オブジェクトXの情報を読み込む
+			CObjectX::LoadInfoTxt(LoadingFile, listSaveManager, Buff, pObj);
+		}
+	}
 
-	//listSaveManager.push_back(CEnemy::Create(Type, nLife, Pos, Rot, Scale));//vectorに情報を保存する
-
+	if (CScene::GetMode() == CScene::MODE_GAME)
+	{//ゲームモードだったら
+		//フェーズマネージャーに情報を格納。召喚フェーズに入ったらフェーズマネージャーから敵が召喚される
+		CGame::GetPhaseManager()->PushPhaseInfo(GetPosInfo().GetPos(), GetRotInfo().GetRot(), GetSizeInfo().GetScale(), GetLifeInfo().GetMaxLife(),
+			static_cast<int>(EnemyType), 0, nPhaseNum, fNormalSpeed, fSensingRange, 3, VecMoveAiInfo);
+	}
+	else if (CScene::GetMode() == CScene::MODE_EDIT)
+	{//エディットモードだったら
+		SetVecMoveAiInfo(VecMoveAi);//移動AI情報を設定する
+	}
 }
 //============================================================================================================================================
 
@@ -437,8 +571,10 @@ void CEnemy::DefeatStaging()
 //====================================================================================
 void CEnemy::CollisionProcess()
 {
-	GetCollisionInfo().GetSquareInfo().ResetPushOutFirstFlag();   //それぞれの軸の押し出し判定の優先フラグをリセット
-	SetIsLanding(false);                                          //地面に乗っているかどうかをリセット 
+	CObjectX::CollisionInfo& CollisionInfo = GetCollisionInfo();               //当たり判定情報を取得する
+	CObjectX::CollisionInfo::State& CollisionState = CollisionInfo.GetState(); //当たり判定状態を取得する
+	CollisionInfo.GetSquareInfo().ResetPushOutFirstFlag();                     //それぞれの軸の押し出し判定の優先フラグをリセット
+	CollisionState.SetLanding(false);                                          //地面に乗っているかどうかをリセット 
 	for (int nCntPri = 0; nCntPri < CObject::m_nMAXPRIORITY; nCntPri++)
 	{//オブジェクトリストを検索する
 		CObject* pObj = CObject::GetTopObject(nCntPri);//リストの先頭オブジェクトを取得する
@@ -1155,14 +1291,21 @@ CShotWeakEnemy* CShotWeakEnemy::Create(SHOTWEAKENEMYTYPE Type, int nLife, int nP
 {
 	CShotWeakEnemy* pShotWeakEnemy = DBG_NEW CShotWeakEnemy;                             //射撃に弱い敵の生成
 
-	pShotWeakEnemy->Init();                                                              //初期化処理
-	int nIdx = CManager::GetObjectXInfo()->Regist(s_aSHOTWEAKENEMY_FILENAME[int(Type)]); //モデル情報を登録し番号を取得
-	pShotWeakEnemy->BindObjectXInfo(CManager::GetObjectXInfo()->GetMesh(nIdx),           //モデル情報を設定する
-		CManager::GetObjectXInfo()->GetBuffMat(nIdx),
-		CManager::GetObjectXInfo()->GetdwNumMat(nIdx),
-		CManager::GetObjectXInfo()->GetTexture(nIdx),
-		CManager::GetObjectXInfo()->GetColorValue(nIdx));
-
+	pShotWeakEnemy->Init();                                                              //初期化処
+	int nType = static_cast<int>(Type);//タイプ番号を格納
+	if (nType < 0 || nType >= static_cast<int>(SHOTWEAKENEMYTYPE::MAX))
+	{
+		assert("配列外アクセス！(CShotWeakEnemy)");
+	}
+	else
+	{//例外処理
+		int nIdx = CManager::GetObjectXInfo()->Regist(s_aSHOTWEAKENEMY_FILENAME[nType]); //モデル情報を登録し番号を取得
+		pShotWeakEnemy->BindObjectXInfo(CManager::GetObjectXInfo()->GetMesh(nIdx),           //モデル情報を設定する
+			CManager::GetObjectXInfo()->GetBuffMat(nIdx),
+			CManager::GetObjectXInfo()->GetdwNumMat(nIdx),
+			CManager::GetObjectXInfo()->GetTexture(nIdx),
+			CManager::GetObjectXInfo()->GetColorValue(nIdx));
+	}
 	pShotWeakEnemy->SetPhaseNum(nPhaseNum);                                              //フェーズ番号を設定する
 	pShotWeakEnemy->m_ShotWeakEnemyType = Type;                                          //射撃に弱い敵の種類
 	pShotWeakEnemy->GetLifeInfo().SetLife(nLife);                                        //体力
@@ -1214,172 +1357,157 @@ void CShotWeakEnemy::SaveInfoTxt(fstream& WritingFile)
 //====================================================================================
 //テキストファイルから情報を読み込む
 //====================================================================================
-void CShotWeakEnemy::LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff)
+//void CShotWeakEnemy::LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff)
+//{
+//	int nShotWeakEnemyType = 0;                               //ショットに弱い敵タイプ   
+//	int nLife = 0;                                            //体力
+//	int nPhaseNum = 0;                                        //フェーズ番号
+//	int nDivisionNum = 0;                                     //分裂回数
+//	D3DXVECTOR3 Move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);         //移動量
+//	D3DXVECTOR3 Pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);          //位置
+//	D3DXVECTOR3 Scale = D3DXVECTOR3(0.0f, 0.0f, 0.0f);        //拡大率
+//	D3DXVECTOR3 Rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);          //向き
+//	SHOTWEAKENEMYTYPE ShotWeakEnemyType = {};                 //背景モデルの種類
+//	ENEMYTYPE EnemyType = {};                                 //敵のタイプ
+//													          
+//	vector<CAIModel*> VecMoveAi = {};                         //移動AIの動的配列
+//	vector<MoveAiInfo> VecMoveAiInfo = {};                    //移動AI情報の動的配列
+//													          
+//	int nCntMoveAi = 0;                                       //移動AIの数をカウント
+//	D3DXVECTOR3 MoveAiPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);    //移動AIの位置
+//	D3DXVECTOR3 MoveAiRot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);    //移動AIの向き
+//	D3DXVECTOR3 MoveAiScale = D3DXVECTOR3(0.0f, 0.0f, 0.0f);  //移動AIの拡大率
+//
+//	float fNormalSpeed = 0.0f;                                //通常速度
+//	float fSensingRange = 0.0f;                               //索敵距離
+//
+//	while (Buff != "END_SETSHOTWEAKENEMY")
+//	{//文字列がEND_SETSHOTWEAKENEMYになるまで繰り返す
+//		LoadingFile >> Buff;//単語を読み込む
+//		if (Buff == "#")
+//		{//#ならその行をスキップ
+//			getline(LoadingFile, Buff);
+//		}
+//		else if (Buff == "SHOTWEAKENEMYTYPE")
+//		{//射撃に弱い敵の種類
+//			LoadingFile >> Buff;//イコール
+//			LoadingFile >> nShotWeakEnemyType;
+//		}
+//		else if (Buff == "ENEMYTYPE")
+//		{//敵のタイプ
+//			LoadingFile >> Buff;//イコール
+//			LoadingFile >> nType;
+//		}
+//		else if (Buff == "LIFE")
+//		{//体力
+//			LoadingFile >> Buff;//イコール
+//			LoadingFile >> nLife;
+//		}
+//		else if (Buff == "POS")
+//		{//位置
+//			LoadingFile >> Buff;//イコール
+//			LoadingFile >> Pos.x;      //位置X
+//			LoadingFile >> Pos.y;      //位置Y
+//			LoadingFile >> Pos.z;      //位置Z
+//		}
+//		else if (Buff == "ROT")
+//		{//向き
+//			LoadingFile >> Buff;//イコール
+//			LoadingFile >> Rot.x;      //位置X
+//			LoadingFile >> Rot.y;      //位置Y
+//			LoadingFile >> Rot.z;      //位置Z
+//		}
+//		else if (Buff == "SCALE")
+//		{//拡大率
+//			LoadingFile >> Buff;//イコール
+//			LoadingFile >> Scale.x;      //拡大率X
+//			LoadingFile >> Scale.y;      //拡大率Y
+//			LoadingFile >> Scale.z;      //拡大率Z
+//		}
+//		else if (Buff == "PHASENUM")
+//		{//フェーズ番号
+//			LoadingFile >> Buff;//イコール
+//			LoadingFile >> nPhaseNum;//フェーズ番号
+//		}
+//		else if (Buff == "NORMALSPEED")
+//		{//通常移動速度
+//			LoadingFile >> Buff;//イコール
+//			LoadingFile >> fNormalSpeed;//通常速度
+//		}
+//		else if (Buff == "SENSINGRANGE")
+//		{//索敵範囲
+//			LoadingFile >> Buff;//イコール
+//			LoadingFile >> fSensingRange;
+//		}
+//	}
+//
+//	ShotWeakEnemyType = static_cast<SHOTWEAKENEMYTYPE>(nShotWeakEnemyType);//射撃に弱い敵のタイプを格納
+//	EnemyType = static_cast<ENEMYTYPE>(nType);                             //敵のタイプを格納
+//	if (CScene::GetMode() == CScene::MODE_EDIT)
+//	{//エディットモードだったら
+//		CShotWeakEnemy* pShotWeakEnemy = CShotWeakEnemy::Create(ShotWeakEnemyType,nLife,nPhaseNum,Pos,Rot,Scale);//射撃に弱い敵を生成
+//		pShotWeakEnemy->SetVecMoveAiInfo(VecMoveAi);    //移動AIの動的配列を設定
+//		pShotWeakEnemy->SetNormalSpeed(fNormalSpeed);   //通常移動速度を設定
+//		pShotWeakEnemy->SetSensingRange(fSensingRange); //索敵範囲を設定
+//		listSaveManager.push_back(pShotWeakEnemy);      //vectorに情報を保存する
+//
+//	}
+//	else if (CScene::GetMode() == CScene::MODE_GAME)
+//	{//ゲームモードだったら
+//
+//		//フェーズマネージャーに情報を格納。召喚フェーズに入ったらフェーズマネージャーから敵が召喚される
+//		CGame::GetPhaseManager()->PushPhaseInfo(Pos, Rot, Scale, nLife, static_cast<int>(EnemyType), nShotWeakEnemyType, nPhaseNum,fNormalSpeed,fSensingRange,0,VecMoveAiInfo);
+//	}
+//
+//}
+////============================================================================================================================================
+
+//====================================================================================
+//テキストファイルから情報を読み込む
+//====================================================================================
+void CShotWeakEnemy::LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff, CObject* pObj)
 {
-	int nType = 0;                                            //種類
-	int nShotWeakEnemyType = 0;                               //ショットに弱い敵タイプ   
-	int nLife = 0;                                            //体力
-	int nPhaseNum = 0;                                        //フェーズ番号
-	int nDivisionNum = 0;                                     //分裂回数
-	D3DXVECTOR3 Move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);         //移動量
-	D3DXVECTOR3 Pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);          //位置
-	D3DXVECTOR3 Scale = D3DXVECTOR3(0.0f, 0.0f, 0.0f);        //拡大率
-	D3DXVECTOR3 Rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);          //向き
-	SHOTWEAKENEMYTYPE ShotWeakEnemyType = {};                 //背景モデルの種類
-	ENEMYTYPE EnemyType = {};                                 //敵のタイプ
-													          
-	vector<CAIModel*> VecMoveAi = {};                         //移動AIの動的配列
-	vector<MoveAiInfo> VecMoveAiInfo = {};                    //移動AI情報の動的配列
-													          
-	int nCntMoveAi = 0;                                       //移動AIの数をカウント
-	D3DXVECTOR3 MoveAiPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);    //移動AIの位置
-	D3DXVECTOR3 MoveAiRot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);    //移動AIの向き
-	D3DXVECTOR3 MoveAiScale = D3DXVECTOR3(0.0f, 0.0f, 0.0f);  //移動AIの拡大率
-
-	float fNormalSpeed = 0.0f;                                //通常速度
-	float fSensingRange = 0.0f;                               //索敵距離
-
-	while (Buff != "END_SETSHOTWEAKENEMY")
-	{//文字列がEND_SETSHOTWEAKENEMYになるまで繰り返す
-		LoadingFile >> Buff;//単語を読み込む
-		if (Buff == "#")
-		{//#ならその行をスキップ
-			getline(LoadingFile, Buff);
-		}
-		else if (Buff == "SHOTWEAKENEMYTYPE")
-		{//射撃に弱い敵の種類
-			LoadingFile >> Buff;//イコール
-			LoadingFile >> nShotWeakEnemyType;
-		}
-		else if (Buff == "ENEMYTYPE")
-		{//敵のタイプ
-			LoadingFile >> Buff;//イコール
-			LoadingFile >> nType;
-		}
-		else if (Buff == "LIFE")
-		{//体力
-			LoadingFile >> Buff;//イコール
-			LoadingFile >> nLife;
-		}
-		else if (Buff == "POS")
-		{//位置
-			LoadingFile >> Buff;//イコール
-			LoadingFile >> Pos.x;      //位置X
-			LoadingFile >> Pos.y;      //位置Y
-			LoadingFile >> Pos.z;      //位置Z
-		}
-		else if (Buff == "ROT")
-		{//向き
-			LoadingFile >> Buff;//イコール
-			LoadingFile >> Rot.x;      //位置X
-			LoadingFile >> Rot.y;      //位置Y
-			LoadingFile >> Rot.z;      //位置Z
-		}
-		else if (Buff == "SCALE")
-		{//拡大率
-			LoadingFile >> Buff;//イコール
-			LoadingFile >> Scale.x;      //拡大率X
-			LoadingFile >> Scale.y;      //拡大率Y
-			LoadingFile >> Scale.z;      //拡大率Z
-		}
-		else if (Buff == "PHASENUM")
-		{//フェーズ番号
-			LoadingFile >> Buff;//イコール
-			LoadingFile >> nPhaseNum;//フェーズ番号
-		}
-		else if (Buff == "NORMALSPEED")
-		{//通常移動速度
-			LoadingFile >> Buff;//イコール
-			LoadingFile >> fNormalSpeed;//通常速度
-		}
-		else if (Buff == "SENSINGRANGE")
-		{//索敵範囲
-			LoadingFile >> Buff;//イコール
-			LoadingFile >> fSensingRange;
-		}
-		else if (Buff == "SETMOVEAI")
-		{//移動AI
-			while (1)
-			{
-				LoadingFile >> Buff;
-				if (Buff == "SETNUM")
-				{//何個目か
-					LoadingFile >> Buff;//イコール
-					LoadingFile >> nCntMoveAi;//番号
-					while (1)
-					{
-						LoadingFile >> Buff;
-
-						if (Buff == "POS")
-						{
-							LoadingFile >> Buff;//イコール
-							LoadingFile >> MoveAiPos.x;      //位置X
-							LoadingFile >> MoveAiPos.y;      //位置Y
-							LoadingFile >> MoveAiPos.z;      //位置Z
-						}
-						else if (Buff == "ROT")
-						{
-							LoadingFile >> Buff;//イコール
-							LoadingFile >> MoveAiRot.x;      //位置X
-							LoadingFile >> MoveAiRot.y;      //位置Y
-							LoadingFile >> MoveAiRot.z;      //位置Z
-						}
-						else if (Buff == "SCALE")
-						{
-							LoadingFile >> Buff;//イコール
-							LoadingFile >> MoveAiScale.x;      //拡大率X
-							LoadingFile >> MoveAiScale.y;      //拡大率Y
-							LoadingFile >> MoveAiScale.z;      //拡大率Z
-						}
-						else if (Buff == "END_SETNUM")
-						{
-							if (CScene::GetMode() == CScene::MODE_EDIT)
-							{//エディットモードの時は普通に全ての移動AIを出したいため直接動的配列に格納
-								CAIModel* pAiModel = CAIModel::Create(CAIModel::AIMODELTYPE::MOVEPOINT, MoveAiPos, MoveAiRot, MoveAiScale, nullptr);//AIモデルの生成
-								pAiModel->GetDrawInfo().SetUseDraw(false);  //描画しない
-								pAiModel->GetDrawInfo().SetUseShadow(false);//影を描画しない
-								VecMoveAi.push_back(pAiModel);              //移動AIの動的配列に格納
-							}
-							else if (CScene::GetMode() == CScene::MODE_GAME)
-							{//ゲームモードのときはまだ呼ばれていない敵の場合、移動AI自体を存在させたくないだけデータだけを格納し、呼ばれたときにPhaseManagerに保存したデータを使用して移動AIを召喚する
-								MoveAiInfo Info = {};          //移動AI情報
-								Info.Pos = MoveAiPos;          //位置
-								Info.Rot = MoveAiRot;          //向き
-								Info.Scale = MoveAiScale;      //拡大率
-								VecMoveAiInfo.push_back(Info); //動的配列に格納
-							}
-							break;
-						}
-					}
-				}
-				else if (Buff == "END_SETMOVEAI")
-				{//移動AIの情報の書き出し終了
-					break;
-				}
+	int nShotWeakEnemyType = 0;                                            //射撃に弱い敵タイプ   
+	SHOTWEAKENEMYTYPE ShotWeakEnemyType = {};                              //射撃に弱い敵タイプ
+	CShotWeakEnemy* pShotWeakEnemy = dynamic_cast<CShotWeakEnemy*>(pObj);  //射撃に弱い敵にダウンキャスト
+	
+	if (pShotWeakEnemy != nullptr)
+	{
+		while (Buff != "END_SETSHOTWEAKENEMY")
+		{//文字列がEND_SETSHOTWEAKENEMYになるまで繰り返す
+			LoadingFile >> Buff;//単語を読み込む
+			if (Buff == "#")
+			{//#ならその行をスキップ
+				getline(LoadingFile, Buff);
+			}
+			else if (Buff == "SHOTWEAKENEMYTYPE")
+			{//射撃に弱い敵の種類
+				LoadingFile >> Buff;//イコール
+				LoadingFile >> nShotWeakEnemyType;
+				ShotWeakEnemyType = static_cast<SHOTWEAKENEMYTYPE>(nShotWeakEnemyType);//射撃に弱い敵のタイプを格納
+				SetShotWeakEnemyType(ShotWeakEnemyType);               //射撃に弱い敵タイプを設定
+			}
+			else if (Buff == "SETENEMY")
+			{//敵の情報を設定
+				CEnemy::LoadInfoTxt(LoadingFile, listSaveManager, Buff, pObj);
 			}
 		}
+
+		if (CScene::GetMode() == CScene::MODE_EDIT)
+		{//エディットモードだったら
+			listSaveManager.push_back(this);      //ステージマネージャーに情報を保存する
+		}
+		else if (CScene::GetMode() == CScene::MODE_GAME)
+		{//ゲームモードではフェーズマネージャーで召喚するので一旦消す
+			SetUseDeath(true);
+			SetDeath();
+		}
 	}
-
-	ShotWeakEnemyType = static_cast<SHOTWEAKENEMYTYPE>(nShotWeakEnemyType);//射撃に弱い敵のタイプを格納
-	EnemyType = static_cast<ENEMYTYPE>(nType);                             //敵のタイプを格納
-	if (CScene::GetMode() == CScene::MODE_EDIT)
-	{//エディットモードだったら
-		CShotWeakEnemy* pShotWeakEnemy = CShotWeakEnemy::Create(ShotWeakEnemyType,nLife,nPhaseNum,Pos,Rot,Scale);//射撃に弱い敵を生成
-		pShotWeakEnemy->SetVecMoveAiInfo(VecMoveAi);    //移動AIの動的配列を設定
-		pShotWeakEnemy->SetNormalSpeed(fNormalSpeed);   //通常移動速度を設定
-		pShotWeakEnemy->SetSensingRange(fSensingRange); //索敵範囲を設定
-		listSaveManager.push_back(pShotWeakEnemy);      //vectorに情報を保存する
-
+	else
+	{//例外処理
+		assert("射撃に弱い敵へのポインタが存在しない");
 	}
-	else if (CScene::GetMode() == CScene::MODE_GAME)
-	{//ゲームモードだったら
-
-		//フェーズマネージャーに情報を格納。召喚フェーズに入ったらフェーズマネージャーから敵が召喚される
-		CGame::GetPhaseManager()->PushPhaseInfo(Pos, Rot, Scale, nLife, static_cast<int>(EnemyType), nShotWeakEnemyType, nPhaseNum,fNormalSpeed,fSensingRange,0,VecMoveAiInfo);
-	}
-
 }
-//============================================================================================================================================
 
 //====================================================================================
 //ステージマネージャーのオブジェクトをチェンジする
@@ -1750,13 +1878,21 @@ CDiveWeakEnemy* CDiveWeakEnemy::Create(DIVEWEAKENEMYTYPE Type, int nLife, int nP
 	CDiveWeakEnemy* pDiveWeakEnemy = DBG_NEW CDiveWeakEnemy;//ダイブに弱い敵を生成
 
 	pDiveWeakEnemy->Init();                                                                    //初期化処理
-	int nIdx = CManager::GetObjectXInfo()->Regist(s_aDIVEWEAKENEMY_FILENAME[int(Type)]);       //ダイブに弱い敵のモデル情報を登録し番号を取得
-	pDiveWeakEnemy->BindObjectXInfo(CManager::GetObjectXInfo()->GetMesh(nIdx),                 //モデル情報を設定
-		CManager::GetObjectXInfo()->GetBuffMat(nIdx),
-		CManager::GetObjectXInfo()->GetdwNumMat(nIdx),
-		CManager::GetObjectXInfo()->GetTexture(nIdx),
-		CManager::GetObjectXInfo()->GetColorValue(nIdx));
-
+	int nType = static_cast<int>(Type);//タイプ番号を格納
+	if (nType < 0 || nType >= static_cast<int>(DIVEWEAKENEMYTYPE::MAX))
+	{//例外処理
+		assert("配列外アクセス！(CDiveWeakEnemy)");
+	}
+	else
+	{
+		//情報を登録、読み込み
+		int nIdx = CManager::GetObjectXInfo()->Regist(s_aDIVEWEAKENEMY_FILENAME[nType]);
+		pDiveWeakEnemy->BindObjectXInfo(CManager::GetObjectXInfo()->GetMesh(nIdx),
+			CManager::GetObjectXInfo()->GetBuffMat(nIdx),
+			CManager::GetObjectXInfo()->GetdwNumMat(nIdx),
+			CManager::GetObjectXInfo()->GetTexture(nIdx),
+			CManager::GetObjectXInfo()->GetColorValue(nIdx));
+	}
 	pDiveWeakEnemy->SetPhaseNum(nPhaseNum);                                                    //フェーズ番号を設定する
 	pDiveWeakEnemy->m_DiveWeakEnemyType = Type;                                                //ダイブに弱い敵の種類を設定
 	pDiveWeakEnemy->GetLifeInfo().SetLife(nLife);                                              //体力
@@ -1808,178 +1944,224 @@ void CDiveWeakEnemy::SaveInfoTxt(fstream& WritingFile)
 }
 //============================================================================================================================================
 
+////====================================================================================
+////テキストファイルから情報を読み込む
+////====================================================================================
+//void CDiveWeakEnemy::LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff)
+//{
+//	int nType = 0;                                           //種類
+//	int nDiveWeakEnemyType = 0;                              //ダイブに弱い敵タイプ   
+//	int nLife = 0;                                           //体力
+//	int nPhaseNum = 0;                                       //フェーズ番号
+//	int nDivisionNum = 0;                                    //分裂回数
+// 	D3DXVECTOR3 Move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);        //移動量
+//	D3DXVECTOR3 Pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);         //位置
+//	D3DXVECTOR3 Scale = D3DXVECTOR3(0.0f, 0.0f, 0.0f);       //拡大率
+//	D3DXVECTOR3 Rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);         //向き
+//    DIVEWEAKENEMYTYPE DiveWeakEnemyType = {};                //背景モデルの種類
+//	ENEMYTYPE EnemyType = {};                                //敵タイプ
+//														     
+//	vector<CAIModel*> VecMoveAi = {};                        //AIモデルの動的配列
+//	vector<MoveAiInfo> VecMoveAiInfo = {};                   //AIモデル情報の動的配列
+//
+//	int nCntMoveAi = 0;                                      //移動AIの数カウント用
+//	D3DXVECTOR3 MoveAiPos = D3DXVECTOR3(0.0f,0.0f,0.0f);     //移動AIの位置
+//	D3DXVECTOR3 MoveAiRot = D3DXVECTOR3(0.0f,0.0f,0.0f);     //移動AIの向き
+//	D3DXVECTOR3 MoveAiScale = D3DXVECTOR3(0.0f,0.0f,0.0f);   //移動AIの拡大率
+//
+//	float fNormalSpeed = 0.0f;                               //通常速度
+//	float fSensingRange = 0.0f;                              //索敵距離
+//	while (Buff != "END_SETDIVEWEAKENEMY")
+//	{//ダイブに弱い敵の設定が終わるまで繰り返す
+//		LoadingFile >> Buff;//単語を読み込む
+//		if (Buff == "#")
+//		{//行のスキップ
+//			getline(LoadingFile, Buff);
+//		}
+//		else if (Buff == "DIVEWEAKENEMYTYPE")
+//		{//ダイブに弱い敵のタイプ
+//			LoadingFile >> Buff;//イコール
+//			LoadingFile >> nDiveWeakEnemyType;
+//		}
+//		else if (Buff == "ENEMYTYPE")
+//		{//敵のタイプ
+//			LoadingFile >> Buff;//イコール
+//			LoadingFile >> nType;
+//		}
+//		else if (Buff == "LIFE")
+//		{//体力
+//			LoadingFile >> Buff;//イコール
+//			LoadingFile >> nLife;
+//		}
+//		else if (Buff == "POS")
+//		{//位置
+//			LoadingFile >> Buff;//イコール
+//			LoadingFile >> Pos.x;      //位置X
+//			LoadingFile >> Pos.y;      //位置Y
+//			LoadingFile >> Pos.z;      //位置Z
+//		}
+//		else if (Buff == "ROT")
+//		{//向き
+//			LoadingFile >> Buff;//イコール
+//			LoadingFile >> Rot.x;      //位置X
+//			LoadingFile >> Rot.y;      //位置Y
+//			LoadingFile >> Rot.z;      //位置Z
+//		}
+//		else if (Buff == "SCALE")
+//		{//拡大率
+//			LoadingFile >> Buff;//イコール
+//			LoadingFile >> Scale.x;      //拡大率X
+//			LoadingFile >> Scale.y;      //拡大率Y
+//			LoadingFile >> Scale.z;      //拡大率Z
+//		}
+//		else if (Buff == "PHASENUM")
+//		{//フェーズ番号
+//			LoadingFile >> Buff;      //イコール
+//			LoadingFile >> nPhaseNum; //フェーズ番号
+//		}
+//		else if (Buff == "NORMALSPEED")
+//		{//通常移動速度
+//			LoadingFile >> Buff;//イコール
+//			LoadingFile >> fNormalSpeed;//通常速度
+//		}
+//		else if (Buff == "SENSINGRANGE")
+//		{//索敵範囲
+//			LoadingFile >> Buff;//イコール
+//			LoadingFile >> fSensingRange;
+//		}
+//		else if (Buff == "DIVISIONNUM")
+//		{//分裂回数
+//			LoadingFile >> Buff;//イコール
+//			LoadingFile >> nDivisionNum;//分裂回数
+//		}
+//		else if (Buff == "SETMOVEAI")
+//		{//移動AIの設定
+//			while (1)
+//			{
+//				LoadingFile >> Buff;
+//				if (Buff == "SETNUM")
+//				{//数
+//					LoadingFile >> Buff;//イコール
+//					LoadingFile >> nCntMoveAi;//番号
+//					while (1)
+//					{
+//						LoadingFile >> Buff;
+//
+//						if (Buff == "POS")
+//						{//位置
+//							LoadingFile >> Buff;//イコール
+//							LoadingFile >> MoveAiPos.x;      //位置X
+//							LoadingFile >> MoveAiPos.y;      //位置Y
+//							LoadingFile >> MoveAiPos.z;      //位置Z
+//						}
+//						else if (Buff == "ROT")
+//						{//向き
+//							LoadingFile >> Buff;//イコール
+//							LoadingFile >> MoveAiRot.x;      //位置X
+//							LoadingFile >> MoveAiRot.y;      //位置Y
+//							LoadingFile >> MoveAiRot.z;      //位置Z
+//						}
+//						else if (Buff == "SCALE")
+//						{//拡大率
+//							LoadingFile >> Buff;//イコール
+//							LoadingFile >> MoveAiScale.x;      //拡大率X
+//							LoadingFile >> MoveAiScale.y;      //拡大率Y
+//							LoadingFile >> MoveAiScale.z;      //拡大率Z
+//						}
+//						else if (Buff == "END_SETNUM")
+//						{//移動AIの設定
+//							if (CScene::GetMode() == CScene::MODE_EDIT)
+//							{//エディットモードの時は普通に全ての移動AIを出したいため直接動的配列に格納
+//								CAIModel* pAiModel = CAIModel::Create(CAIModel::AIMODELTYPE::MOVEPOINT, MoveAiPos, MoveAiRot, MoveAiScale, nullptr);//AIモデルの生成
+//								pAiModel->GetDrawInfo().SetUseDraw(false);  //描画しない
+//								pAiModel->GetDrawInfo().SetUseShadow(false);//影を描画しない
+//								VecMoveAi.push_back(pAiModel);              //移動AIの動的配列に格納
+//							}
+//							else if (CScene::GetMode() == CScene::MODE_GAME)
+//							{//ゲームモードのときはまだ呼ばれていない敵の場合、移動AI自体を存在させたくないだけデータだけを格納し、呼ばれたときにPhaseManagerに保存したデータを使用して移動AIを召喚する
+//								MoveAiInfo Info = {};          //移動AI情報
+//								Info.Pos = MoveAiPos;          //位置
+//								Info.Rot = MoveAiRot;          //向き
+//								Info.Scale = MoveAiScale;      //拡大率
+//								VecMoveAiInfo.push_back(Info); //動的配列に格納
+//							}
+//							break;
+//						}
+//					}
+//				}
+//				else if (Buff == "END_SETMOVEAI")
+//				{//移動AIの設定終了
+//					break;
+//				}
+//			}
+//		}
+//	}
+//
+//	DiveWeakEnemyType = static_cast<DIVEWEAKENEMYTYPE>(nDiveWeakEnemyType);//ダイブに弱い敵のタイプ
+//	EnemyType = static_cast<ENEMYTYPE>(nType);                             //敵のタイプ
+//	if (CScene::GetMode() == CScene::MODE_EDIT)
+//	{//エディットモードなら
+//		CDiveWeakEnemy* pDiveWeakEnemy = CDiveWeakEnemy::Create(DiveWeakEnemyType, nLife, nPhaseNum, Pos, Rot, Scale,3);//生成処理
+//		pDiveWeakEnemy->GetDrawInfo().SetUseDraw(true);                                                                 //描画する
+//		pDiveWeakEnemy->GetDrawInfo().SetUseShadow(true);                                                               //影を描画する
+//		pDiveWeakEnemy->SetVecMoveAiInfo(VecMoveAi);                                                                    //移動AIの動的配列を設定
+//		pDiveWeakEnemy->SetNormalSpeed(fNormalSpeed);                                                                   //通常移動速度を設定
+//		pDiveWeakEnemy->SetSensingRange(fSensingRange);                                                                 //索敵範囲を設定
+//		pDiveWeakEnemy->GetMoveInfo().SetUseUpdatePos(true);                                                            //位置を更新する
+//		listSaveManager.push_back(pDiveWeakEnemy);                                                                      //ステージマネージャーに情報を保存する
+//	}
+//	else if (CScene::GetMode() == CScene::MODE_GAME)
+//	{//ゲームモードならフェーズマネージャーに情報を保存
+//		CGame::GetPhaseManager()->PushPhaseInfo(Pos, Rot, Scale, nLife, static_cast<int>(EnemyType), nDiveWeakEnemyType, nPhaseNum,fNormalSpeed,fSensingRange,3,VecMoveAiInfo);
+//	}
+//}
+////============================================================================================================================================
+
 //====================================================================================
 //テキストファイルから情報を読み込む
 //====================================================================================
-void CDiveWeakEnemy::LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff)
+void CDiveWeakEnemy::LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff, CObject* pObj)
 {
-	int nType = 0;                                           //種類
-	int nDiveWeakEnemyType = 0;                              //ダイブに弱い敵タイプ   
-	int nLife = 0;                                           //体力
-	int nPhaseNum = 0;                                       //フェーズ番号
-	int nDivisionNum = 0;                                    //分裂回数
- 	D3DXVECTOR3 Move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);        //移動量
-	D3DXVECTOR3 Pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);         //位置
-	D3DXVECTOR3 Scale = D3DXVECTOR3(0.0f, 0.0f, 0.0f);       //拡大率
-	D3DXVECTOR3 Rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);         //向き
-    DIVEWEAKENEMYTYPE DiveWeakEnemyType = {};                //背景モデルの種類
-	ENEMYTYPE EnemyType = {};                                //敵タイプ
-														     
-	vector<CAIModel*> VecMoveAi = {};                        //AIモデルの動的配列
-	vector<MoveAiInfo> VecMoveAiInfo = {};                   //AIモデル情報の動的配列
-
-	int nCntMoveAi = 0;                                      //移動AIの数カウント用
-	D3DXVECTOR3 MoveAiPos = D3DXVECTOR3(0.0f,0.0f,0.0f);     //移動AIの位置
-	D3DXVECTOR3 MoveAiRot = D3DXVECTOR3(0.0f,0.0f,0.0f);     //移動AIの向き
-	D3DXVECTOR3 MoveAiScale = D3DXVECTOR3(0.0f,0.0f,0.0f);   //移動AIの拡大率
-
-	float fNormalSpeed = 0.0f;                               //通常速度
-	float fSensingRange = 0.0f;                              //索敵距離
+	int nDiveWeakEnemyType = 0;                                            //ダイブに弱い敵タイプ   
+	int nDivisionNum = 0;                                                  //分裂回数
+	DIVEWEAKENEMYTYPE DiveWeakEnemyType = {};                              //ダイブに弱い敵タイプ
+	
 	while (Buff != "END_SETDIVEWEAKENEMY")
-	{//ダイブに弱い敵の設定が終わるまで繰り返す
+	{//文字列がEND_SETSHOTWEAKENEMYになるまで繰り返す
 		LoadingFile >> Buff;//単語を読み込む
 		if (Buff == "#")
-		{//行のスキップ
+		{//#ならその行をスキップ
 			getline(LoadingFile, Buff);
 		}
 		else if (Buff == "DIVEWEAKENEMYTYPE")
-		{//ダイブに弱い敵のタイプ
+		{//射撃に弱い敵の種類
 			LoadingFile >> Buff;//イコール
 			LoadingFile >> nDiveWeakEnemyType;
-		}
-		else if (Buff == "ENEMYTYPE")
-		{//敵のタイプ
-			LoadingFile >> Buff;//イコール
-			LoadingFile >> nType;
-		}
-		else if (Buff == "LIFE")
-		{//体力
-			LoadingFile >> Buff;//イコール
-			LoadingFile >> nLife;
-		}
-		else if (Buff == "POS")
-		{//位置
-			LoadingFile >> Buff;//イコール
-			LoadingFile >> Pos.x;      //位置X
-			LoadingFile >> Pos.y;      //位置Y
-			LoadingFile >> Pos.z;      //位置Z
-		}
-		else if (Buff == "ROT")
-		{//向き
-			LoadingFile >> Buff;//イコール
-			LoadingFile >> Rot.x;      //位置X
-			LoadingFile >> Rot.y;      //位置Y
-			LoadingFile >> Rot.z;      //位置Z
-		}
-		else if (Buff == "SCALE")
-		{//拡大率
-			LoadingFile >> Buff;//イコール
-			LoadingFile >> Scale.x;      //拡大率X
-			LoadingFile >> Scale.y;      //拡大率Y
-			LoadingFile >> Scale.z;      //拡大率Z
-		}
-		else if (Buff == "PHASENUM")
-		{//フェーズ番号
-			LoadingFile >> Buff;      //イコール
-			LoadingFile >> nPhaseNum; //フェーズ番号
-		}
-		else if (Buff == "NORMALSPEED")
-		{//通常移動速度
-			LoadingFile >> Buff;//イコール
-			LoadingFile >> fNormalSpeed;//通常速度
-		}
-		else if (Buff == "SENSINGRANGE")
-		{//索敵範囲
-			LoadingFile >> Buff;//イコール
-			LoadingFile >> fSensingRange;
+			DiveWeakEnemyType = static_cast<DIVEWEAKENEMYTYPE>(nDiveWeakEnemyType);//ダイブに弱い敵のタイプを格納
+			SetDiveWeakEnemyType(DiveWeakEnemyType);//ダイブに弱い敵のタイプを設定
 		}
 		else if (Buff == "DIVISIONNUM")
 		{//分裂回数
-			LoadingFile >> Buff;//イコール
-			LoadingFile >> nDivisionNum;//分裂回数
+			LoadingFile >> Buff;         //イコール
+			LoadingFile >> nDivisionNum; //分裂回数
+			SetDivisionNum(nDivisionNum);//分裂回数を設定
 		}
-		else if (Buff == "SETMOVEAI")
-		{//移動AIの設定
-			while (1)
-			{
-				LoadingFile >> Buff;
-				if (Buff == "SETNUM")
-				{//数
-					LoadingFile >> Buff;//イコール
-					LoadingFile >> nCntMoveAi;//番号
-					while (1)
-					{
-						LoadingFile >> Buff;
-
-						if (Buff == "POS")
-						{//位置
-							LoadingFile >> Buff;//イコール
-							LoadingFile >> MoveAiPos.x;      //位置X
-							LoadingFile >> MoveAiPos.y;      //位置Y
-							LoadingFile >> MoveAiPos.z;      //位置Z
-						}
-						else if (Buff == "ROT")
-						{//向き
-							LoadingFile >> Buff;//イコール
-							LoadingFile >> MoveAiRot.x;      //位置X
-							LoadingFile >> MoveAiRot.y;      //位置Y
-							LoadingFile >> MoveAiRot.z;      //位置Z
-						}
-						else if (Buff == "SCALE")
-						{//拡大率
-							LoadingFile >> Buff;//イコール
-							LoadingFile >> MoveAiScale.x;      //拡大率X
-							LoadingFile >> MoveAiScale.y;      //拡大率Y
-							LoadingFile >> MoveAiScale.z;      //拡大率Z
-						}
-						else if (Buff == "END_SETNUM")
-						{//移動AIの設定
-							if (CScene::GetMode() == CScene::MODE_EDIT)
-							{//エディットモードの時は普通に全ての移動AIを出したいため直接動的配列に格納
-								CAIModel* pAiModel = CAIModel::Create(CAIModel::AIMODELTYPE::MOVEPOINT, MoveAiPos, MoveAiRot, MoveAiScale, nullptr);//AIモデルの生成
-								pAiModel->GetDrawInfo().SetUseDraw(false);  //描画しない
-								pAiModel->GetDrawInfo().SetUseShadow(false);//影を描画しない
-								VecMoveAi.push_back(pAiModel);              //移動AIの動的配列に格納
-							}
-							else if (CScene::GetMode() == CScene::MODE_GAME)
-							{//ゲームモードのときはまだ呼ばれていない敵の場合、移動AI自体を存在させたくないだけデータだけを格納し、呼ばれたときにPhaseManagerに保存したデータを使用して移動AIを召喚する
-								MoveAiInfo Info = {};          //移動AI情報
-								Info.Pos = MoveAiPos;          //位置
-								Info.Rot = MoveAiRot;          //向き
-								Info.Scale = MoveAiScale;      //拡大率
-								VecMoveAiInfo.push_back(Info); //動的配列に格納
-							}
-							break;
-						}
-					}
-				}
-				else if (Buff == "END_SETMOVEAI")
-				{//移動AIの設定終了
-					break;
-				}
-			}
+		else if (Buff == "SETENEMY")
+		{//敵の情報を設定
+			CEnemy::LoadInfoTxt(LoadingFile, listSaveManager, Buff, pObj);
 		}
 	}
 
-	DiveWeakEnemyType = static_cast<DIVEWEAKENEMYTYPE>(nDiveWeakEnemyType);//ダイブに弱い敵のタイプ
-	EnemyType = static_cast<ENEMYTYPE>(nType);                             //敵のタイプ
 	if (CScene::GetMode() == CScene::MODE_EDIT)
-	{//エディットモードなら
-		CDiveWeakEnemy* pDiveWeakEnemy = CDiveWeakEnemy::Create(DiveWeakEnemyType, nLife, nPhaseNum, Pos, Rot, Scale,3);//生成処理
-		pDiveWeakEnemy->GetDrawInfo().SetUseDraw(true);                                                                 //描画する
-		pDiveWeakEnemy->GetDrawInfo().SetUseShadow(true);                                                               //影を描画する
-		pDiveWeakEnemy->SetVecMoveAiInfo(VecMoveAi);                                                                    //移動AIの動的配列を設定
-		pDiveWeakEnemy->SetNormalSpeed(fNormalSpeed);                                                                   //通常移動速度を設定
-		pDiveWeakEnemy->SetSensingRange(fSensingRange);                                                                 //索敵範囲を設定
-		pDiveWeakEnemy->GetMoveInfo().SetUseUpdatePos(true);                                                            //位置を更新する
-		listSaveManager.push_back(pDiveWeakEnemy);                                                                      //ステージマネージャーに情報を保存する
+	{//エディットモードだったら
+		listSaveManager.push_back(this);//ステージマネージャーに情報を保存する
 	}
 	else if (CScene::GetMode() == CScene::MODE_GAME)
-	{//ゲームモードならフェーズマネージャーに情報を保存
-		CGame::GetPhaseManager()->PushPhaseInfo(Pos, Rot, Scale, nLife, static_cast<int>(EnemyType), nDiveWeakEnemyType, nPhaseNum,fNormalSpeed,fSensingRange,3,VecMoveAiInfo);
+	{//ゲームモードではフェーズマネージャーで召喚するので一旦消す
+		SetUseDeath(true);
+		SetDeath();
 	}
 }
-//============================================================================================================================================
 
 //====================================================================================
 //ステージマネージャーのオブジェクトをチェンジする
@@ -2117,7 +2299,7 @@ void CDiveWeakEnemy::AttackProcess()
 		CObjectX::PosInfo& PlayerPosInfo = pPlayer->GetPosInfo();           //プレイヤーの位置情報を取得
 		const D3DXVECTOR3& Pos = PosInfo.GetPos();                          //位置を取得
 		const D3DXVECTOR3& Move = MoveInfo.GetMove();                       //移動量を取得
-		const D3DXVECTOR3& PlayerPos = PlayerPosInfo.Pos;                   //プレイヤーの位置を取得
+		const D3DXVECTOR3& PlayerPos = PlayerPosInfo.GetPos();              //プレイヤーの位置を取得
 		D3DXVECTOR3 Rot = RotInfo.GetRot();                                 //向き
 		const float & fNormalSpeed = GetNormalSpeed();                      //通常移動速度
 		float fRotAim = atan2f(PlayerPos.x - Pos.x, PlayerPos.z - Pos.z);   //Z方向を基準にプレイヤーへの角度（目的の角度）を計算する
@@ -2352,7 +2534,7 @@ CEnemyMove_Frightened::CEnemyMove_Frightened(CEnemy* pEnemy, D3DXVECTOR3 StopPos
 	pEnemy->SetState(CEnemy::STATE::FRIGHTENDED);//怯え状態にする
 
 	//ロックオン表示を上記で求めたスクリーン座標に召喚する
-	m_pLockOn = CUi::Create(CUi::UITYPE::TARGET_000, CObject2D::POLYGONTYPE::SENTERROLLING, 200.0f, 200.0f, 100, true, D3DXVECTOR3(ScreenPos.x, ScreenPos.y, 0.0f),
+	m_pLockOn = CUi::Create(CUi::UITYPE::TARGET_000,false,CObject2D::POLYGONTYPE::SENTERROLLING, 200.0f, 200.0f, 100, true, D3DXVECTOR3(ScreenPos.x, ScreenPos.y, 0.0f),
 		D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(0.0f, 1.0f, 1.0f, 1.0f));
 
 	pEnemy->SetAction(false);        //攻撃をオフにする
@@ -2541,15 +2723,21 @@ CIdleEnemy* CIdleEnemy::Create(IDLEENEMYTYPE Type, int nLife, int nPhaseNum, D3D
 
 	//初期化処理
 	pIdleEnemy->Init();
-
-	//モデル情報を登録、読み込み
-	int nIdx = CManager::GetObjectXInfo()->Regist(s_aIDLEENEMY_FILENAME[int(Type)]);
-	pIdleEnemy->BindObjectXInfo(CManager::GetObjectXInfo()->GetMesh(nIdx),
-		CManager::GetObjectXInfo()->GetBuffMat(nIdx),
-		CManager::GetObjectXInfo()->GetdwNumMat(nIdx),
-		CManager::GetObjectXInfo()->GetTexture(nIdx),
-		CManager::GetObjectXInfo()->GetColorValue(nIdx));
-
+	int nType = static_cast<int>(Type);//タイプ番号を格納
+	if (nType < 0 || nType >= static_cast<int>(IDLEENEMYTYPE::MAX))
+	{//例外処理
+		assert("配列外アクセス！(CIdleEnemy)");
+	}
+	else
+	{
+		//情報を登録、読み込み
+		int nIdx = CManager::GetObjectXInfo()->Regist(s_aIDLEENEMY_FILENAME[nType]);
+		pIdleEnemy->BindObjectXInfo(CManager::GetObjectXInfo()->GetMesh(nIdx),
+			CManager::GetObjectXInfo()->GetBuffMat(nIdx),
+			CManager::GetObjectXInfo()->GetdwNumMat(nIdx),
+			CManager::GetObjectXInfo()->GetTexture(nIdx),
+			CManager::GetObjectXInfo()->GetColorValue(nIdx));
+	}
 	//ステータスを設定
 	pIdleEnemy->SetPhaseNum(nPhaseNum);                                     //フェーズ番号を設定する
 	pIdleEnemy->SetEnemyType(CEnemy::ENEMYTYPE::IDLE);                      //敵の種類を設定する
@@ -2600,173 +2788,173 @@ void CIdleEnemy::SaveInfoTxt(fstream& WritingFile)
 }
 //============================================================================================================================================
 
-//====================================================================================
-//情報ロード処理
-//===================================================================================
-void CIdleEnemy::LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff)
-{
-	int nType = 0;                                           //種類
-	int nIdleEnemyType = 0;                                  //何もしない敵タイプ   
-	int nLife = 0;                                           //体力
-	int nPhaseNum = 0;                                       //フェーズ番号
-	D3DXVECTOR3 Move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);        //移動量
-	D3DXVECTOR3 Pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);         //位置
-	D3DXVECTOR3 Scale = D3DXVECTOR3(0.0f, 0.0f, 0.0f);       //拡大率
-	D3DXVECTOR3 Rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);         //向き
-	IDLEENEMYTYPE IdleEnemyType = IDLEENEMYTYPE::NORMAL;     //何もしない敵の種類
-	ENEMYTYPE EnemyType = {};                                //敵の分類
-														     
-	vector<CAIModel*> VecMoveAi = {};                        //移動AIの動的配列
-	vector<MoveAiInfo> VecMoveAiInfo = {};                   //移動AI情報の動的配列
-														     
-	int nCntMoveAi = 0;                                      //移動AIの数
-	D3DXVECTOR3 MoveAiPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);   //移動AIの位置
-	D3DXVECTOR3 MoveAiRot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);   //移動AIの向き
-	D3DXVECTOR3 MoveAiScale = D3DXVECTOR3(0.0f, 0.0f, 0.0f); //移動AIの拡大率
-
-	float fNormalSpeed = 0.0f;                               //通常速度
-	float fSensingRange = 0.0f;                              //索敵距離（攻撃モードに入る距離)
-	while (Buff != "END_SETIDLEENEMY")
-	{
-		LoadingFile >> Buff;//単語を読み込む
-		if (Buff == "#")
-		{
-			getline(LoadingFile, Buff);
-		}
-		else if (Buff == "IDLEENEMYTYPE")
-		{
-			LoadingFile >> Buff;//イコール
-			LoadingFile >> nIdleEnemyType;//何もしない敵タイプを読み込む
-		}
-		else if (Buff == "ENEMYTYPE")
-		{
-			LoadingFile >> Buff;//イコール
-			LoadingFile >> nType;//敵の分類を読み込む
-		}
-		else if (Buff == "LIFE")
-		{
-			LoadingFile >> Buff;//イコール
-			LoadingFile >> nLife;//体力を読み込む
-		}
-		else if (Buff == "POS")
-		{
-			LoadingFile >> Buff;//イコール
-			LoadingFile >> Pos.x;      //位置X
-			LoadingFile >> Pos.y;      //位置Y
-			LoadingFile >> Pos.z;      //位置Z
-		}
-		else if (Buff == "ROT")
-		{
-			LoadingFile >> Buff;//イコール
-			LoadingFile >> Rot.x;      //向きX
-			LoadingFile >> Rot.y;      //向きY
-			LoadingFile >> Rot.z;      //向きZ
-		}
-		else if (Buff == "SCALE")
-		{
-			LoadingFile >> Buff;//イコール
-			LoadingFile >> Scale.x;      //拡大率X
-			LoadingFile >> Scale.y;      //拡大率Y
-			LoadingFile >> Scale.z;      //拡大率Z
-		}
-		else if (Buff == "PHASENUM")
-		{
-			LoadingFile >> Buff;      //イコール
-			LoadingFile >> nPhaseNum; //フェーズ番号
-		}
-		else if (Buff == "NORMALSPEED")
-		{
-			LoadingFile >> Buff;//イコール
-			LoadingFile >> fNormalSpeed;//通常速度
-		}
-		else if (Buff == "SENSINGRANGE")
-		{
-			LoadingFile >> Buff;//イコール
-			LoadingFile >> fSensingRange;//索敵範囲を読み込む
-		}
-		else if (Buff == "SETMOVEAI")
-		{//移動AIの情報を読み込む
-			while (1)
-			{
-				LoadingFile >> Buff;
-				if (Buff == "SETNUM")
-				{
-					LoadingFile >> Buff;//イコール
-					LoadingFile >> nCntMoveAi;//番号
-					while (1)
-					{
-						LoadingFile >> Buff;
-
-						if (Buff == "POS")
-						{
-							LoadingFile >> Buff;//イコール
-							LoadingFile >> MoveAiPos.x;      //位置X
-							LoadingFile >> MoveAiPos.y;      //位置Y
-							LoadingFile >> MoveAiPos.z;      //位置Z
-						}
-						else if (Buff == "ROT")
-						{
-							LoadingFile >> Buff;//イコール
-							LoadingFile >> MoveAiRot.x;      //向きX
-							LoadingFile >> MoveAiRot.y;      //向きY
-							LoadingFile >> MoveAiRot.z;      //向きZ
-						}
-						else if (Buff == "SCALE")
-						{
-							LoadingFile >> Buff;//イコール
-							LoadingFile >> MoveAiScale.x;      //拡大率X
-							LoadingFile >> MoveAiScale.y;      //拡大率Y
-							LoadingFile >> MoveAiScale.z;      //拡大率Z
-						}
-						else if (Buff == "END_SETNUM")
-						{
-							if (CScene::GetMode() == CScene::MODE_EDIT)
-							{//エディットモードの場合（エディットモードでは最初から全ての敵と移動AIを表示したいので、生成する）
-								CAIModel* pAiModel = CAIModel::Create(CAIModel::AIMODELTYPE::MOVEPOINT, MoveAiPos, MoveAiRot, MoveAiScale, nullptr);//生成
-								pAiModel->GetDrawInfo().SetUseDraw(true);//描画をする
-								pAiModel->GetDrawInfo().SetUseShadow(true);//影を描画する
-								VecMoveAi.push_back(pAiModel);
-							}
-							else if (CScene::GetMode() == CScene::MODE_GAME)
-							{//ゲームモードの場合（ゲームモードはフェーズ制で進むので、最初から移動AIを生成したいので、フェーズ情報に格納する)
-								MoveAiInfo Info = {};//移動AIの情報を初期化
-								Info.Pos = MoveAiPos;//移動AIの位置
-								Info.Rot = MoveAiRot;//移動AIの向き
-								Info.Scale = MoveAiScale;//移動AIの拡大率
-								VecMoveAiInfo.push_back(Info);//移動AI情報の動的配列に格納
-							}
-							break;
-						}
-					}
-				}
-				else if (Buff == "END_SETMOVEAI")
-				{//移動AIの読み込みを終了する
-					break;
-				}
-			}
-		}
-	}
-
-	IdleEnemyType = static_cast<IDLEENEMYTYPE>(nIdleEnemyType);//int型で読み込んだ何もしない敵のタイプ番号を列挙型にキャストして格納
-	EnemyType = static_cast<ENEMYTYPE>(nType);                 //敵の分類を列挙型にキャスト
-
-	if (CScene::GetMode() == CScene::MODE_EDIT)
-	{//エディットモードの場合（フェーズ制は適用しないので、最初から全ての情報を生成）
-		CIdleEnemy* pIdleEnemy = CIdleEnemy::Create(IdleEnemyType, nLife, nPhaseNum, Pos, Rot, Scale);//生成
-		pIdleEnemy->GetDrawInfo().SetUseDraw(true);        //描画する
-		pIdleEnemy->GetDrawInfo().SetUseShadow(true);      //影を描画する
-		pIdleEnemy->SetVecMoveAiInfo(VecMoveAi);           //移動AI情報を設定
-		pIdleEnemy->SetNormalSpeed(3.0f);                  //通常速度を設定
-		pIdleEnemy->SetSensingRange(fSensingRange);        //索敵範囲を設定
-		pIdleEnemy->GetMoveInfo().SetUseUpdatePos(true);   //位置の更新を行う
-		listSaveManager.push_back(pIdleEnemy);             //vectorに情報を保存する
-	}
-	else if (CScene::GetMode() == CScene::MODE_GAME)
-	{//ゲームモードなら（フェーズ制でゲームが動くので、フェーズ情報に敵の情報を格納）
-		CGame::GetPhaseManager()->PushPhaseInfo(Pos, Rot, Scale, nLife, static_cast<int>(EnemyType),nIdleEnemyType, nPhaseNum,3.0f, fSensingRange, 3, VecMoveAiInfo);
-	}
-}
-//============================================================================================================================================
+////====================================================================================
+////情報ロード処理
+////===================================================================================
+//void CIdleEnemy::LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff)
+//{
+//	int nType = 0;                                           //種類
+//	int nIdleEnemyType = 0;                                  //何もしない敵タイプ   
+//	int nLife = 0;                                           //体力
+//	int nPhaseNum = 0;                                       //フェーズ番号
+//	D3DXVECTOR3 Move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);        //移動量
+//	D3DXVECTOR3 Pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);         //位置
+//	D3DXVECTOR3 Scale = D3DXVECTOR3(0.0f, 0.0f, 0.0f);       //拡大率
+//	D3DXVECTOR3 Rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);         //向き
+//	IDLEENEMYTYPE IdleEnemyType = IDLEENEMYTYPE::NORMAL;     //何もしない敵の種類
+//	ENEMYTYPE EnemyType = {};                                //敵の分類
+//														     
+//	vector<CAIModel*> VecMoveAi = {};                        //移動AIの動的配列
+//	vector<MoveAiInfo> VecMoveAiInfo = {};                   //移動AI情報の動的配列
+//														     
+//	int nCntMoveAi = 0;                                      //移動AIの数
+//	D3DXVECTOR3 MoveAiPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);   //移動AIの位置
+//	D3DXVECTOR3 MoveAiRot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);   //移動AIの向き
+//	D3DXVECTOR3 MoveAiScale = D3DXVECTOR3(0.0f, 0.0f, 0.0f); //移動AIの拡大率
+//
+//	float fNormalSpeed = 0.0f;                               //通常速度
+//	float fSensingRange = 0.0f;                              //索敵距離（攻撃モードに入る距離)
+//	while (Buff != "END_SETIDLEENEMY")
+//	{
+//		LoadingFile >> Buff;//単語を読み込む
+//		if (Buff == "#")
+//		{
+//			getline(LoadingFile, Buff);
+//		}
+//		else if (Buff == "IDLEENEMYTYPE")
+//		{
+//			LoadingFile >> Buff;//イコール
+//			LoadingFile >> nIdleEnemyType;//何もしない敵タイプを読み込む
+//		}
+//		else if (Buff == "ENEMYTYPE")
+//		{
+//			LoadingFile >> Buff;//イコール
+//			LoadingFile >> nType;//敵の分類を読み込む
+//		}
+//		else if (Buff == "LIFE")
+//		{
+//			LoadingFile >> Buff;//イコール
+//			LoadingFile >> nLife;//体力を読み込む
+//		}
+//		else if (Buff == "POS")
+//		{
+//			LoadingFile >> Buff;//イコール
+//			LoadingFile >> Pos.x;      //位置X
+//			LoadingFile >> Pos.y;      //位置Y
+//			LoadingFile >> Pos.z;      //位置Z
+//		}
+//		else if (Buff == "ROT")
+//		{
+//			LoadingFile >> Buff;//イコール
+//			LoadingFile >> Rot.x;      //向きX
+//			LoadingFile >> Rot.y;      //向きY
+//			LoadingFile >> Rot.z;      //向きZ
+//		}
+//		else if (Buff == "SCALE")
+//		{
+//			LoadingFile >> Buff;//イコール
+//			LoadingFile >> Scale.x;      //拡大率X
+//			LoadingFile >> Scale.y;      //拡大率Y
+//			LoadingFile >> Scale.z;      //拡大率Z
+//		}
+//		else if (Buff == "PHASENUM")
+//		{
+//			LoadingFile >> Buff;      //イコール
+//			LoadingFile >> nPhaseNum; //フェーズ番号
+//		}
+//		else if (Buff == "NORMALSPEED")
+//		{
+//			LoadingFile >> Buff;//イコール
+//			LoadingFile >> fNormalSpeed;//通常速度
+//		}
+//		else if (Buff == "SENSINGRANGE")
+//		{
+//			LoadingFile >> Buff;//イコール
+//			LoadingFile >> fSensingRange;//索敵範囲を読み込む
+//		}
+//		else if (Buff == "SETMOVEAI")
+//		{//移動AIの情報を読み込む
+//			while (1)
+//			{
+//				LoadingFile >> Buff;
+//				if (Buff == "SETNUM")
+//				{
+//					LoadingFile >> Buff;//イコール
+//					LoadingFile >> nCntMoveAi;//番号
+//					while (1)
+//					{
+//						LoadingFile >> Buff;
+//
+//						if (Buff == "POS")
+//						{
+//							LoadingFile >> Buff;//イコール
+//							LoadingFile >> MoveAiPos.x;      //位置X
+//							LoadingFile >> MoveAiPos.y;      //位置Y
+//							LoadingFile >> MoveAiPos.z;      //位置Z
+//						}
+//						else if (Buff == "ROT")
+//						{
+//							LoadingFile >> Buff;//イコール
+//							LoadingFile >> MoveAiRot.x;      //向きX
+//							LoadingFile >> MoveAiRot.y;      //向きY
+//							LoadingFile >> MoveAiRot.z;      //向きZ
+//						}
+//						else if (Buff == "SCALE")
+//						{
+//							LoadingFile >> Buff;//イコール
+//							LoadingFile >> MoveAiScale.x;      //拡大率X
+//							LoadingFile >> MoveAiScale.y;      //拡大率Y
+//							LoadingFile >> MoveAiScale.z;      //拡大率Z
+//						}
+//						else if (Buff == "END_SETNUM")
+//						{
+//							if (CScene::GetMode() == CScene::MODE_EDIT)
+//							{//エディットモードの場合（エディットモードでは最初から全ての敵と移動AIを表示したいので、生成する）
+//								CAIModel* pAiModel = CAIModel::Create(CAIModel::AIMODELTYPE::MOVEPOINT, MoveAiPos, MoveAiRot, MoveAiScale, nullptr);//生成
+//								pAiModel->GetDrawInfo().SetUseDraw(true);//描画をする
+//								pAiModel->GetDrawInfo().SetUseShadow(true);//影を描画する
+//								VecMoveAi.push_back(pAiModel);
+//							}
+//							else if (CScene::GetMode() == CScene::MODE_GAME)
+//							{//ゲームモードの場合（ゲームモードはフェーズ制で進むので、最初から移動AIを生成したいので、フェーズ情報に格納する)
+//								MoveAiInfo Info = {};//移動AIの情報を初期化
+//								Info.Pos = MoveAiPos;//移動AIの位置
+//								Info.Rot = MoveAiRot;//移動AIの向き
+//								Info.Scale = MoveAiScale;//移動AIの拡大率
+//								VecMoveAiInfo.push_back(Info);//移動AI情報の動的配列に格納
+//							}
+//							break;
+//						}
+//					}
+//				}
+//				else if (Buff == "END_SETMOVEAI")
+//				{//移動AIの読み込みを終了する
+//					break;
+//				}
+//			}
+//		}
+//	}
+//
+//	IdleEnemyType = static_cast<IDLEENEMYTYPE>(nIdleEnemyType);//int型で読み込んだ何もしない敵のタイプ番号を列挙型にキャストして格納
+//	EnemyType = static_cast<ENEMYTYPE>(nType);                 //敵の分類を列挙型にキャスト
+//
+//	if (CScene::GetMode() == CScene::MODE_EDIT)
+//	{//エディットモードの場合（フェーズ制は適用しないので、最初から全ての情報を生成）
+//		CIdleEnemy* pIdleEnemy = CIdleEnemy::Create(IdleEnemyType, nLife, nPhaseNum, Pos, Rot, Scale);//生成
+//		pIdleEnemy->GetDrawInfo().SetUseDraw(true);        //描画する
+//		pIdleEnemy->GetDrawInfo().SetUseShadow(true);      //影を描画する
+//		pIdleEnemy->SetVecMoveAiInfo(VecMoveAi);           //移動AI情報を設定
+//		pIdleEnemy->SetNormalSpeed(3.0f);                  //通常速度を設定
+//		pIdleEnemy->SetSensingRange(fSensingRange);        //索敵範囲を設定
+//		pIdleEnemy->GetMoveInfo().SetUseUpdatePos(true);   //位置の更新を行う
+//		listSaveManager.push_back(pIdleEnemy);             //vectorに情報を保存する
+//	}
+//	else if (CScene::GetMode() == CScene::MODE_GAME)
+//	{//ゲームモードなら（フェーズ制でゲームが動くので、フェーズ情報に敵の情報を格納）
+//		CGame::GetPhaseManager()->PushPhaseInfo(Pos, Rot, Scale, nLife, static_cast<int>(EnemyType),nIdleEnemyType, nPhaseNum,3.0f, fSensingRange, 3, VecMoveAiInfo);
+//	}
+//}
+////============================================================================================================================================
 
 //====================================================================================
 //タイプチェンジ処理
@@ -2834,6 +3022,47 @@ CObject* CIdleEnemy::ManagerSaveObject()
 void CIdleEnemy::ManagerChooseControlInfo()
 {
 	CEnemy::ManagerChooseControlInfo();//敵の情報を操作する
+}
+//============================================================================================================================================
+
+//====================================================================================
+//テキストファイルから情報を読み込む
+//===================================================================================
+void CIdleEnemy::LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff, CObject* pObj)
+{
+	int nIdleWeakEnemyType = 0;                                            //何もしない敵タイプ   
+	IDLEENEMYTYPE IdleWeakEnemyType = {};                                  //何もしない敵タイプ
+	CIdleEnemy* pIdleEnemy = dynamic_cast<CIdleEnemy*>(pObj);              //何もしない敵にダウンキャスト
+
+	while (Buff != "END_SETIDLEENEMY")
+	{//文字列がEND_SETSHOTWEAKENEMYになるまで繰り返す
+		LoadingFile >> Buff;//単語を読み込む
+		if (Buff == "#")
+		{//#ならその行をスキップ
+			getline(LoadingFile, Buff);
+		}
+		else if (Buff == "IDLEENEMYTYPE")
+		{//射撃に弱い敵の種類
+			LoadingFile >> Buff;//イコール
+			LoadingFile >> nIdleWeakEnemyType;
+			IdleWeakEnemyType = static_cast<IDLEENEMYTYPE>(nIdleWeakEnemyType);//何もしない敵のタイプを格納
+			SetIdleEnemyType(IdleWeakEnemyType);                               //何もしない敵のタイプを設定
+		}
+		else if (Buff == "SETENEMY")
+		{//敵の情報を設定
+			CEnemy::LoadInfoTxt(LoadingFile, listSaveManager, Buff, pObj);
+		}
+	}
+
+	if (CScene::GetMode() == CScene::MODE_EDIT)
+	{//エディットモードだったら
+		listSaveManager.push_back(this);//ステージマネージャーに情報を保存する
+	}
+	else if (CScene::GetMode() == CScene::MODE_GAME)
+	{//ゲームモードではフェーズマネージャーで召喚するので一旦消す
+		SetUseDeath(true);
+		SetDeath();
+	}
 }
 //============================================================================================================================================
 

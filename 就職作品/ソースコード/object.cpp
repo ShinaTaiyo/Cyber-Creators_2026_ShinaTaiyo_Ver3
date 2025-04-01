@@ -12,6 +12,7 @@
 #include "object2d.h"
 #include "renderer.h"
 #include "manager.h"
+#include "game.h"
 //====================================================
 
 //========================
@@ -21,17 +22,15 @@ int CObject::m_nNumAll = 0;//オブジェクト総数
 CObject* CObject::m_apObject[CObject::m_nMAXPRIORITY][CObject::m_nMAXOBJECT] = {};
 CObject* CObject::m_pTop[CObject::m_nMAXPRIORITY] = {};
 CObject* CObject::m_pCur[CObject::m_nMAXPRIORITY] = {};
-
 bool CObject::m_bActivationReleaseAll = false;            //ReleaseAllを発動するかどうか
 //====================================================
-
 
 //=====================================================
 //コンストラクタ（描画順設定用）
 //=====================================================
 CObject::CObject(int nPriority,bool bUseintPriority, TYPE Type, OBJECTTYPE ObjType) : m_type(Type),m_ObjectType(ObjType),
 m_bDeath(false), m_bUseDeath(false),m_pPrev(nullptr),m_pNext(nullptr),
-m_nPriority(nPriority),m_bCreateSuccess(false),m_nCntFrame(0),m_ManagerObjectType(MANAGEROBJECTTYPE::NONE)
+m_nPriority(nPriority),m_bCreateSuccess(false),m_nCntFrame(0),m_ManagerObjectType(MANAGEROBJECTTYPE::NONE),m_bIsStopUpdatePause(true)
 {
 	m_bCreateSuccess = false;                       //生成に成功したかどうか
 	m_bDeath = false;                               //死亡フラグ
@@ -95,7 +94,7 @@ HRESULT CObject::Init()
 //=====================================================
 void CObject::Uninit()
 {
-	SetDeath();
+
 }
 //======================================================================================================================
 
@@ -166,11 +165,25 @@ void CObject::UpdateAll()
 
 		while (pObj != nullptr)
 		{
-			//次のオブジェクトを格納
-			CObject* pNext = pObj->m_pNext;
+			if (CGame::GetPauseFlag())
+			{//ゲームモードがポーズ状態だったら
 
-			pObj->Update();
-			pObj = pNext;
+				//次のオブジェクトを格納
+				CObject* pNext = pObj->m_pNext;
+
+				if (!pObj->m_bIsStopUpdatePause)
+				{//ポーズ中に更新を止めないなら
+					pObj->Update();
+				}
+
+				pObj = pNext;//リストを次へ
+			}
+			else
+			{//ゲームモードがポーズ状態じゃなかったら
+				CObject* pNext = pObj->m_pNext;    //次のオブジェクトを格納
+				pObj->Update();                    //更新処理
+				pObj = pNext;                      //リストを次へ
+			}
 		}
 	}
 
@@ -184,19 +197,17 @@ void CObject::UpdateAll()
 void CObject::DrawAll()
 {
 	CObject* pObj = nullptr;//オブジェクト格納用
-
-	for (int nCntPriority = 0; nCntPriority < m_nMAXPRIORITY; nCntPriority++)
+	for (int nCnt = 0; nCnt < static_cast<int>(TYPE::MAX); nCnt++)
 	{
-		pObj = m_pTop[nCntPriority];//トップオブジェクトを取得
+	    pObj = m_pTop[s_nDrawPriority[nCnt]]; // トップオブジェクトを取得
 		while (pObj != nullptr)
 		{
-			//次のオブジェクトを格納
-			CObject* pNext = pObj->m_pNext;
-
-			pObj->Draw();
+			CObject* pNext = pObj->m_pNext; // 次のオブジェクトを格納
+			pObj->Draw(); // 描画
 			pObj = pNext;
 		}
 	}
+
 }
 //======================================================================================================================
 
@@ -330,7 +341,16 @@ void CObject::Release()
 //=======================================================================
 void CObject::SaveInfoTxt(fstream& WritingFile)
 {
+	//特になし
+}
+//=============================================================================================================================================
 
+//=======================================================================
+//情報をテキストファイルから読み込む
+//=======================================================================
+void CObject::LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff, CObject* pObj)
+{
+	//特になし
 }
 //=============================================================================================================================================
 
@@ -339,7 +359,7 @@ void CObject::SaveInfoTxt(fstream& WritingFile)
 //=======================================================================
 void CObject::ManagerChooseControlInfo()
 {
-
+	//特になし
 }
 //=============================================================================================================================================
 

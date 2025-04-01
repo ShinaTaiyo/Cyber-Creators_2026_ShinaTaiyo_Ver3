@@ -11,6 +11,7 @@
 #include "collision.h"
 #include "manager.h"
 #include "calculation.h"
+#include "particle.h"
 #include "debugtext.h"
 #include "camera.h"
 //====================================================================================================================
@@ -419,37 +420,40 @@ bool CCollision::IsPointInsideAABB(const D3DXVECTOR3& Point, CObjectX* pComObjX)
 //==============================================================
 void CCollision::ResolveExtrusionCollisionSquare(CObjectX* pObjX, CObjectX* pComObjX)
 {
-	if (pObjX->GetCollisionInfo().GetSquareInfo().GetPushOutFlag(AXIS::X) == true)
-	{//X軸を先に判定（壁ずりで落ちていく時に引っ掛からないためにYは最後)
-		CCollision::NewExtrusionCollisionSquareX(pObjX, pComObjX);
-		CCollision::NewExtrusionCollisionSquareZ(pObjX, pComObjX);
-		CCollision::NewExtrusionCollisionSquareY(pObjX, pComObjX);
-	}
-	else if (pObjX->GetCollisionInfo().GetSquareInfo().GetPushOutFlag(AXIS::Z) == true)
-	{//Z軸を先に判定（壁ずりで落ちていく時に引っ掛からないためにYは最後)
-		CCollision::NewExtrusionCollisionSquareZ(pObjX, pComObjX);
-		CCollision::NewExtrusionCollisionSquareX(pObjX, pComObjX);
-		CCollision::NewExtrusionCollisionSquareY(pObjX, pComObjX);
-	}
-	else if (pObjX->GetCollisionInfo().GetSquareInfo().GetPushOutFlag(AXIS::Y) == true)
-	{//Y軸を先に判定（歩いている時にオブジェクト同士の境界で引っ掛からないため)
+	if (pObjX->GetCollisionInfo().GetState().GetLandingOld())
+	{
 		CCollision::NewExtrusionCollisionSquareY(pObjX, pComObjX);
 		if (pObjX->GetCollisionInfo().GetSquareInfo().GetPushOutFlag(AXIS::X) == true)
-		{//歩いている中でも横の壁づりで引っ掛からないために次にX軸を判定)
+		{
 			CCollision::NewExtrusionCollisionSquareX(pObjX, pComObjX);
 			CCollision::NewExtrusionCollisionSquareZ(pObjX, pComObjX);
 		}
 		else
-		{//歩いている中でも横の壁づりで引っ掛からないために次にZ軸を判定)
+		{
 			CCollision::NewExtrusionCollisionSquareZ(pObjX, pComObjX);
 			CCollision::NewExtrusionCollisionSquareX(pObjX, pComObjX);
 		}
 	}
+	else if (pObjX->GetCollisionInfo().GetState().GetWallingOld())
+	{
+		if (pObjX->GetCollisionInfo().GetSquareInfo().GetPushOutFlag(AXIS::X) == true)
+		{
+			CCollision::NewExtrusionCollisionSquareX(pObjX, pComObjX);
+			CCollision::NewExtrusionCollisionSquareZ(pObjX, pComObjX);
+		}
+		else
+		{
+			CCollision::NewExtrusionCollisionSquareZ(pObjX, pComObjX);
+			CCollision::NewExtrusionCollisionSquareX(pObjX, pComObjX);
+		}
+		CCollision::NewExtrusionCollisionSquareY(pObjX, pComObjX);
+	}
 	else
-	{//どの軸も優先されないので普通に判定
+	{
 		CCollision::NewExtrusionCollisionSquareX(pObjX, pComObjX);
 		CCollision::NewExtrusionCollisionSquareY(pObjX, pComObjX);
 		CCollision::NewExtrusionCollisionSquareZ(pObjX, pComObjX);
+
 	}
 }
 //====================================================================================================================
@@ -473,9 +477,10 @@ void CCollision::ExtrusionCollisionSquarePushOutFirstDecide(CObjectX* pObjX, COb
 	const D3DXVECTOR3& ComPos = pComObjX->GetPosInfo().GetPos();          //相手の位置
 	const D3DXVECTOR3& ComVtxMax = pComObjX->GetSizeInfo().GetVtxMax();   //相手の最大頂点
 	const D3DXVECTOR3& ComVtxMin = pComObjX->GetSizeInfo().GetVtxMin();   //相手の最小頂点
-
+	CObjectX::CollisionInfo& CollisionInfo = pObjX->GetCollisionInfo();   //当たり判定情報を取得する
+	CObjectX::CollisionInfo::State& CollisionState = CollisionInfo.GetState();//当たり判定状態を取得する
 	//*処理開始
-
+	
 	//上
 	if (MyPosFuture.x + MyVtxMax.x > ComPos.x + ComVtxMin.x
 		&& MyPosFuture.x + MyVtxMin.x < ComPos.x + ComVtxMax.x
@@ -484,10 +489,9 @@ void CCollision::ExtrusionCollisionSquarePushOutFirstDecide(CObjectX* pObjX, COb
 		&& MyPosFuture.z + MyVtxMax.z > ComPos.z + ComVtxMin.z
 		&& MyPosFuture.z + MyVtxMin.z < ComPos.z + ComVtxMax.z)
 	{//1f後にオブジェクトに乗るなら
-		pObjX->GetCollisionInfo().GetSquareInfo().SetPushOutFirstFlag(AXIS::Y, true);
-		pObjX->GetCollisionInfo().GetSquareInfo().SetPushOutFirstFlag(AXIS::X, false);
-		pObjX->GetCollisionInfo().GetSquareInfo().SetPushOutFirstFlag(AXIS::Z, false);
-		pObjX->SetIsLanding(true);//地面に乗っているフラグをオンにする
+		CollisionInfo.GetSquareInfo().SetPushOutFirstFlag(AXIS::Y, true);
+		CollisionInfo.GetSquareInfo().SetPushOutFirstFlag(AXIS::X, false);
+		CollisionInfo.GetSquareInfo().SetPushOutFirstFlag(AXIS::Z, false);
 	}
 	//下
 	else if (MyPosFuture.x + MyVtxMax.x > ComPos.x + ComVtxMin.x
@@ -497,9 +501,9 @@ void CCollision::ExtrusionCollisionSquarePushOutFirstDecide(CObjectX* pObjX, COb
 		&& MyPosFuture.z + MyVtxMax.z > ComPos.z + ComVtxMin.z
 		&& MyPosFuture.z + MyVtxMin.z < ComPos.z + ComVtxMax.z)
 	{//1f後にオブジェクトの下に当たるなら
-		pObjX->GetCollisionInfo().GetSquareInfo().SetPushOutFirstFlag(AXIS::Y, true);
-		pObjX->GetCollisionInfo().GetSquareInfo().SetPushOutFirstFlag(AXIS::X, false);
-		pObjX->GetCollisionInfo().GetSquareInfo().SetPushOutFirstFlag(AXIS::Z, false);
+		CollisionInfo.GetSquareInfo().SetPushOutFirstFlag(AXIS::Y, true);
+		CollisionInfo.GetSquareInfo().SetPushOutFirstFlag(AXIS::X, false);
+		CollisionInfo.GetSquareInfo().SetPushOutFirstFlag(AXIS::Z, false);
 	}
 	if (MyPosFuture.x + MyVtxMax.x > ComPos.x + ComVtxMin.x
 		&& MyPosOld.x + MyVtxMax.x <= ComPos.x + ComVtxMin.x
@@ -508,8 +512,8 @@ void CCollision::ExtrusionCollisionSquarePushOutFirstDecide(CObjectX* pObjX, COb
 		&& MyPosFuture.z + MyVtxMax.z > ComPos.z + ComVtxMin.z
 		&& MyPosFuture.z + MyVtxMin.z < ComPos.z + ComVtxMax.z)
 	{//1f後にオブジェクトのX軸の右側に当たるなら
-		pObjX->GetCollisionInfo().GetSquareInfo().SetPushOutFirstFlag(AXIS::X, true);
-		pObjX->GetCollisionInfo().GetSquareInfo().SetPushOutFirstFlag(AXIS::Z, false);
+		CollisionInfo.GetSquareInfo().SetPushOutFirstFlag(AXIS::X, true);
+		CollisionInfo.GetSquareInfo().SetPushOutFirstFlag(AXIS::Z, false);
 	}
 	else if (MyPosFuture.x + MyVtxMin.x < ComPos.x + ComVtxMax.x
 		&& MyPosOld.x + MyVtxMin.x >= ComPos.x + ComVtxMax.x
@@ -518,8 +522,8 @@ void CCollision::ExtrusionCollisionSquarePushOutFirstDecide(CObjectX* pObjX, COb
 		&& MyPosFuture.z + MyVtxMax.z > ComPos.z + ComVtxMin.z
 		&& MyPosFuture.z + MyVtxMin.z < ComPos.z + ComVtxMax.z)
 	{//1f後にオブジェクトのX軸の左側に当たるなら
-		pObjX->GetCollisionInfo().GetSquareInfo().SetPushOutFirstFlag(AXIS::X, true);
-		pObjX->GetCollisionInfo().GetSquareInfo().SetPushOutFirstFlag(AXIS::Z, false);
+		CollisionInfo.GetSquareInfo().SetPushOutFirstFlag(AXIS::X, true);
+		CollisionInfo.GetSquareInfo().SetPushOutFirstFlag(AXIS::Z, false);
 	}
 	//前
 	if (MyPosFuture.z + MyVtxMax.z > ComPos.z + ComVtxMin.z
@@ -529,8 +533,8 @@ void CCollision::ExtrusionCollisionSquarePushOutFirstDecide(CObjectX* pObjX, COb
 		&& MyPosFuture.x + MyVtxMax.x > ComPos.x + ComVtxMin.x
 		&& MyPosFuture.x + MyVtxMin.x < ComPos.x + ComVtxMax.x)
 	{//1f後にオブジェクトの手前側に当たるなら
-		pObjX->GetCollisionInfo().GetSquareInfo().SetPushOutFirstFlag(AXIS::Z, true);
-		pObjX->GetCollisionInfo().GetSquareInfo().SetPushOutFirstFlag(AXIS::X, false);
+		CollisionInfo.GetSquareInfo().SetPushOutFirstFlag(AXIS::Z, true);
+		CollisionInfo.GetSquareInfo().SetPushOutFirstFlag(AXIS::X, false);
 	}
 	//奥
 	else if (MyPosFuture.z + MyVtxMin.z < ComPos.z + ComVtxMax.z
@@ -540,8 +544,8 @@ void CCollision::ExtrusionCollisionSquarePushOutFirstDecide(CObjectX* pObjX, COb
 		&& MyPosFuture.x + MyVtxMax.x > ComPos.x + ComVtxMin.x
 		&& MyPosFuture.x + MyVtxMin.x < ComPos.x + ComVtxMax.x)
 	{//1f後にオブジェクトの奥側に当たるなら
-		pObjX->GetCollisionInfo().GetSquareInfo().SetPushOutFirstFlag(AXIS::Z, true);
-		pObjX->GetCollisionInfo().GetSquareInfo().SetPushOutFirstFlag(AXIS::X, false);
+		CollisionInfo.GetSquareInfo().SetPushOutFirstFlag(AXIS::Z, true);
+		CollisionInfo.GetSquareInfo().SetPushOutFirstFlag(AXIS::X, false);
 	}
 }
 //====================================================================================================================
@@ -561,6 +565,9 @@ bool CCollision::NewExtrusionCollisionSquareX(CObjectX* pObjX, CObjectX* pComObj
 	const D3DXVECTOR3& ComVtxMax = pComObjX->GetSizeInfo().GetVtxMax(); //相手の最大頂点
 	const D3DXVECTOR3& ComVtxMin = pComObjX->GetSizeInfo().GetVtxMin(); //相手の最小頂点
 
+	CObjectX::CollisionInfo& CollisionInfo = pObjX->GetCollisionInfo();        //当たり判定情報を取得する
+	CObjectX::CollisionInfo::State& CollisionState = CollisionInfo.GetState(); //当たり判定状態を取得する
+
 	if (MyPos.x + MyVtxMax.x > ComPos.x + ComVtxMin.x
 		&& MyPosOld.x + MyVtxMax.x <= ComPos.x + ComVtxMin.x
 		&& MyPos.y + MyVtxMax.y > ComPos.y + ComVtxMin.y
@@ -571,6 +578,7 @@ bool CCollision::NewExtrusionCollisionSquareX(CObjectX* pObjX, CObjectX* pComObj
 		pObjX->GetPosInfo().SetPos(D3DXVECTOR3(ComPos.x + ComVtxMin.x - MyVtxMax.x - 0.1f,
 			pObjX->GetPosInfo().GetPos().y,
 			pObjX->GetPosInfo().GetPos().z));
+		CollisionState.SetWalling(true);
 		return true;
 	}
 	else if (MyPos.x + MyVtxMin.x < ComPos.x + ComVtxMax.x
@@ -583,6 +591,7 @@ bool CCollision::NewExtrusionCollisionSquareX(CObjectX* pObjX, CObjectX* pComObj
 		pObjX->GetPosInfo().SetPos(D3DXVECTOR3(ComPos.x + ComVtxMax.x - MyVtxMin.x + 0.1f,
 			pObjX->GetPosInfo().GetPos().y,
 			pObjX->GetPosInfo().GetPos().z));
+		CollisionState.SetWalling(true);
 		return true;
 	}
 	return false;
@@ -594,15 +603,18 @@ bool CCollision::NewExtrusionCollisionSquareX(CObjectX* pObjX, CObjectX* pComObj
 //================================================================
 bool CCollision::NewExtrusionCollisionSquareY(CObjectX* pObjX, CObjectX* pComObjX)
 {
-	const D3DXVECTOR3& MyPos = pObjX->GetPosInfo().GetPos();            //自分の位置
-	const D3DXVECTOR3& MyMove = pObjX->GetMoveInfo().GetMove();         //自分の移動量
-	const D3DXVECTOR3& MyPosOld = pObjX->GetPosInfo().GetPosOld();      //自分の1f前の位置
-	const D3DXVECTOR3& MyVtxMax = pObjX->GetSizeInfo().GetVtxMax();     //自分の最大頂点
-	const D3DXVECTOR3& MyVtxMin = pObjX->GetSizeInfo().GetVtxMin();     //自分の最小頂点
+	const D3DXVECTOR3& MyPos = pObjX->GetPosInfo().GetPos();                   //自分の位置
+	const D3DXVECTOR3& MyMove = pObjX->GetMoveInfo().GetMove();                //自分の移動量
+	const D3DXVECTOR3& MyPosOld = pObjX->GetPosInfo().GetPosOld();             //自分の1f前の位置
+	const D3DXVECTOR3& MyVtxMax = pObjX->GetSizeInfo().GetVtxMax();            //自分の最大頂点
+	const D3DXVECTOR3& MyVtxMin = pObjX->GetSizeInfo().GetVtxMin();            //自分の最小頂点
+																		       
+	const D3DXVECTOR3& ComPos = pComObjX->GetPosInfo().GetPos();               //相手の位置
+	const D3DXVECTOR3& ComVtxMax = pComObjX->GetSizeInfo().GetVtxMax();        //相手の最大頂点
+	const D3DXVECTOR3& ComVtxMin = pComObjX->GetSizeInfo().GetVtxMin();        //相手の最小頂点
+	CObjectX::CollisionInfo& CollisionInfo = pObjX->GetCollisionInfo();        //当たり判定情報を取得する
+	CObjectX::CollisionInfo::State& CollisionState = CollisionInfo.GetState(); //当たり判定状態を取得する
 
-	const D3DXVECTOR3& ComPos = pComObjX->GetPosInfo().GetPos();        //相手の位置
-	const D3DXVECTOR3& ComVtxMax = pComObjX->GetSizeInfo().GetVtxMax(); //相手の最大頂点
-	const D3DXVECTOR3& ComVtxMin = pComObjX->GetSizeInfo().GetVtxMin(); //相手の最小頂点
 	//上
 	if (MyPos.x + MyVtxMax.x > ComPos.x + ComVtxMin.x
 		&& MyPos.x + MyVtxMin.x < ComPos.x + ComVtxMax.x
@@ -616,7 +628,7 @@ bool CCollision::NewExtrusionCollisionSquareY(CObjectX* pObjX, CObjectX* pComObj
 		pObjX->GetPosInfo().SetPos(D3DXVECTOR3(pObjX->GetPosInfo().GetPos().x,
 			ComPos.y + ComVtxMax.y + fPosY + 0.1f,
 			pObjX->GetPosInfo().GetPos().z));
-		pObjX->SetIsLanding(true);
+		CollisionState.SetLanding(true);
 		return true;
 	}
 	//下
@@ -653,6 +665,9 @@ bool CCollision::NewExtrusionCollisionSquareZ(CObjectX* pObjX, CObjectX* pComObj
 	const D3DXVECTOR3& ComVtxMax = pComObjX->GetSizeInfo().GetVtxMax(); //相手の最大頂点
 	const D3DXVECTOR3& ComVtxMin = pComObjX->GetSizeInfo().GetVtxMin(); //相手の最小頂点
 
+	CObjectX::CollisionInfo& CollisionInfo = pObjX->GetCollisionInfo();        //当たり判定情報を取得する
+	CObjectX::CollisionInfo::State& CollisionState = CollisionInfo.GetState(); //当たり判定状態を取得する
+
 	if (MyPos.z + MyVtxMax.z > ComPos.z + ComVtxMin.z
 		&& MyPosOld.z + MyVtxMax.z <= ComPos.z + ComVtxMin.z
 		&& MyPos.y + MyVtxMax.y > ComPos.y + ComVtxMin.y
@@ -663,6 +678,7 @@ bool CCollision::NewExtrusionCollisionSquareZ(CObjectX* pObjX, CObjectX* pComObj
 		pObjX->GetPosInfo().SetPos(D3DXVECTOR3(pObjX->GetPosInfo().GetPos().x,
 			pObjX->GetPosInfo().GetPos().y,
 			ComPos.z + ComVtxMin.z - MyVtxMax.z - 0.1f));
+		CollisionState.SetWalling(true);
 		return true;
 	}
 	else if (MyPos.z + MyVtxMin.z < ComPos.z + ComVtxMax.z
@@ -675,6 +691,7 @@ bool CCollision::NewExtrusionCollisionSquareZ(CObjectX* pObjX, CObjectX* pComObj
 		pObjX->GetPosInfo().SetPos(D3DXVECTOR3(pObjX->GetPosInfo().GetPos().x,
 			pObjX->GetPosInfo().GetPos().y,
 			ComPos.z + ComVtxMax.z - MyVtxMin.z + 0.1f));
+		CollisionState.SetWalling(true);
 		return true;
 	}
 	return false;

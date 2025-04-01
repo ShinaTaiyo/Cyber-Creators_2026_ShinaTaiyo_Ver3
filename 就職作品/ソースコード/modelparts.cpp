@@ -93,16 +93,16 @@ void CModelParts::Draw()
 //==========================================================================
 void CModelParts::ExtraDraw()
 {
-	CObjectX::Draw();//オブジェクトX描画処理
+ 	CObjectX::Draw();//オブジェクトX描画処理
 }
 //================================================================================================================================================
 
 //=====================================================================================================================
 //生成処理
 //=====================================================================================================================
-CModelParts* CModelParts::Create(string String)
+CModelParts* CModelParts::Create(string String, CObject::TYPE Type)
 {
-	CModelParts* pModelParts = DBG_NEW CModelParts;                                   //プレイヤーを生成
+	CModelParts* pModelParts = DBG_NEW CModelParts(0,false,Type);                     //モデルパーツを生成（呼び出し元のタイプに合わせる)
 	int nIdx = 0;                                                                     //モデルのインデックス
 	pModelParts->Init();                                                              //初期化処理
 	pModelParts->GetSizeInfo().SetScale(D3DXVECTOR3(1.0f,1.0f,1.0f));                 //拡大率を設定する

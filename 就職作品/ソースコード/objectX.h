@@ -83,7 +83,7 @@ public:
 		bool bBlinkingColor = false;                 //色を点滅させるかどうか
 
 		//ワールド変換行列
-		D3DXMATRIX mtxWorld = {};                     //マトリックスワールド!
+		D3DXMATRIX mtxWorld;                     //マトリックスワールド!
 	    D3DXMATRIX * pMtxParent = nullptr;            //親マトリックス 
 		D3DXCOLOR Color = { 1.0f,1.0f,1.0f,1.0f };    //現在の統一の色合い
 
@@ -143,7 +143,8 @@ public:
 		const D3DXVECTOR3& GetPosFuture() const { return PosFuture; }                         //1f後の位置を取得する
 
 		//ワールド座標
-		const D3DXVECTOR3& GetWorldPos() const { return WorldPos; }                           //ワールド座標を取得する
+		const D3DXVECTOR3& GetWorldPos() const { return WorldPos; }                           //ワールド座標を取得する（左のcosntは呼び出し先で値を変更出来なくし、
+		                                                                                      //右のconstは、関数内で値を変更出来なくする
 
 		//============================================================================================================
 	};
@@ -152,15 +153,20 @@ public:
 	{
 		//変数
 		D3DXVECTOR3 Rot = {0.0f,0.0f,0.0f};                              //向き!
-		D3DXVECTOR3 AddRot = { 0.0f,0.0f,0.0f};//加算する向き!
+		D3DXVECTOR3 AddRot = { 0.0f,0.0f,0.0f};                          //加算する向き!
+		D3DXVECTOR3 RotAim = { 0.0f,0.0f,0.0f};                          //目的の向き 
 		bool bUseAddRot = false;   //向きの加算を使用するかどうか!
 
 		//関数
 		void SetRot(D3DXVECTOR3 CopyRot) { Rot = CopyRot; }                                           //向きの設定
-		D3DXVECTOR3& GetRot() { return Rot; }                                                 //向きの取得
-		void SetUseAddRot(bool bUse, D3DXVECTOR3 CopyRot) { bUseAddRot = bUse; AddRot = CopyRot; }
-		bool& GetUseAddRot() { return bUseAddRot; }//向きの加算を使用しているかどうか
-		D3DXVECTOR3& GetAddRot() { return AddRot; }//向きの加算量を取得
+		D3DXVECTOR3& GetRot() { return Rot; }                                                         //向きの取得
+
+		void SetUseAddRot(bool bUse, D3DXVECTOR3 CopyRot) { bUseAddRot = bUse; AddRot = CopyRot; }    //向きの加算を設定
+		bool& GetUseAddRot() { return bUseAddRot; }                                                   //向きの加算を使用しているかどうか
+		D3DXVECTOR3& GetAddRot() { return AddRot; }                                                   //向きの加算量を取得
+
+		void SetRotAim(D3DXVECTOR3 CopyRotAim) { RotAim = CopyRotAim; }                               //目的の向きを設定
+		const D3DXVECTOR3& GetRotAim() const { return RotAim; }                                       //目的の向きを取得
 	};
 
 	struct SizeInfo
@@ -380,7 +386,21 @@ public:
 		//状態
 		struct State
 		{
-			bool bIsLanding = false;                     //地面にいるかどうか
+		private:
+			bool bIsLanding = false;                                      //地面にいるかどうか
+			bool bIsLandingOld = false;                                   //1f前に地面にいるかどうか
+			bool bIsWalling = false;                                      //壁にいるかどうか
+			bool bIsWallingOld = false;                                   //1f前に壁にいるかどうか
+		public:
+			const bool& GetLanding() const { return bIsLanding; }         //地面にいるかどうかを取得
+			const bool& GetLandingOld() const { return bIsLandingOld; }   //1f前に地面にいるかどうかを取得する
+			const bool& GetWalling() const { return bIsWalling; }         //壁にいるかどうかを取得
+			const bool& GetWallingOld() const { return bIsWallingOld; }   //1f前に壁にいるかどうかを取得
+			void SetLanding(bool bFlag) { bIsLanding = bFlag; }           //地面にいるかどうかを設定
+			void SetLandingOld(bool bFlag) { bIsLandingOld = bFlag; }     //1f前に地面にいるかどうかを取得する
+			void SetWalling(bool bFlag) { bIsWalling = bFlag; }           //壁にいるかどうかを設定
+			void SetWallingOld(bool bFlag) { bIsWallingOld = bFlag; }     //1f前に壁にいるかどうかを取得する
+			void ResetState() { bIsLanding = false; bIsWalling = false; } //フラグをリセットする
 		};
 
 		//変数
@@ -439,18 +459,18 @@ public:
 	//==========================================================
 
 	//オブジェクトXの種類
-	void SetObjXType(OBJECTXTYPE ObjXType) { m_nObjXType = ObjXType; }                      //オブジェクトXの分類を設定
-	OBJECTXTYPE GetObjXType() { return m_nObjXType; }                                       //オブジェクトXのタイプを取得する
-
-	//タイプ番号
-	void SetTypeNum(int nTypeNum) { m_nTypeNum = nTypeNum; }                                //オブジェクトごとのタイプ番号を設定
-	int GetTypeNum() { return m_nTypeNum;}                                                  //オブジェクトごとのタイプ番号を設定
-
-	//情報表示処理＆操作
-	void ManagerChooseControlInfo() override;                                               //ステージマネージャーが情報を操作する
-
-	void SaveInfoTxt(fstream& WritingFile) override;                                        //テキストファイルに情報を保存するための関数
-
+	void SetObjXType(OBJECTXTYPE ObjXType) { m_nObjXType = ObjXType; }                                           //オブジェクトXの分類を設定
+	OBJECTXTYPE GetObjXType() { return m_nObjXType; }                                                            //オブジェクトXのタイプを取得する
+																							                     
+	//タイプ番号																			                        
+	void SetTypeNum(int nTypeNum) { m_nTypeNum = nTypeNum; }                                                     //オブジェクトごとのタイプ番号を設定
+	int GetTypeNum() { return m_nTypeNum;}                                                                       //オブジェクトごとのタイプ番号を設定
+																							                     
+	//情報表示処理＆操作																	                        
+	void ManagerChooseControlInfo() override;                                                                    //ステージマネージャーが情報を操作する
+																							                     
+	void SaveInfoTxt(fstream& WritingFile) override;                                                             //テキストファイルに情報を保存するための関数
+	void LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff, CObject* pObj) override; //テキストファイルから情報を読み込むための関数
 	//================================================================================================================================================
 
 	//==========================================================
@@ -514,10 +534,6 @@ public:
 	//Z
 	void SetExtrusionCollisionSquareZ(bool bSuccess) { m_bExtrusionCollisionSquareZ = bSuccess; }
 	const bool& GetExtrusionCollisionSquareZ() const { return m_bExtrusionCollisionSquareZ; }
-
-	//地面にいるかどうか
-	void SetIsLanding(bool bLanding) { m_bIsLanding = bLanding; }
-	const bool& GetLanding() const { return m_bIsLanding; }
 
 	//============================================================================================================
 

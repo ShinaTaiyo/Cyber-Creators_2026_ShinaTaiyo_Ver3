@@ -120,7 +120,7 @@ void CBg::Create(BG type)
 	CTexture* pTextureClass = CManager::GetTexture();           //テクスチャクラスを取得
 	if (pBg != nullptr)
 	{//背景が存在していたら
-		pBg->Init();                                                                   //初期化処理
+		pBg->Init();                                                                   //初期化処理a
 		pBg->CObject2D::SetAnimInfo(1, 1, false);                                      //ポリゴンとテクスチャ情報を設定
 		pBg->SetColor(D3DXCOLOR(1.0f,1.0f, 1.0f, 1.0f), false, 1.0f);                  //色合いを設定
 		pBg->SetWidth(SCREEN_WIDTH / 2);                                               //ポリゴンの横幅を設定

@@ -18,7 +18,7 @@
 class CModelParts : public CObjectX
 {
 public:
-	CModelParts(int nPri = 0, bool bUseintPri = false, CObject::TYPE type = CObject::TYPE::MODELPARTS, CObject::OBJECTTYPE ObjType = CObject::OBJECTTYPE::OBJECTTYPE_X);    //コンストラクタ
+	CModelParts(int nPri = 0, bool bUseintPri = false, CObject::TYPE type = CObject::TYPE::NONE, CObject::OBJECTTYPE ObjType = CObject::OBJECTTYPE::OBJECTTYPE_X);    //コンストラクタ
 	~CModelParts();                    //デストラクタ
 	HRESULT Init() override;           //初期化処理
 	void Uninit() override;            //終了処理
@@ -27,7 +27,7 @@ public:
 	void Draw() override;              //描画処理
 	void ExtraDraw();                  //別枠の描画処理（オブジェクトの派生だけど、このパーツが持っているオブジェクトの処理が呼ばれたときに呼びたいので、自動的に呼ばれないようにする）
 	void SetDeath() override;          //死亡フラグ設定処理
-	static CModelParts* Create(string String);//生成処理
+	static CModelParts* Create(string String,CObject::TYPE Type);//生成処理
 
 	void SetPartsIdx(int nIdx) { m_nPartsIdx = nIdx; }//パーツ番号を設定する
 private:

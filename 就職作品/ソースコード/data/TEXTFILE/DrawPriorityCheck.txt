@@ -1,0 +1,57 @@
+                NONE,            //タイプなし
+		BG3D,            //3D背景０
+		FIELD,           //床１
+		BLOCK,           //ブロック３
+		BGMODEL,         //背景モデル２
+		AIMODEL,         //AIモデル４
+		WIREHEAD,        //ワイヤー頭６
+		PLAYER,          //プレイヤー５
+		ENEMY,           //敵９
+		ATTACK,          //攻撃８
+		WIRE,            //ワイヤー７
+		MESHORBIT,       //軌跡メッシュ１３
+		EFFECT,          //エフェクト１４
+		PARTICLE,        //パーティクル１２
+		UI3D,            //UI3D１０
+		BG,              //背景２０
+		NUMBER,          //数字１９
+		NUMBER3D,        //数字3D１１
+	        PARTICLE2D,      //パーティクル２D１５
+		LOCKON,          //ロックオン１６
+		UI,              //UI１８
+		GAUGE,           //ゲージ１７
+		PHASEINFO,       //フェーズ情報２１
+		STAGEMANAGER,    //ステージマネージャー２２
+		PHASEMANAGER,    //フェーズマネージャー２３
+		EVENTMANAGER,    //イベントマネージャー２４
+		COMBO,           //コンボ２５
+		TUTORIAL,        //チュートリアル２６
+		SCORE,           //スコア２７
+		FADE,            //フェード２８
+		MAX
+
+                NONE = 0,
+                FIELD,1
+                BGMODEL,2
+                BLOCK,3
+                AIMODEL,4
+                PLAYER,5
+                WIREHEAD,6
+                WIRE,7
+                ATTACK,8
+                ENEMY,9
+                UI3D,10
+                NUMBER3D,11
+                PARTICLE,12
+                MESHORBIT,13
+                EFFECT,14
+                PARTICLE2D,15
+                LOCKON,16
+                GAUGE,17
+                UI,18
+                NUMBER,19
+                BG,20
+                以降同じ
+                
+                
+                                 

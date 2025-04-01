@@ -145,7 +145,7 @@ float CCalculation::CalculationCollectionRot2D(float fMyRot, float fRotAim, floa
 //=========================================================
 //移動方向への角度を計算する
 //=========================================================
-bool CCalculation::CaluclationMove(bool bUseStick, D3DXVECTOR3& Move, float fSpeed, MOVEAIM MoveAim, float& fRot)
+bool CCalculation::CaluclationMove(bool bUseStick, D3DXVECTOR3& Pos, D3DXVECTOR3& Move, float fSpeed, MOVEAIM MoveAim, float& fRot)
 {
 	float fCameraRot = CManager::GetCamera()->GetRot().y;           //カメラの向きを取得
 	float fMoveX = 0.0f;                                            //X方向の移動量
@@ -153,7 +153,7 @@ bool CCalculation::CaluclationMove(bool bUseStick, D3DXVECTOR3& Move, float fSpe
 	bool bMove = false;                                             //移動しているかどうか 
 	bool bUseController = true;                                     //コントローラーを使用するかどうか
 	bMove = CManager::GetInputJoypad()->GetLStickPress(8, 0.0f);    //コントローラーの入力
-
+	D3DXVECTOR3 PosFuture = { 0.0f,0.0f,0.0f };                     //1f後の位置
 	if (bMove == false)
 	{//この時点でコントローラーの入力がされていない場合、キー入力の受付を開始
 		bUseController = false;//コントローラーは使用しない
@@ -177,6 +177,7 @@ bool CCalculation::CaluclationMove(bool bUseStick, D3DXVECTOR3& Move, float fSpe
 		if (fMoveX != 0.0f || fMoveZ != 0.0f)
 		{//上記の処理でボタンを入力していたら動いているとみなす
 			bMove = true;//移動状態
+
 		}
 		else
 		{
@@ -185,39 +186,42 @@ bool CCalculation::CaluclationMove(bool bUseStick, D3DXVECTOR3& Move, float fSpe
 	}
 	if (bMove == true)
 	{//移動状態なら
+		float fMoveRot = 0.0f;//移動する向きを決める
 		//カメラを基準に向きを決める
 		if (bUseController == true)
 		{
-			fRot = CManager::GetInputJoypad()->GetLStickAimRot();                     //左スティックの向きを取得する
-			CManager::GetDebugText()->PrintDebugText("スティックの向き：%f\n",fRot);  //デバッグ表示
-			CManager::GetDebugText()->PrintDebugText("カメラの向き：%f\n",fCameraRot);//デバッグ表示
-			fRot += fCameraRot;                                                       //取得した向きにカメラの向きを足してカメラ基準にする
-			CManager::GetDebugText()->PrintDebugText("目的の向き：%f\n",fRot);        //デバッグ表示
+			fMoveRot = CManager::GetInputJoypad()->GetLStickAimRot();                     //左スティックの向きを取得する
 		}
 		else
 		{//比から角度を求める（Z軸の正方向が前なので、Z軸を基準「右引数」にX方向の角度「左引数」を求める）
-			fRot = atan2f(fMoveX,fMoveZ) + fCameraRot;//カメラを基準にキー入力の角度を求める
-			CManager::GetDebugText()->PrintDebugText("目的の向き：%f\n", fRot);//デバッグ表示
+			fMoveRot = atan2f(fMoveX, fMoveZ);
 		}
 		switch (MoveAim)
 		{//どの面を軸に移動するかを決める
-		case MOVEAIM_XY://XY方向を基準に移動する
-			Move.x = sinf(fRot) * fSpeed;
-			Move.y = cosf(fRot) * fSpeed;
+		case MOVEAIM_XY://XY方向を基準に移動する（移動方向をカメラ基準で決める)
+			Move.x = sinf(fMoveRot + fCameraRot) * fSpeed;
+			Move.y = cosf(fMoveRot + fCameraRot) * fSpeed;
 			break;
 		case MOVEAIM_XZ://XZ方向を基準に移動する
-			Move.x = sinf(fRot) * fSpeed;
-			Move.z = cosf(fRot) * fSpeed;
+			Move.x = sinf(fMoveRot + fCameraRot) * fSpeed;
+			Move.z = cosf(fMoveRot + fCameraRot) * fSpeed;
 			break;
 		case MOVEAIM_ZY://ZY方向を基準に移動する
-			Move.z = sinf(fRot) * fSpeed;
-			Move.y = cosf(fRot) * fSpeed;
+			Move.z = sinf(fMoveRot + fCameraRot) * fSpeed;
+			Move.y = cosf(fMoveRot + fCameraRot) * fSpeed;
 			break;
 		default:
 			break;
 		}
+
+		//1f後の位置を計算
+		PosFuture = Pos + Move;
+
+		//1f後の位置と現在の位置のベクトルから向くべき角度を求める
+		fRot = atan2f(PosFuture.x - Pos.x, PosFuture.z - Pos.z);
 	}
 	return bMove;
+
 }
 //===========================================================================================================
 

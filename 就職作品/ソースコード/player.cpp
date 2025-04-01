@@ -81,12 +81,12 @@ HRESULT CPlayer::Init()
         m_pLockOn->SetPolygonRotSpeed(0.01f);//ポリゴンを回転させる
 
         //モード表示の生成
-        m_pModeDisp = CUi::Create(CUi::UITYPE::ACTIONMODE_GUN, CObject2D::POLYGONTYPE::SENTERROLLING, 100.0f, 100.0f, 1, false, D3DXVECTOR3(50.0f, 50.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f),
+        m_pModeDisp = CUi::Create(CUi::UITYPE::ACTIONMODE_GUN,false,CObject2D::POLYGONTYPE::SENTERROLLING, 100.0f, 100.0f, 1, false, D3DXVECTOR3(50.0f, 50.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f),
             D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
         m_pModeDisp->SetUseDeath(false);     //死亡フラグを使用しない
 
         //*ダイブゲージのフレームを生成
-        m_pDiveGaugeFrame = CUi::Create(CUi::UITYPE::DIVEGAUGEFRAME_000, CObject2D::POLYGONTYPE::SENTERROLLING, 450.0f, 100.0f, 1, false, D3DXVECTOR3(SCREEN_WIDTH - 250.0f, 100.0f, 0.0f),
+        m_pDiveGaugeFrame = CUi::Create(CUi::UITYPE::DIVEGAUGEFRAME_000,false,CObject2D::POLYGONTYPE::SENTERROLLING, 450.0f, 100.0f, 1, false, D3DXVECTOR3(SCREEN_WIDTH - 250.0f, 100.0f, 0.0f),
             D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
         m_pDiveGaugeFrame->SetUseDeath(false);//死亡フラグを使用しない
 
@@ -94,7 +94,7 @@ HRESULT CPlayer::Init()
         m_pDiveGaugeFrame->GetUiCompositeContainer()->Add(DBG_NEW CUIComposite_Gauge(m_pDiveGaugeFrame,D3DXVECTOR3(SCREEN_WIDTH - 390.0f, 106.5f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 0.0f, 1.0f), CObject2D::POLYGONTYPE::LEFT, CGauge::GAUGETYPE::DIVE, 350.0f, 19.6f, 0, 20));
 
         //*ダイブ可能回数のUIを生成
-        m_pDivePossibleNum = CUi::Create(CUi::UITYPE::POSSIBLEDIVENUMTEXT_000, CObject2D::POLYGONTYPE::SENTERROLLING, 200.0f, 100.0f, 1, false, D3DXVECTOR3(200.0f, 100.0f, 0.0f),
+        m_pDivePossibleNum = CUi::Create(CUi::UITYPE::POSSIBLEDIVENUMTEXT_000,false,CObject2D::POLYGONTYPE::SENTERROLLING, 200.0f, 100.0f, 1, false, D3DXVECTOR3(200.0f, 100.0f, 0.0f),
             D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 61.0f, 1.0f, 1.0f));
         m_pDivePossibleNum->GetUiCompositeContainer()->Add(DBG_NEW CUIComposite_Numeric(m_pDivePossibleNum, 0, 50.0f, 50.0f));//数字の機能をコンポジットパターンのコンテナに格納
         m_pDivePossibleNum->SetUseDeath(false);                                                                               //死亡フラグを使用しない
@@ -127,11 +127,12 @@ void CPlayer::Update()
 {
     CObjectX::PosInfo& PosInfo = GetPosInfo();            //位置情報
     CObjectX::SizeInfo& SizeInfo = GetSizeInfo();         //サイズ情報
+    CObjectX::CollisionInfo& CollisionInfo = GetCollisionInfo();//当たり判定情報を取得する
     const D3DXVECTOR3& Pos = PosInfo.GetPos();            //位置
     const D3DXVECTOR3& VtxMax = SizeInfo.GetVtxMax();     //最大頂点
     if (CScene::GetMode() == CScene::MODE_GAME)
     {//ゲームシーンなら
-        if (GetLanding())
+        if (CollisionInfo.GetState().GetLanding())
         {//地面にいるなら重力を０に
             GetMoveInfo().SetMove(D3DXVECTOR3(GetMoveInfo().GetMove().x,0.0f, GetMoveInfo().GetMove().z));
         }
@@ -293,7 +294,6 @@ void CPlayer::SetDeath()
 CPlayer* CPlayer::Create(D3DXVECTOR3 pos, D3DXVECTOR3 rot, D3DXVECTOR3 move, D3DXVECTOR3 Scale)
 {
     CPlayer* pPlayer = DBG_NEW CPlayer(DBG_NEW CPlayerMove_Normal(),DBG_NEW CPlayerAttack_Shot());//プレイヤーを生成
-    int nIdx = 0;//テクスチャのインデックス
     CObjectX::PosInfo& PosInfo = pPlayer->GetPosInfo();                                                      //位置情報
     CObjectX::RotInfo& RotInfo = pPlayer->GetRotInfo();                                                      //向き情報
     CObjectX::SizeInfo& SizeInfo = pPlayer->GetSizeInfo();                                                   //サイズ情報
@@ -305,6 +305,16 @@ CPlayer* CPlayer::Create(D3DXVECTOR3 pos, D3DXVECTOR3 rot, D3DXVECTOR3 move, D3D
     pPlayer->SetTypeNum(0);                                                                                  //オブジェクトXごとのタイプ番号を設定
     pPlayer->RegistMotion("data\\MODEL\\Enemy\\MotionEnemy\\DiveWeakEnemy\\DiveWeakEnemyMotion.txt",pPlayer);//モーションファイルを割り当てる
     pPlayer->GetDrawInfo().SetUseDraw(false);                                                                //描画しない
+
+    int nIdx = CManager::GetObjectXInfo()->Regist("data\\MODEL\\Enemy\\MotionEnemy\\DiveWeakEnemy\\DiveWeakEnemy00_CollisionModel.x"); //モデル情報を登録し番号を取得
+    pPlayer->BindObjectXInfo(CManager::GetObjectXInfo()->GetMesh(nIdx),                                      //モデル情報を設定する（当たり判定用のモデル)
+        CManager::GetObjectXInfo()->GetBuffMat(nIdx),
+        CManager::GetObjectXInfo()->GetdwNumMat(nIdx),
+        CManager::GetObjectXInfo()->GetTexture(nIdx),
+        CManager::GetObjectXInfo()->GetColorValue(nIdx));
+
+    pPlayer->SetSize();                                                                                      //サイズを設定
+
     PosInfo.SetPos(pos);                                                                                     //位置の設定
     PosInfo.SetPosOld(pos);                                                                                  //1f前の位置を設定
     PosInfo.SetPosFuture(pos);                                                                               //1f後の位置を設定
@@ -492,8 +502,12 @@ void CPlayer::SetInitialActionMode(ACTIONMODE ActionMode)
 //========================================================
 void CPlayer::CollisionProcess()
 {
-    SetIsLanding(false);                                       //地面に乗っているかどうかのフラグをリセット
-    GetCollisionInfo().GetSquareInfo().ResetPushOutFirstFlag();//それぞれの軸の押し出し判定の優先フラグをリセット
+    CObjectX::CollisionInfo& CollisionInfo = GetCollisionInfo();                //当たり判定情報を取得する
+    CObjectX::CollisionInfo::State& CollisionState = CollisionInfo.GetState();  //当たり判定状態を取得する
+    CollisionInfo.GetSquareInfo().ResetPushOutFirstFlag();                      //それぞれの軸の押し出し判定の優先フラグをリセット
+    CollisionState.SetWallingOld(CollisionInfo.GetState().GetWalling());
+    CollisionState.SetLandingOld(CollisionInfo.GetState().GetLanding());
+    CollisionState.ResetState();
     m_bCollision = false;                                      //判定状態をリセット
     for (int nCntPri = 0; nCntPri < CObject::m_nMAXPRIORITY; nCntPri++)
     {//オブジェクトリストを検索

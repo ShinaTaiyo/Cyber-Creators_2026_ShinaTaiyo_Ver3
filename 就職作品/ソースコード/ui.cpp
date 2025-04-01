@@ -36,7 +36,12 @@ const string CUi::UI_FILENAME[static_cast<int>(CUi::UITYPE::MAX)] =
 	"data\\TEXTURE\\UI\\DiveGaugeFrame_000.png",
 	"data\\TEXTURE\\UI\\GameClear_000.png",
 	"data\\TEXTURE\\UI\\Lose_000.png",
-	"data\\TEXTURE\\UI\\Combo_000.png"
+	"data\\TEXTURE\\UI\\Combo_000.png",
+	"data\\TEXTURE\\UI\\PauseText_000.png",
+	"data\\TEXTURE\\UI\\ExitText_000.png",
+	"data\\TEXTURE\\UI\\ContinueText_000.png",
+	"data\\TEXTURE\\UI\\CameraSensitivityText_000.png",
+	"data\\TEXTURE\\UI\\ReturnText_000.png",
 };//テクスチャファイル名
 
 //====================================================
@@ -117,10 +122,18 @@ void CUi::SetDeath()
 //====================================================
 //生成処理
 //====================================================
-CUi* CUi::Create(UITYPE type, CObject2D::POLYGONTYPE PolygonType, float fWidth, float fHeight, int nLife, bool bUseLife, D3DXVECTOR3 Pos, D3DXVECTOR3 Move, D3DXVECTOR3 Rot, D3DXCOLOR col)
+CUi* CUi::Create(UITYPE type, bool bPauseUi, CObject2D::POLYGONTYPE PolygonType, float fWidth, float fHeight, int nLife, bool bUseLife, D3DXVECTOR3 Pos, D3DXVECTOR3 Move, D3DXVECTOR3 Rot, D3DXCOLOR col)
 {
-	CUi* pUi = DBG_NEW CUi;                                                          //UIを生成
-	CTexture* pTextureClass = CManager::GetTexture();                                //テクスチャクラスを取得
+	CUi* pUi = nullptr;                                                              //UIへのポインタを初期化
+	CTexture* pTextureClass = CManager::GetTexture();                                //テクスチャ情報を取得
+	if (bPauseUi)
+	{//ポーズ用のUIにする
+		pUi = DBG_NEW CUi(0, false, TYPE::UI_PAUSE);
+	}
+	else
+	{//普通のUIにする
+		pUi = DBG_NEW CUi();
+	}
 	pUi->SetUiType(type);                                                            //UIの種類を設定
 	pUi->SetUseLife(bUseLife, nLife, nLife);                                         //体力設定
 	pUi->Init();                                                                     //初期化処理

@@ -79,10 +79,13 @@ public:
 	const float& GetPosRToPosVLength() const { return m_fLength; }                        //中止点と視点の距離を取得する
 																				          
 	//======================================									          
-	//静的メンバ取得関係														             
+	//静的メンバ敬														             
 	//======================================									          
 	static const float & GetInitialLength() { return s_fINITIAL_LENGTH; }                 //最初の距離を取得する
 	static const bool& GetUseCameraControllMouse() { return s_bCAMERACONTROLLMOUSE; }     //デバッグにカメラをマウスで操作するかどうかを取得する
+	static const int& GetSensitivityLevel() { return s_nSENSITIVITYLEVEL; }               //感度レベルを取得する
+	static const int& GetMaxSensitivityLevel() { return s_nMAX_SENSITIVITYLEVEL; }        //最大感度レベルを取得する
+	static void SetSensitivityLevel(int nLevel) {s_nSENSITIVITYLEVEL = nLevel;}           //感度レベルを設定する                   
 	//==========================================================================================================================================
 
 	//======================================
@@ -97,6 +100,8 @@ private:
     //======================================
 	static const float m_BESIDECAMERALENGTH;                                              //ビサイドモードのカメラの距離
 	static const float s_fINITIAL_LENGTH;                                                 //最初の距離
+	static constexpr int s_nMAX_SENSITIVITYLEVEL = 20;                                    //最大感度レベル
+	static int s_nSENSITIVITYLEVEL;                                                       //カメラの感度レベル
 	static bool s_bCAMERACONTROLLMOUSE;                                                   //カメラをマウスで操作するかどうか（Debugでは使わないかもしれないが、Releaseでは必ず使う)
 	static constexpr bool s_bDEBUGCAMERACONTROLLMOUSE = false;                            //デバッグ時にもカメラをマウスで操作するかどうか（カメラを使用するとカーソルが固定されてしまうので、使用するかを決める)
 	//==========================================================================================================================================
@@ -110,7 +115,7 @@ private:
 	D3DXVECTOR3 m_AddPosV;                        //加算視点
 	D3DXVECTOR3 m_VecU;                           //上方向ベクトル!
 	D3DXVECTOR3 m_Rot;                            //向き!
-	D3DXMATRIX m_mtxProjection;                   //プロジェクション行列!
+	D3DXMATRIX m_mtxProjection;                   //プロジェクション行列!!
 	D3DXMATRIX m_mtxView;                         //ビューマトリックス!
 	CAMERATYPE m_CameraType;                      //カメラモードの種類!
 	D3DXVECTOR3 m_DifferenceLength;               //差分!
@@ -157,6 +162,8 @@ public:
 	void Process(CCamera* pCamera);//処理
 private:
 	static const float s_fNORMAL_AROUNDROTSPEED;  //カメラの回転速度
+	static constexpr float s_fMAX_STICKSENSITIVITY = 0.08f;//スティックの最大感度
+	static constexpr float s_fMAX_MOUSESENSITIVITY = 0.01f;//マウス最大感度
 };
 
 //狙った向きを向かせる

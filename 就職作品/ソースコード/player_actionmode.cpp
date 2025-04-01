@@ -63,13 +63,17 @@ void CPlayerMove::MoveProcess(CPlayer* pPlayer)
 		const D3DXVECTOR3& Move = pPlayer->GetMoveInfo().GetMove();//移動量
 		D3DXVECTOR3 AddMove = D3DXVECTOR3(0.0f, 0.0f, 0.0f);       //加算する移動量
 		bool bMove = false;                                        //移動しているかどうか
-		float fRotAim = 0.0f;                                      //目的の向き
-
+		CObjectX::RotInfo& RotInfo = pPlayer->GetRotInfo();        //向き情報
+		D3DXVECTOR3 RotAim = RotInfo.GetRotAim();                  //目的の向きを取得
+																   //目的の向き
+		CObjectX::PosInfo& PosInfo = pPlayer->GetPosInfo();        //位置情報
+		D3DXVECTOR3 NextPos = PosInfo.GetPos();                    //位置
+		CCamera* pCamera = CManager::GetCamera();                  //カメラ
 		//移動しているかどうかを取得。移動しているならAddMoveに値が入る
-		bMove = CCalculation::CaluclationMove(true, AddMove, 10.0f, CCalculation::MOVEAIM_XZ, fRotAim);
+		bMove = CCalculation::CaluclationMove(true, NextPos,AddMove, 10.0f, CCalculation::MOVEAIM_XZ, RotAim.y);
 
 		//移動方向にプレイヤーの向きを合わせる
-		pPlayer->GetRotInfo().SetRot(D3DXVECTOR3(pPlayer->GetRotInfo().GetRot().x, fRotAim, pPlayer->GetRotInfo().GetRot().z));
+		pPlayer->GetRotInfo().SetRot(D3DXVECTOR3(pPlayer->GetRotInfo().GetRot().x,pCamera->GetRot().y, pPlayer->GetRotInfo().GetRot().z));
 
 		pPlayer->GetMoveInfo().SetUseInteria(true, CObjectX::GetNormalInertia());//慣性を使用する
 		pPlayer->GetMoveInfo().SetUseGravity(true, CObjectX::GetNormalGravity());//重力を使用する
@@ -93,7 +97,9 @@ void CPlayerMove::MoveProcess(CPlayer* pPlayer)
 //=====================================================================================================
 void CPlayerMove::JumpProcess(CPlayer* pPlayer)
 {
-	if (pPlayer->GetLanding())
+	CObjectX::CollisionInfo& CollisionInfo = pPlayer->GetCollisionInfo();               //当たり判定情報を取得する
+	CObjectX::CollisionInfo::State& CollisionState = CollisionInfo.GetState();          //当たり判定状態を取得する
+	if (CollisionState.GetLanding())
 	{//地面にいるならジャンプ
 		pPlayer->GetMoveInfo().SetUseGravity(true, CObjectX::GetNormalGravity());//重力を使用する
 		if (CManager::GetInputJoypad()->GetTrigger(CInputJoypad::JOYKEY::A) || CManager::GetInputKeyboard()->GetTrigger(DIK_SPACE))

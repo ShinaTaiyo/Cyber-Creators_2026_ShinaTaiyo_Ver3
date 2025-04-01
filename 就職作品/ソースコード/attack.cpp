@@ -214,8 +214,12 @@ void CAttack::HitOtherCollisionProcess()
 //==================================================================
 void CAttack::ExtrusionCollisionProcess()
 {
-	GetCollisionInfo().GetSquareInfo().ResetPushOutFirstFlag();//それぞれの軸の押し出し判定の優先フラグをリセット
-	SetIsLanding(false);//オブジェクトが地面に乗っているかどうかを初期化
+	CObjectX::CollisionInfo& CollisionInfo = GetCollisionInfo();//当たり判定情報を取得する
+	CObjectX::CollisionInfo::State& CollisionState = CollisionInfo.GetState();//フラグをリセット
+	CollisionState.SetLandingOld(CollisionState.GetLanding());     //1f前にオブジェクトが地面に乗っているかどうかを設定
+	CollisionState.SetWallingOld(CollisionState.GetWalling());     //1f前にオブジェクトが壁にいるかどうかを設定
+	CollisionState.ResetState();                                   //ステート
+	CollisionInfo.GetSquareInfo().ResetPushOutFirstFlag();         //それぞれの軸の押し出し判定の優先フラグをリセット
 
 	for (int nCntPri = 0; nCntPri < CObject::m_nMAXPRIORITY; nCntPri++)
 	{//全てのリストを検索する
@@ -574,7 +578,7 @@ CAttackEnemy* CAttackEnemy::Create(ATTACKTYPE AttackType, TARGETTYPE TargetType,
 //==================================================================
 void CAttack::BoundInfo::BoundProcess(CAttack* pAttack)
 {
-	if (pAttack->GetLanding() == true)
+	if (pAttack->GetCollisionInfo().GetState().GetLanding() == true)
 	{//地面に乗っていたら
 
 		//跳ねさせる

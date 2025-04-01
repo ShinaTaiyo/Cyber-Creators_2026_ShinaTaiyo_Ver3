@@ -184,6 +184,8 @@
     <ClCompile Include="objectXInfo.cpp" />
     <ClCompile Include="particle.cpp" />
     <ClCompile Include="particle2d.cpp" />
+    <ClCompile Include="pausemanager.cpp" />
+    <ClCompile Include="pausemanager_state.cpp" />
     <ClCompile Include="phasemanager.cpp" />
     <ClCompile Include="player.cpp" />
     <ClCompile Include="player_actionmode.cpp" />
@@ -243,6 +245,8 @@
     <ClInclude Include="objectXInfo.h" />
     <ClInclude Include="particle.h" />
     <ClInclude Include="particle2d.h" />
+    <ClInclude Include="pausemanager.h" />
+    <ClInclude Include="pausemanager_state.h" />
     <ClInclude Include="phasemanager.h" />
     <ClInclude Include="player.h" />
     <ClInclude Include="player_actionmode.h" />

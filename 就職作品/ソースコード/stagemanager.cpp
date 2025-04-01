@@ -214,6 +214,7 @@ void CStageManager::LoadMapTxt(int nMapNum)
 
 	while (!ReadingFile.eof())
 	{
+		CObject* pObj = nullptr;//オブジェクトへのポインタを初期化
 		ReadingFile >> Reading_Buff;
 
 		if (Reading_Buff == "PLAYER_SPAWNPOINT")
@@ -225,23 +226,28 @@ void CStageManager::LoadMapTxt(int nMapNum)
 		}
 		else if (Reading_Buff == "SETBLOCK")
 		{//ブロック
-			CBlock::LoadInfoTxt(ReadingFile, m_StgObjList, Reading_Buff);
+			pObj = CBlock::Create(CBlock::BLOCKTYPE::NORMAL, 1, D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), false);//ブロックを生成
 		}
 		else if (Reading_Buff == "SETBGMODEL")
 		{//背景モデル
-			CBgModel::LoadInfoTxt(ReadingFile, m_StgObjList, Reading_Buff);
+			pObj = CBgModel::Create(CBgModel::BGMODELTYPE::BILL_00, D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), false);//背景モデルを生成
 		}
 		else if (Reading_Buff == "SETSHOTWEAKENEMY")
 		{//射撃に弱い敵
-			CShotWeakEnemy::LoadInfoTxt(ReadingFile, m_StgObjList, Reading_Buff);
+			pObj = CShotWeakEnemy::Create(CShotWeakEnemy::SHOTWEAKENEMYTYPE::NORMAL, 1, 0, D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f));//敵を生成
 		}
 		else if (Reading_Buff == "SETDIVEWEAKENEMY")
 		{//ダイブに弱い敵
-			CDiveWeakEnemy::LoadInfoTxt(ReadingFile, m_StgObjList, Reading_Buff);
+			pObj = CDiveWeakEnemy::Create(CDiveWeakEnemy::DIVEWEAKENEMYTYPE::NORMAL, 1, 0, D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), 0);//ダイブに弱い敵を生成
 		}
 		else if (Reading_Buff == "SETIDLEENEMY")
 		{//何もしない敵
-			CIdleEnemy::LoadInfoTxt(ReadingFile, m_StgObjList, Reading_Buff);
+			pObj = CIdleEnemy::Create(CIdleEnemy::IDLEENEMYTYPE::NORMAL, 1, 0, D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f));;//何もしない敵を生成
+		}
+
+		if (pObj != nullptr)
+		{//オブジェクトへのポインタが存在していたら
+			pObj->LoadInfoTxt(ReadingFile, m_StgObjList, Reading_Buff, pObj);//テキストファイルから情報を読み込オム
 		}
 	}
 
@@ -262,7 +268,7 @@ void CStageManager::SaveMapTxt(int nMapNum)
 	fstream WritingFile;                                  //ファイル
 	string Writing_Buff;                                  //文字列
 
-	WritingFile.open(m_aWORLDMAP_TXT[nMapNum], ios::out); //読み取りモードでファイルを開く	
+	WritingFile.open(m_aWORLDMAP_TXT[nMapNum], ios::out); //書き出しモードでファイルを開く	
 
 	//プレイヤーのスポーンポイントを設定する（小数点第３位まで）
 	WritingFile << "PLAYER_SPAWNPOINT = " << fixed << setprecision(3) <<m_SpawnPoint.x << " " <<

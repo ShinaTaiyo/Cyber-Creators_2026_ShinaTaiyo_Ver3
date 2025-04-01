@@ -138,8 +138,9 @@ HRESULT CManager::Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 	//===================================
 	//モードの設定
 	//===================================
-	m_pSceneFade = CSceneFade::Create();
 	SetMode(CScene::MODE_TITLE);
+	m_pSceneFade = CSceneFade::Create();
+	m_pSceneFade->SetIsStopUpdatePause(false);//ポーズ中でも更新する
 	m_pSceneFade->SetSceneFade(CFade::FADEMODE_OUT, CScene::MODE_TITLE);
 	//=====================================================
 

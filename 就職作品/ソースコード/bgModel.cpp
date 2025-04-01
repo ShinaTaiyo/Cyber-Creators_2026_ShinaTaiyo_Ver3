@@ -115,18 +115,7 @@ CBgModel* CBgModel::Create(BGMODELTYPE bgModelType, D3DXVECTOR3 pos, D3DXVECTOR3
 	pBgModel->GetSizeInfo().SetUseSwapVtxXZ(bSwapVtxXZ);  //XZの頂点のサイズを入れ替えるかどうか
 	pBgModel->GetDrawInfo().SetUseShadow(false);          //影を使用しない
 
-	//モデル情報設定
-	int nIdx = CManager::GetObjectXInfo()->Regist(BGMODEL_FILENAME[static_cast<int>(bgModelType)]);
-
-	//モデル情報を割り当てる
-	pBgModel->BindObjectXInfo(CManager::GetObjectXInfo()->GetMesh(nIdx),
-		CManager::GetObjectXInfo()->GetBuffMat(nIdx),
-		CManager::GetObjectXInfo()->GetdwNumMat(nIdx),
-		CManager::GetObjectXInfo()->GetTexture(nIdx),
-		CManager::GetObjectXInfo()->GetColorValue(nIdx));
-
 	pBgModel->SetManagerObjectType(CObject::MANAGEROBJECTTYPE::BGMODEL);//ステージマネージャーで呼び出す時の種類を設定
-	pBgModel->SetSize();//サイズを設定する
 
 	if (bSwapVtxXZ == true)
 	{//XZのサイズを入れ替えるなら
@@ -151,7 +140,7 @@ CBgModel* CBgModel::Create(BGMODELTYPE bgModelType, D3DXVECTOR3 pos, D3DXVECTOR3
 void CBgModel::SaveInfoTxt(fstream& WritingFile)
 {
 	WritingFile << "SETBGMODEL" << endl;
-	WritingFile << "TYPE = " << static_cast<int>(m_Type) << endl;
+	WritingFile << "TYPE = " << static_cast<int>(m_Type);
 	switch (m_Type)
 	{
 	case BGMODELTYPE::BILL_00:
@@ -171,18 +160,71 @@ void CBgModel::SaveInfoTxt(fstream& WritingFile)
 }
 //======================================================================================================================
 
+////==================================================================
+////ステージマネージャーから情報を読み込む
+////==================================================================
+//void CBgModel::LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff)
+//{
+//	int nType = 0;//種類
+//	D3DXVECTOR3 Move = D3DXVECTOR3(0.0f,0.0f,0.0f);  //移動量
+//	D3DXVECTOR3 Pos = D3DXVECTOR3(0.0f,0.0f,0.0f);   //位置
+//	D3DXVECTOR3 Scale = D3DXVECTOR3(0.0f,0.0f,0.0f); //拡大率
+//	D3DXVECTOR3 Rot = D3DXVECTOR3(0.0f,0.0f,0.0f);   //向き
+//	BGMODELTYPE Type = {};            //背景モデルの種類
+//	bool bSwapVtxXZ = false;//XZの頂点を
+//	while (Buff != "END_SETBGMODEL")
+//	{
+//		LoadingFile >> Buff;//単語を読み込む
+//		if (Buff == "#")
+//		{
+//			getline(LoadingFile, Buff);
+//		}
+//		else if (Buff == "TYPE")
+//		{
+//			LoadingFile >> Buff;//イコール
+//			LoadingFile >> nType;      //種類
+//		}
+//		else if (Buff == "POS")
+//		{
+//			LoadingFile >> Buff;//イコール
+//			LoadingFile >> Pos.x;      //位置X
+//			LoadingFile >> Pos.y;      //位置Y
+//			LoadingFile >> Pos.z;      //位置Z
+//		}
+//		else if (Buff == "ROT")
+//		{
+//			LoadingFile >> Buff;//イコール
+//			LoadingFile >> Rot.x;      //位置X
+//			LoadingFile >> Rot.y;      //位置Y
+//			LoadingFile >> Rot.z;      //位置Z
+//		}
+//		else if (Buff == "SCALE")
+//		{
+//			LoadingFile >> Buff;//イコール
+//			LoadingFile >> Scale.x;      //拡大率X
+//			LoadingFile >> Scale.y;      //拡大率Y
+//			LoadingFile >> Scale.z;      //拡大率Z
+//		}
+//		else if (Buff == "SWAPVTXXZ")
+//		{
+//			LoadingFile >> Buff;//イコール
+//			LoadingFile >> bSwapVtxXZ;
+//		}
+//	}
+//	Type = BGMODELTYPE(nType);
+//
+//	listSaveManager.push_back(CBgModel::Create(Type,Pos, Rot, Scale,bSwapVtxXZ));//vectorに情報を保存する
+//
+//}
+////======================================================================================================================
+
 //==================================================================
 //ステージマネージャーから情報を読み込む
 //==================================================================
-void CBgModel::LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff)
+void CBgModel::LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff, CObject* pObj)
 {
-	int nType = 0;//種類
-	D3DXVECTOR3 Move = D3DXVECTOR3(0.0f,0.0f,0.0f);  //移動量
-	D3DXVECTOR3 Pos = D3DXVECTOR3(0.0f,0.0f,0.0f);   //位置
-	D3DXVECTOR3 Scale = D3DXVECTOR3(0.0f,0.0f,0.0f); //拡大率
-	D3DXVECTOR3 Rot = D3DXVECTOR3(0.0f,0.0f,0.0f);   //向き
-	BGMODELTYPE Type = {};            //背景モデルの種類
-	bool bSwapVtxXZ = false;//XZの頂点を
+	int nType = 0;                                       //種類
+	BGMODELTYPE Type = {};                               //背景モデルの種類
 	while (Buff != "END_SETBGMODEL")
 	{
 		LoadingFile >> Buff;//単語を読み込む
@@ -192,40 +234,17 @@ void CBgModel::LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager
 		}
 		else if (Buff == "TYPE")
 		{
-			LoadingFile >> Buff;//イコール
-			LoadingFile >> nType;      //種類
+			LoadingFile >> Buff;                    //イコール
+			LoadingFile >> nType;                   //種類
+			Type = static_cast<BGMODELTYPE>(nType); //背景モデルのタイプにキャスト
+			SetBgModelType(Type);                   //背景モデルのタイプを設定
 		}
-		else if (Buff == "POS")
-		{
-			LoadingFile >> Buff;//イコール
-			LoadingFile >> Pos.x;      //位置X
-			LoadingFile >> Pos.y;      //位置Y
-			LoadingFile >> Pos.z;      //位置Z
-		}
-		else if (Buff == "ROT")
-		{
-			LoadingFile >> Buff;//イコール
-			LoadingFile >> Rot.x;      //位置X
-			LoadingFile >> Rot.y;      //位置Y
-			LoadingFile >> Rot.z;      //位置Z
-		}
-		else if (Buff == "SCALE")
-		{
-			LoadingFile >> Buff;//イコール
-			LoadingFile >> Scale.x;      //拡大率X
-			LoadingFile >> Scale.y;      //拡大率Y
-			LoadingFile >> Scale.z;      //拡大率Z
-		}
-		else if (Buff == "SWAPVTXXZ")
-		{
-			LoadingFile >> Buff;//イコール
-			LoadingFile >> bSwapVtxXZ;
+		else if (Buff == "SETOBJECTX")
+		{//オブジェクトXの情報を設定する
+			CObjectX::LoadInfoTxt(LoadingFile, listSaveManager, Buff, this);
 		}
 	}
-	Type = BGMODELTYPE(nType);
-
-	listSaveManager.push_back(CBgModel::Create(Type,Pos, Rot, Scale,bSwapVtxXZ));//vectorに情報を保存する
-
+	listSaveManager.push_back(this);//ステージマネージャーのオブジェクトリストに情報を登録する
 }
 //======================================================================================================================
 
@@ -280,5 +299,36 @@ CObject* CBgModel::ManagerChengeObject(bool bAim)
 CObject* CBgModel::ManagerSaveObject()
 {
 	return CBgModel::Create(m_Type, GetPosInfo().GetPos(), GetRotInfo().GetRot(), GetSizeInfo().GetScale(), GetSizeInfo().GetUseSwapVtxXZ());//生成したオブジェクトを返す
+}
+//======================================================================================================================
+
+//==================================================================
+//背景モデルの種類を設定する
+//==================================================================
+void CBgModel::SetBgModelType(BGMODELTYPE Type)
+{
+	int nType = static_cast<int>(Type);//タイプ番号を取得
+
+	if (nType < 0 || nType >= static_cast<int>(BGMODELTYPE::MAX))
+	{
+		//例外処理
+		assert("背景モデルで配列外アクセス！");
+	}
+	else
+	{
+		Uninit();
+		//モデル情報設定
+		int nIdx = CManager::GetObjectXInfo()->Regist(BGMODEL_FILENAME[static_cast<int>(nType)]);
+
+		//モデル情報を割り当てる
+		BindObjectXInfo(CManager::GetObjectXInfo()->GetMesh(nIdx),
+			CManager::GetObjectXInfo()->GetBuffMat(nIdx),
+			CManager::GetObjectXInfo()->GetdwNumMat(nIdx),
+			CManager::GetObjectXInfo()->GetTexture(nIdx),
+			CManager::GetObjectXInfo()->GetColorValue(nIdx));
+
+		SetSize();//サイズを設定する
+
+	}
 }
 //======================================================================================================================

@@ -118,6 +118,7 @@ public:
 	void SetColor(D3DXCOLOR col, bool bAlphaOnly,float fAlpha);                  //色を設定
 	void SetAnimInfo(int nMaxAnimationPattern, int nAnimationChange,bool bAnim); //アニメーション関係の設定
 	void SetAnim(int nAnim) { m_nAnimaionPattern = nAnim; }                      //アニメーション番号を設定
+	void InitTextureOnly();                                                    //テクスチャだけ初期化
 	void SetTextureIndex(int nIdx) { m_nTextureIndex = nIdx; }                   //テクスチャ番号をセットする
 	int GetTextureIndex() { return m_nTextureIndex; }                            //テクスチャ番号を取得する
     //==============================================================================================================================================================

@@ -66,7 +66,8 @@ public:
     //==========================================================
     //関数
 	void SaveInfoTxt(fstream& WritingFile) override;                                              //テキストファイルに情報を保存するための関数
-	static void LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff); //テキストファイルから情報を読み込むための関数   
+	//static void LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff); //テキストファイルから情報を読み込むための関数   
+	void LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff, CObject* pObj) override;//テキストファイルから情報を読み込むための関数
 	CObject* ManagerSaveObject() override;                                                        //ステージマネージャーに今のオブジェクトを保存する
 	void ManagerChooseControlInfo() override;                                                     //ステージマネージャーから操作する
 	void SetPhaseNum(int nNum) { m_nPhaseNum = nNum; }                                            //フェーズ番号を設定する
@@ -235,12 +236,17 @@ public:
 	void SetDeath() override;           //死亡フラグを設定
 	static CShotWeakEnemy* Create(SHOTWEAKENEMYTYPE Type, int nLife,int nPhaseNum,D3DXVECTOR3 pos, D3DXVECTOR3 rot, D3DXVECTOR3 Scale);//生成処理
 
+	//個別
+	void SetShotWeakEnemyType(SHOTWEAKENEMYTYPE Type) { m_ShotWeakEnemyType = Type; }//射撃に弱い敵タイプ設定
+	SHOTWEAKENEMYTYPE GetShotWeakEnemyType() { return m_ShotWeakEnemyType; }         //射撃に弱い敵タイプを取得
+
 	//==========================================================
     //エディタ関係
     //==========================================================
     //関数
 	void SaveInfoTxt(fstream& WritingFile) override;                                               //テキストファイルに情報を保存するための関数
-	static void LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff);  //テキストファイルから情報を読み込むための関数   
+	//static void LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff);  //テキストファイルから情報を読み込むための関数
+	void LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff, CObject* pObj) override;//テキストファイルから情報を読み込むための関数
 	CObject* ManagerChengeObject(bool bAim) override;                                              //ステージマネージャーに変更したオブジェクトを渡す
 	CObject* ManagerSaveObject() override;                                                         //ステージマネージャーに今のオブジェクトを保存する
 	//=================================================================================================================
@@ -299,12 +305,16 @@ public:
 	void SetDeath() override;           //死亡フラグを設定
 	static CDiveWeakEnemy* Create(DIVEWEAKENEMYTYPE Type, int nLife,int nPhaseNum,D3DXVECTOR3 pos, D3DXVECTOR3 rot, D3DXVECTOR3 Scale,int nDivisionNum);//生成処理
 
+	//個別
+	void SetDiveWeakEnemyType(DIVEWEAKENEMYTYPE Type) { m_DiveWeakEnemyType = Type; }//ダイブに弱い敵の種類を設定
+	DIVEWEAKENEMYTYPE GetDiveWeakEnemyType() { return m_DiveWeakEnemyType; }         //ダイブに弱い敵の種類を取得
 	//==========================================================
     //エディタ関係
     //==========================================================
     //関数
 	void SaveInfoTxt(fstream& WritingFile) override;                                               //テキストファイルに情報を保存するための関数
-	static void LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff);  //テキストファイルから情報を読み込むための関数   
+	//static void LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff);  //テキストファイルから情報を読み込むための関数
+	void LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff, CObject* pObj) override;//テキストファイルから情報を読み込むための関数
 	CObject* ManagerChengeObject(bool bAim) override;                                              //ステージマネージャーに変更したオブジェクトを渡す
 	CObject* ManagerSaveObject() override;                                                         //ステージマネージャーに今のオブジェクトを保存する
 	void ManagerChooseControlInfo() override;                                                      //ステージマネージャーから操作する
@@ -377,12 +387,17 @@ public:
 	static CIdleEnemy* Create(IDLEENEMYTYPE Type, int nLife, int nPhaseNum, D3DXVECTOR3 pos, D3DXVECTOR3 rot, D3DXVECTOR3 Scale);//生成処理
 	//=================================================================================================================
 
+	//個別
+	void SetIdleEnemyType(IDLEENEMYTYPE Type) { m_IdleEnemyType = Type; }//何もしない敵の種類を設定
+	IDLEENEMYTYPE GetIdleEnemyType() { return m_IdleEnemyType; }         //何もしない敵の種類を設定
+
 	//==========================================================
     //エディタ関係
     //==========================================================
     //関数
 	void SaveInfoTxt(fstream& WritingFile) override;                                               //テキストファイルに情報を保存するための関数
-	static void LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff);  //テキストファイルから情報を読み込むための関数   
+	//static void LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff);  //テキストファイルから情報を読み込むための関数
+	void LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff, CObject* pObj) override;//テキストファイルから情報を読み込むための関数
 	CObject* ManagerChengeObject(bool bAim) override;                                              //ステージマネージャーに変更したオブジェクトを渡す
 	CObject* ManagerSaveObject() override;                                                         //ステージマネージャーに今のオブジェクトを保存する
 	void ManagerChooseControlInfo() override;                                                      //ステージマネージャーから操作する

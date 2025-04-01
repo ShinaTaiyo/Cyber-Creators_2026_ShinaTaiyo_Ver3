@@ -39,7 +39,7 @@ CTitle::CTitle() : m_bMoveSwitch(true)
 	m_pBg3D = CBg3D::Create(CBg3D::BG3DTYPE::SKY, D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(500.0f, 500.0f, 500.0f));
 	m_pBg3D->SetUseDeath(false);
 
-	m_pTitleLogo = CUi::Create(CUi::UITYPE::TITLELOGO_000, CObject2D::POLYGONTYPE::SENTERROLLING, 1000.0f, 500.0f, 10, false, D3DXVECTOR3(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 110.0f, 0.0f),
+	m_pTitleLogo = CUi::Create(CUi::UITYPE::TITLELOGO_000, false, CObject2D::POLYGONTYPE::SENTERROLLING, 1000.0f, 500.0f, 10, false, D3DXVECTOR3(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 110.0f, 0.0f),
 		D3DXVECTOR3(0.0f, 0.0f, 0.0f),D3DXVECTOR3(0.0f,0.0f,0.0f),D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 	m_pTitleLogo->SetUseDeath(false);
 }
@@ -64,7 +64,7 @@ HRESULT CTitle::Init()
 	//タイトル背景を生成
 	CManager::GetCamera()->SetRot(D3DXVECTOR3(-D3DX_PI * 0.5f, 0.0f, 0.0f));//カメラの向きを設定
 
-	CUi* pUi = CUi::Create(CUi::UITYPE::PRESSENTER_000, CObject2D::POLYGONTYPE::SENTERROLLING, 200.0f, 200.0f, 100, false, D3DXVECTOR3(SCREEN_WIDTH - 200.0f,
+	CUi* pUi = CUi::Create(CUi::UITYPE::PRESSENTER_000, false, CObject2D::POLYGONTYPE::SENTERROLLING, 200.0f, 200.0f, 100, false, D3DXVECTOR3(SCREEN_WIDTH - 200.0f,
 		SCREEN_HEIGHT - 100.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));//エンターを押したらスタートというUIを生成
 	pUi->SetUseBlinking(true, 45, 0.0f);//UIを点滅させる
 	pUi->SetUseDeath(true);             //死亡フラグを使用する

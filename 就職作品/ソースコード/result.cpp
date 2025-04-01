@@ -47,7 +47,7 @@ HRESULT CResult::Init()
 	if (CGame::GetGameClear() == true)
 	{//ゲームをクリアしていたら
 		//「ゲームクリア」のUIを生成
-		pUi = CUi::Create(CUi::UITYPE::GAMECLEAR_000, CObject2D::POLYGONTYPE::SENTERROLLING, 600.0f, 600.0f, 10, false, D3DXVECTOR3(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 0.0f),
+		pUi = CUi::Create(CUi::UITYPE::GAMECLEAR_000,false,CObject2D::POLYGONTYPE::SENTERROLLING, 600.0f, 600.0f, 10, false, D3DXVECTOR3(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 0.0f),
 			D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 		pUi->SetUseBlinking(true, 30, 0.0f);//点滅させる
 		pUi->SetUseDeath(true);             //死亡フラグを使用する
@@ -55,7 +55,7 @@ HRESULT CResult::Init()
 	else
 	{//ゲームに負けていたら
 		//「負け」のUIを生成
-		pUi = CUi::Create(CUi::UITYPE::LOSE_000, CObject2D::POLYGONTYPE::SENTERROLLING, 600.0f, 600.0f, 10, false, D3DXVECTOR3(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 0.0f),
+		pUi = CUi::Create(CUi::UITYPE::LOSE_000, false, CObject2D::POLYGONTYPE::SENTERROLLING, 600.0f, 600.0f, 10, false, D3DXVECTOR3(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 0.0f),
 			D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 		pUi->SetUseBlinking(true, 30, 0.0f);//点滅させる
 		pUi->SetUseDeath(true);             //死亡フラグを使用する
