@@ -217,7 +217,11 @@ void CCamera::SetCamera()
 
 	if (m_CameraType == CAMERATYPE_BIRD || m_CameraType == CAMERATYPE_BESIDE)
 	{
-		//プロジェクションマトリックスを作成z
+		// プロジェクションマトリックスを作成（透視投影行列）→　遠くのオブジェクトを小さく見せる
+		//１：行列、２：視野角、３：アスペクト比、４：近クリップ面、５：遠クリップ面
+		//  近クリップ面：０、遠クリップ面：１
+		// クリップ空間より外にあるものは描画しないようにしたり、トリミングが行われ、
+		//描画コストが減る
 		D3DXMatrixPerspectiveFovLH(&m_mtxProjection,
 			D3DXToRadian(45.0f),
 			(float)SCREEN_WIDTH / (float)SCREEN_HEIGHT,

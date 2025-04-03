@@ -327,7 +327,7 @@ D3DXVECTOR3* CCalculation::CalcScreenToWorld(D3DXVECTOR3* pout, float Sx, float 
 	// 各行列の逆行列を算出（ビュー、プロジェクションマトリックスの逆行列をかけるのは、カメラの位置に2DのUIが出ていると定義できるから)
 	//逆行列とは、値に値-1をかけ、掛け合わされる前に戻すこと
 	D3DXMATRIX InvView, InvPrj, VP, InvViewport;
-	D3DXMatrixInverse(&InvView, NULL, View);//ビューマトリックスとの逆光列（カメラの視点、注視点などを踏まえて、変換されているので戻す）
+	D3DXMatrixInverse(&InvView, NULL, View);//ビューマトリックスとの逆光列をかけてワールド座標を求める
 	D3DXMatrixInverse(&InvPrj, NULL, Prj);  //プロジェクションマトリックスとの逆行列（見え方（平行投影、視野角など）を変えているので、逆行列を掛け合わせ、もとに戻す必要がある）
 	D3DXMatrixIdentity(&VP);
 

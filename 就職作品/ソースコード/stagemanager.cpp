@@ -247,7 +247,7 @@ void CStageManager::LoadMapTxt(int nMapNum)
 
 		if (pObj != nullptr)
 		{//オブジェクトへのポインタが存在していたら
-			pObj->LoadInfoTxt(ReadingFile, m_StgObjList, Reading_Buff, pObj);//テキストファイルから情報を読み込オム
+			pObj->LoadInfoTxt(ReadingFile, m_StgObjList, Reading_Buff, pObj);//テキストファイルから情報を読み込む
 		}
 	}
 
