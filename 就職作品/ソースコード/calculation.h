@@ -63,18 +63,6 @@ public:
 
 	//ワールド座標をスクリーン座標に変換
 	static D3DXVECTOR3 CalcWorldToScreenNoViewport(D3DXVECTOR3 worldPos, D3DXMATRIX viewMatrix, D3DXMATRIX projectionMatrix, float screenWidth, float screenHeight);
-	// XZ平面とスクリーン座標の交点算出関数
-	static D3DXVECTOR3* CalcScreenToXZ(
-		D3DXVECTOR3* pout,
-		float Sx,
-		float Sy,
-		int Screen_w,
-		int Screen_h,
-		D3DXMATRIX* View,
-		D3DXMATRIX* Prj
-	);
-	//目的の物体とレイの向きが一致しているかどうかを判定
-	static bool CalcMatchRay(D3DXVECTOR3 AimPos, float fSx, float fSy, int nScreen_w, int nScreen_h, D3DXMATRIX* View, D3DXMATRIX * Prj);
 
 	//桁数を計算する
 	static int CalculationDigit(int nNum);

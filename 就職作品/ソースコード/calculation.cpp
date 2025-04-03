@@ -377,63 +377,6 @@ D3DXVECTOR3 CCalculation::CalcWorldToScreenNoViewport(D3DXVECTOR3 worldPos, D3DX
 //===========================================================================================================
 
 //=========================================================
-// XZ平面とスクリーン座標の交点算出関数
-//=========================================================
-D3DXVECTOR3* CCalculation::CalcScreenToXZ(D3DXVECTOR3* pout,float Sx,float Sy, int Screen_w, int Screen_h, D3DXMATRIX* View, D3DXMATRIX* Prj)
-{
-	D3DXVECTOR3 nearpos;
-	D3DXVECTOR3 farpos;
-	D3DXVECTOR3 ray;
-	bool bCross = false;
-
-	D3DXVECTOR3 Pos1 = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
-	CalcScreenToWorld(&nearpos, Sx, Sy, 0.0f, Screen_w, Screen_h, View, Prj);//カメラの位置
-	CalcScreenToWorld(&farpos, Sx, Sy, 1.0f, Screen_w, Screen_h, View, Prj); //描画範囲の一番奥の位置
-	ray = farpos - nearpos;
-
-	D3DXVec3Normalize(&ray, &ray);
-
-	nearpos *= -1;
-	* pout = farpos;
-	bCross = false;
-	return pout;
-}
-//===========================================================================================================
-
-//=========================================================
-//目的の位置と狙っている位置とのレイが一致しているかどうかを判定
-//=========================================================
-bool CCalculation::CalcMatchRay(D3DXVECTOR3 AimPos, float fSx, float fSy, int nScreen_w, int nScreen_h, D3DXMATRIX* View, D3DXMATRIX* Prj)
-{
-	D3DXVECTOR3 nearpos1;
-	D3DXVECTOR3 farpos1;
-	D3DXVECTOR3 ray1;
-
-	D3DXVECTOR3 Pos1 = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
-	CalcScreenToWorld(&nearpos1,fSx,fSy, 0.0f, nScreen_w, nScreen_h, View, Prj);//（椎名）カメラの位置
-	CalcScreenToWorld(&farpos1, fSx,fSy, 1.0f, nScreen_w, nScreen_h, View, Prj); //（椎名）描画範囲の一番奥の位置
-	ray1 = farpos1 - nearpos1;
-
-	D3DXVec3Normalize(&ray1, &ray1);
-
-	D3DXVECTOR3 farpos2;
-	D3DXVECTOR3 ray2;
-
-	ray2 = AimPos - nearpos1;//目的の位置とカメラの位置のレイを求める
-
-	D3DXVec3Normalize(&ray2, &ray2);
-
-	if (ray1.x >= ray2.x - 0.05f && ray1.x <= ray2.x + 0.05f &&
-		ray1.y >= ray2.y - 0.05f && ray1.y <= ray2.y + 0.05f &&
-		ray1.z >= ray2.z - 0.05f && ray1.z <= ray2.z + 0.05f)
-	{
-		return true;
-	}
-	return false;
-}
-//===========================================================================================================
-
-//=========================================================
 //桁数を計算する
 //=========================================================
 int CCalculation::CalculationDigit(int nNum)
