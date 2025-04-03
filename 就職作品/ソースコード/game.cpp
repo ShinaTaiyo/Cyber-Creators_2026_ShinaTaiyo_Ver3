@@ -105,7 +105,7 @@ HRESULT CGame::Init()
 			m_pTutorial->SetSuccessCheck(static_cast<CTutorial::CHECK>(nCnt));
 		}
 	}
-	m_pPlayer = CPlayer::Create(D3DXVECTOR3(0.0f,200.0f,0.0f), D3DXVECTOR3(0.0f, D3DX_PI, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1.0f, 1.0f, 1.0f));//プレイヤーを生成
+	m_pPlayer = CPlayer::Create(m_pStageManager->GetSpawnPoint(), D3DXVECTOR3(0.0f, D3DX_PI, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1.0f, 1.0f, 1.0f));//プレイヤーを生成
 	m_pPlayer->SetUseDeath(false);//死亡フラグを使用しない
 
 	CManager::GetSound()->PlaySoundB(CSound::SOUND_LABEL::BGM_FINALBATTLE);//BGMを再生
