@@ -15,6 +15,7 @@
 #include "main.h"
 #include "manager.h"
 #include "camera.h"
+#include "object.h"
 #include "input.h"
 #include "objectXInfo.h"
 #include "calculation.h"
@@ -313,17 +314,17 @@ CPlayer* CPlayer::Create(D3DXVECTOR3 pos, D3DXVECTOR3 rot, D3DXVECTOR3 move, D3D
         CManager::GetObjectXInfo()->GetTexture(nIdx),
         CManager::GetObjectXInfo()->GetColorValue(nIdx));
 
-    pPlayer->SetSize();                                                                                      //サイズを設定
-
-    PosInfo.SetPos(pos);                                                                                     //位置の設定
-    PosInfo.SetPosOld(pos);                                                                                  //1f前の位置を設定
-    PosInfo.SetPosFuture(pos);                                                                               //1f後の位置を設定
-    PosInfo.SetSupportPos(pos);                                                                              //設置位置
-    RotInfo.SetRot(rot);                                                                                     //向きの設定
-    SizeInfo.SetScale(Scale);                                                                                //拡大率の設定
-    SizeInfo.SetFormarScale(Scale);                                                                          //元の拡大率を設定する
-    pPlayer->GetLifeInfo().SetAutoDeath(false);                                                              //死亡フラグを自動で発動するかどうか
-    pPlayer->GetDrawInfo().SetUseShadow(true);                                                               //影を描画する
+    pPlayer->SetSize();                         //サイズを設定
+                                                
+    PosInfo.SetPos(pos);                        //位置の設定
+    PosInfo.SetPosOld(pos);                     //1f前の位置を設定
+    PosInfo.SetPosFuture(pos);                  //1f後の位置を設定
+    PosInfo.SetSupportPos(pos);                 //設置位置
+    RotInfo.SetRot(rot);                        //向きの設定
+    SizeInfo.SetScale(Scale);                   //拡大率の設定
+    SizeInfo.SetFormarScale(Scale);             //元の拡大率を設定する
+    pPlayer->GetLifeInfo().SetAutoDeath(false); //死亡フラグを自動で発動するかどうか
+    pPlayer->GetDrawInfo().SetUseShadow(true);  //影を描画する
 
     //体力
     LifeInfo.SetLife(s_nNORMAL_MAXLIFE);                                                                     //体力
@@ -613,7 +614,7 @@ void CPlayer::SetDamage(int nDamage, int nHitStopTime)
 void CPlayer::AdjustRot()
 {
     const D3DXVECTOR3& CameraRot = CManager::GetCamera()->GetRot();                                           //カメラの向き
-    GetRotInfo().SetRot(D3DXVECTOR3(GetRotInfo().GetRot().x,D3DX_PI + CameraRot.y, GetRotInfo().GetRot().z)); //カメラの向きを基準にプレイヤーの向きを設定
+    GetRotInfo().SetRot(D3DXVECTOR3(GetRotInfo().GetRot().x,CameraRot.y + D3DX_PI, GetRotInfo().GetRot().z)); //カメラの向きを基準にプレイヤーの向きを設定
 }
 //==========================================================================================================
 
@@ -676,9 +677,9 @@ CPlayerAbnormalState_KnockBack::~CPlayerAbnormalState_KnockBack()
 void CPlayerAbnormalState_KnockBack::Process(CPlayer* pPlayer)
 {
     //ノックバックの移動量を減衰させる
-    m_KnockBackMove.x += (0.0f - m_KnockBackMove.x) * m_fInertia;
-    m_KnockBackMove.y += (0.0f - m_KnockBackMove.y) * m_fInertia;
-    m_KnockBackMove.z += (0.0f - m_KnockBackMove.z) * m_fInertia;
+    m_KnockBackMove.x += (0.0f - m_KnockBackMove.x) * m_fInertia * CObject::GetDeltaTimeScale(pPlayer);
+    m_KnockBackMove.y += (0.0f - m_KnockBackMove.y) * m_fInertia * CObject::GetDeltaTimeScale(pPlayer);
+    m_KnockBackMove.z += (0.0f - m_KnockBackMove.z) * m_fInertia * CObject::GetDeltaTimeScale(pPlayer);
 
     //移動量の設定
     pPlayer->GetMoveInfo().SetMove(m_KnockBackMove);

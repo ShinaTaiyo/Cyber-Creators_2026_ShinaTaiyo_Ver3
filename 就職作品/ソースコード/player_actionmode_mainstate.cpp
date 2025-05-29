@@ -179,6 +179,7 @@ CPlayerActionMode_WireShot::CPlayerActionMode_WireShot(CPlayer* pPlayer)
 
 	const D3DXVECTOR3& WireHeadPos = WireHeadPosInfo.GetPos();//ワイヤーの頭の位置
 	const D3DXVECTOR3& LockOnRayCollisionPos = pLockon->GetNearRayColObjPos();//ロックオンのレイが当たった一番近いオブジェクトの衝突位置を取得する
+	const D3DXVECTOR3& LockOnRay = pLockon->GetNowRay(); // ロックオンのレイ
 	//============================================================================
 
 	//サブステート設定
@@ -189,33 +190,24 @@ CPlayerActionMode_WireShot::CPlayerActionMode_WireShot(CPlayer* pPlayer)
 	//ワイヤー頭発射処理
 	//===============================
 
-	D3DXVECTOR3 MathRot = LockOnRayCollisionPos - PlayerPos;//レイが当たった位置とプレイヤーの位置のベクトルを求める
-	D3DXVec3Normalize(&MathRot, &MathRot);                  //上記で求めたベクトルを正規化する
-
 	//正規化したベクトルをもとにYawとPitchを求める
-	float fYaw = atan2f(MathRot.x, MathRot.z);//Zを軸にする
-	float fPitch = atan2f(MathRot.y, sqrtf(powf(MathRot.x, 2) + powf(MathRot.z, 2)));//XZ平面の長さを軸にして求める
-	//fPitch *= -1.0f;//ピッチを奥側に（右手座標、手前側に傾くので、奥側に)
+	float fYaw = atan2f(LockOnRay.x, LockOnRay.z);//Zを軸にする
+	float fPitch = atan2f(LockOnRay.y, sqrtf(powf(LockOnRay.x, 2) + powf(LockOnRay.z, 2)));//XZ平面の長さを軸にして求める
+	WireHeadRotInfo.SetRot(D3DXVECTOR3(-fPitch, fYaw, 0.0f));                                                            // 向きを設定                                                                                 
 
-	WireHeadMoveInfo.SetMove(CCalculation::Calculation3DVec(WireHeadPos, LockOnRayCollisionPos, s_fWIREHEAD_SHOTSPEED));//ワイヤーの頭をロックオンのレイの衝突位置に発射する
-	pWireHead->ResetCoolTime();                                                                                         //ワイヤーの頭が当たるまでのクールタイムをリセット
-	WireHeadMoveInfo.SetUseInteria(false, CObjectX::GetNormalInertia());                                                //ワイヤーの頭の慣性をオフにする
-	WireHeadMoveInfo.SetUseGravity(false, 1.0f);                                                                        //ワイヤーの頭の重力をオフにする
-	WireHeadRotInfo.SetRot(D3DXVECTOR3(D3DX_PI * 0.5f - fPitch, fYaw, 0.0f));                                           //前を基準にpitchを調整（０の時上を向いており、前を向いた時を０と仮定するため、
-	                                                                                                                    //上記の処理でPitchを求めるとき、値を足しているのですでに上を向くターンが終わって
-																														// これ以上値を増やすと下を向き始めるのでPitchを逆にし、向いた方向を向くようにする
-	                                                                                                                    //+ D3DX_PI * 0.5f、Yawは奥側基準なのでそのままで大丈夫
-	WireHeadDrawInfo.SetUseDraw(true);                                                                                  //ワイヤーの頭の描画を復活させる
+	WireHeadMoveInfo.SetMove(CCalculation::Calculation3DVec(WireHeadPos, LockOnRayCollisionPos, s_fWIREHEAD_SHOTSPEED)); // ワイヤーの頭をロックオンのレイの衝突位置に発射する
+	pWireHead->ResetCoolTime();                                                                                          // ワイヤーの頭が当たるまでのクールタイムをリセット
+	WireHeadMoveInfo.SetUseInteria(false, CObjectX::GetNormalInertia());                                                 // ワイヤーの頭の慣性をオフにする
+	WireHeadMoveInfo.SetUseGravity(false, 1.0f);                                                                         // ワイヤーの頭の重力をオフにする
+	WireHeadDrawInfo.SetUseDraw(true);                                                                                   // ワイヤーの頭の描画を復活させる
 
 	//ワイヤー
-	pWire->SetUseDraw(true);                                                                                            //ワイヤーの描画を復活させる
-	pWire->SetUseUpdate(true);                                                                                          //ワイヤーの更新を復活させる
+	pWire->SetUseDraw(true);   // ワイヤーの描画を復活させる
+	pWire->SetUseUpdate(true); // ワイヤーの更新を復活させる
 
 	//プレイヤー
-	PlayerMoveInfo.SetUseInteria(false, CObjectX::GetNormalInertia());                                                  //慣性を使用しない
-	PlayerMoveInfo.SetUseGravity(false, CObjectX::GetNormalGravity());                                                  //重力を使用しない
-	//============================================================================
-
+	PlayerMoveInfo.SetUseInteria(false, CObjectX::GetNormalInertia()); // 慣性を使用しない
+	PlayerMoveInfo.SetUseGravity(false, CObjectX::GetNormalGravity()); // 重力を使用しない
 }
 //=========================================================================================================================================================
 
@@ -299,32 +291,25 @@ void CPlayerActionMode_WireShot::FrightenedEnemy(CPlayer* pPlayer)
 //===================================================================================================================
 void CPlayerActionMode_WireShot::DecisionCameraRot(CPlayer* pPlayer)
 {
-	//===================
-	//変数
-	//===================
+	// === 変数 ===
+
 	CWire* pWire = pPlayer->GetWire();                //ワイヤーへのポインタ
     CWireHead* pWireHead = pWire->GetWireHead();      //ワイヤーの頭へのポインタ
-
-	//カメラ
     CCamera* pCamera = CManager::GetCamera();         //カメラを取得
 	const D3DXVECTOR3& CameraRot = pCamera->GetRot(); //カメラの向き
-    //============================================================
-
-    //==========================
-    //カメラの向きを求める
-    //==========================
     D3DXVECTOR3 ComRot = pWireHead->GetPosInfo().GetPos() - pPlayer->GetPosInfo().GetPos();//ワイヤーの頭とプレイヤーのベクトルを求める
     D3DXVec3Normalize(&ComRot, &ComRot);                                                   //上記で求めたベクトルを正規化する
-
 	//正規化ベクトルをもとにワイヤーの頭とプレイヤーの向きを求める
     float fYaw = atan2f(ComRot.x, ComRot.z);                                               //Z方向を軸にYawを求める
     float fPitch = atan2f(ComRot.y, sqrtf(powf(ComRot.x, 2) + powf(ComRot.z, 2)));         //XZ平面の長さを軸にPitchを求める
-    D3DXVECTOR3 ResultRot = D3DXVECTOR3(-fPitch - D3DX_PI * 0.5f, fYaw, 0.0f);             //カメラの向きを調整する（前方向を基準にするため-をかけて、ワイヤーの頭は上を向いているので、
-	                                                                                       //前を基準に-D3DX_PI * 0.5f
-    if (CameraRot.x > ResultRot.x - 0.5f && CameraRot.x < ResultRot.x + 0.5f &&
-		CameraRot.y > ResultRot.y - 0.5f && CameraRot.y < ResultRot.y + 0.5f)
-    {//現在のカメラの向きが目的の向きに近かったらダイブ先に合わせる
-    	pCamera->ChengeState(DBG_NEW CCameraState_TurnAround(D3DXVECTOR3(-fPitch - D3DX_PI * 0.5f, fYaw, 0.0f), 0.1f));
+
+	// === 処理 ===
+	 
+    // 現在のカメラの向きが目的の向きに近かったらダイブ先に合わせる 
+	if (CameraRot.x > fPitch - 0.5f && CameraRot.x < fPitch + 0.5f &&
+		CameraRot.y > fYaw - 0.5f && CameraRot.y < fYaw + 0.5f)
+    {
+    	pCamera->ChengeState(DBG_NEW CCameraState_TurnAround(D3DXVECTOR3(fPitch, fYaw, 0.0f), 0.1f));
     }
     //==============================================================================================
 
@@ -364,45 +349,49 @@ CPlayerActionMode_DiveMove::~CPlayerActionMode_DiveMove()
 //===================================================================================================================
 void CPlayerActionMode_DiveMove::Process(CPlayer* pPlayer)
 {
-	//====================
-	//変数宣言
-	//====================
+	// === 変数 ===
+
 	bool bInput = false;//指定のボタンを押しているかどうか
 
-	//ワイヤーの頭
-	CWire* pWire = pPlayer->GetWire();                             //ワイヤーへのポインタ
-	CWireHead* pWireHead = pWire->GetWireHead();                   //ワイヤーの頭
-	CObjectX::PosInfo& WireHeadPosInfo = pWireHead->GetPosInfo();  //ワイヤーの位置情報
-	const D3DXVECTOR3& WireHeadPos = WireHeadPosInfo.GetPos();     //ワイヤーの頭の位置
+	// ワイヤー
+	CWire* pWire = pPlayer->GetWire(); // ワイヤーへのポインタ
+	CWireHead* pWireHead = pWire->GetWireHead(); // ワイヤーの頭へのポインタ
+	CObjectX::PosInfo& WireHeadPosInfo = pWireHead->GetPosInfo(); // ワイヤーの頭の位置情報
+	const D3DXVECTOR3& WireHeadPos = WireHeadPosInfo.GetPos();    // ワイヤーの頭の位置
 
-	//プレイヤー
-	CObjectX::PosInfo& PlayerPosInfo = pPlayer->GetPosInfo();      //位置情報
-	CObjectX::RotInfo& PlayerRotInfo = pPlayer->GetRotInfo();      //向き情報
-	const D3DXVECTOR3& PlayerRot = PlayerRotInfo.GetRot();         //向き
-	const D3DXVECTOR3& PlayerPos = PlayerPosInfo.GetPos();         //位置
+	// プレイヤー
+	CObjectX::PosInfo& PlayerPosInfo = pPlayer->GetPosInfo(); // プレイヤーの位置情報
+	CObjectX::RotInfo& PlayerRotInfo = pPlayer->GetRotInfo(); // プレイヤーの向き情報
+	const D3DXVECTOR3& PlayerRot = PlayerRotInfo.GetRot();    // プレイヤーの向き
+	const D3DXVECTOR3& PlayerPos = PlayerPosInfo.GetPos();    // プレイヤーの位置
 
-	CCamera* pCamera = CManager::GetCamera();                      //カメラへのポインタ
-	CInputJoypad* pInputJoypad = CManager::GetInputJoypad();       //ジョイパッド入力情報へのポインタ
-	CInputMouse* pInputMouse = CManager::GetInputMouse();          //マウス入力情報へのポインタ
-	//========================================================================
+	CCamera* pCamera = CManager::GetCamera(); //カメラへのポインタ
+	CInputJoypad* pInputJoypad = CManager::GetInputJoypad(); // ジョイパッド入力情報へのポインタ
+	CInputMouse* pInputMouse = CManager::GetInputMouse();    // マウス入力情報へのポインタ
 
+	// === 処理 ===
+
+	// 指定されたボタンを押したらtrueにする
 	if (pInputJoypad->GetRT_Press() || pInputMouse->GetMouseLeftClickPress())
-	{//指定されたボタンを押したらtrueにする
+	{
 		bInput = true;
 	}
 
+	// ダイブ時に判定したら移動モードと攻撃モードを通常に戻す
 	if (CCalculation::CalculationLength(PlayerPos,WireHeadPos) < s_fCOLLISIONSTARTLENGTH)
-	{//ダイブ時に判定したら移動モードと攻撃モードを通常に戻す
+	{
+		// 引っ付き（敵以外なら引っ付く）
 		if (bInput == true && pWireHead->GetCollisionObjType() != CObject::TYPE::ENEMY)
-		{//引っ付き→ダイブ（もしワイヤーヘッドが衝突したオブジェクトが敵の場合、敵には引っ付きたくないので、攻撃に移行する
-			CGame::GetTutorial()->SetSuccessCheck(CTutorial::CHECK::STUCKWALL);      //壁に引っ付くチュートリアルを完了
-			pPlayer->ChengeActionMode(DBG_NEW CPlayerActionMode_Stuck(pPlayer));     //メインステートを「引っ付き」に変更
+		{
+			CGame::GetTutorial()->SetSuccessCheck(CTutorial::CHECK::STUCKWALL);  // 壁に引っ付くチュートリアルを完了
+			pPlayer->ChengeActionMode(DBG_NEW CPlayerActionMode_Stuck(pPlayer)); // メインステートを「引っ付き」に変更
 		}
+		// 引っ付き→ダイブ（もしワイヤーヘッドが衝突したオブジェクトが敵の場合、敵には引っ付きたくないので、攻撃に移行する
 		else
-		{//攻撃→ダイブモード
-			pWire->SetUseDraw(false);                                                //ワイヤーの頭を描画しない
-			PlayerRotInfo.SetRot(D3DXVECTOR3(0.0f, pCamera->GetRot().y, 0.0f));      //向きをカメラの向きに設定
-			pPlayer->ChengeActionMode(DBG_NEW CPlayerActionMode_DiveAttack(pPlayer));//メインステートを「ダイブ攻撃」に変更
+		{
+			pWire->SetUseDraw(false); // ワイヤーの頭を描画しない
+			PlayerRotInfo.SetRot(D3DXVECTOR3(0.0f, pCamera->GetRot().y, 0.0f)); // 向きをカメラの向きに設定
+			pPlayer->ChengeActionMode(DBG_NEW CPlayerActionMode_DiveAttack(pPlayer)); // メインステートを「ダイブ攻撃」に変更
 		}
 	}
 }
@@ -448,28 +437,41 @@ void CPlayerActionMode_DiveAttack::Process(CPlayer* pPlayer)
 //===================================================================================================================
 CPlayerActionMode_Stuck::CPlayerActionMode_Stuck(CPlayer* pPlayer) : m_bStartWireShot(true)
 {
-	pPlayer->ChengeMoveMode(DBG_NEW CPlayerMove_Dont());                                            //移動方法を「なし」に変更
-	pPlayer->ChengeAttackMode(DBG_NEW CPlayerAttack_Dont());                                        //攻撃方法を「なし」に変更
+	// === 変数、初期設定 ===
+
+	pPlayer->ChengeMoveMode(DBG_NEW CPlayerMove_Dont()); // 移動方法を「なし」に変更
+	pPlayer->ChengeAttackMode(DBG_NEW CPlayerAttack_Dont()); // 攻撃方法を「なし」に変更
 															                                        
-	CCamera* pCamera = CManager::GetCamera();                                                       //カメラを取得する
-	CWireHead* pWireHead = pPlayer->GetWire()->GetWireHead();                                       //ワイヤーの頭を種類
-	pPlayer->GetPosInfo().SetPos(pPlayer->GetPosInfo().GetPos() - pPlayer->GetMoveInfo().GetMove());//1f前の位置に設定
+	CCamera* pCamera = CManager::GetCamera(); // カメラへのポインタ
+	CWireHead* pWireHead = pPlayer->GetWire()->GetWireHead(); // ワイヤーの頭へのポインタ
 
-	//==========================
-	//ワイヤーヘッドへの向きを求める
-	//==========================
-	D3DXVECTOR3 ComRot = pWireHead->GetPosInfo().GetPos() - pPlayer->GetPosInfo().GetPos();//ワイヤーの頭とプレイヤーの位置のベクトルを求める
-	D3DXVec3Normalize(&ComRot, &ComRot);                                                   //ベクトルを正規化
-	float fYaw = atan2f(ComRot.x, ComRot.z);                                               //Yawを求める
-	float fPitch = atan2f(ComRot.y, sqrtf(powf(ComRot.x, 2) + powf(ComRot.z, 2)));         //Pitchを求める
-	D3DXVECTOR3 ResultRot = D3DXVECTOR3(-fPitch - D3DX_PI * 0.5f, fYaw, 0.0f);             //カメラの向きを調整する（前方向を基準にする）
-	CSound* pSound = CManager::GetSound();                                                 //サウンドへのポインタを取得
-	pSound->PlaySoundB(CSound::SOUND_LABEL::SE_LANDING_000);                               //着地音を鳴らす
+	CObjectX::PosInfo& 
+		PlayerPosInfo = pPlayer->CObjectX::GetPosInfo(),     // プレイヤー位置情報
+		WireHeadPosInfo = pWireHead->CObjectX::GetPosInfo(); // ワイヤー頭の位置情報
 
-	if (pCamera->GetRot().x > ResultRot.x - 0.5f && pCamera->GetRot().x < ResultRot.x + 0.5f &&
-		pCamera->GetRot().y > ResultRot.y - 0.5f && pCamera->GetRot().y < ResultRot.y + 0.5f)
-	{//引っ付いたときに壁を向いていたら壁の逆側を向かせる
-		pCamera->ChengeState(DBG_NEW CCameraState_TurnAround(D3DXVECTOR3(-pWireHead->GetRotInfo().GetRot().x, pWireHead->GetRotInfo().GetRot().y + D3DX_PI, 0.0f), 0.15f));
+	const D3DXVECTOR3&
+		PlayerPosOld = PlayerPosInfo.GetPosOld(), // プレイヤーの1f前の位置
+		WireHeadPos = WireHeadPosInfo.GetPos(),   // ワイヤーの頭の位置
+		CameraRot = pCamera->GetRot();            // カメラの向き
+
+	D3DXVECTOR3 ComRot = WireHeadPos - PlayerPosOld; // ワイヤーの頭とプレイヤーの1f前の位置のベクトルを求める
+	D3DXVec3Normalize(&ComRot, &ComRot);     // ベクトルを正規化
+
+	const float
+		fYaw = atan2f(ComRot.x, ComRot.z), // Yawを求める
+	    fPitch = atan2f(ComRot.y, sqrtf(powf(ComRot.x, 2) + powf(ComRot.z, 2))); // Pitchを求める
+
+	CSound* pSound = CManager::GetSound(); // サウンドへのポインタ
+
+	// === 処理 ===
+
+	pSound->PlaySoundB(CSound::SOUND_LABEL::SE_LANDING_000); // 着地音を鳴らす
+
+	// YawとPitchがカメラの向きと一致していたら後ろを向かせる
+	if (CameraRot.x > fPitch - 0.5f && CameraRot.x < fPitch + 0.5f &&
+		CameraRot.y > fYaw - 0.5f && CameraRot.y < fYaw + 0.5f)
+	{
+		pCamera->ChengeState(DBG_NEW CCameraState_TurnAround(D3DXVECTOR3(-fPitch, fYaw + D3DX_PI, 0.0f), 0.15f));
 	}
 	//==============================================================================================
 

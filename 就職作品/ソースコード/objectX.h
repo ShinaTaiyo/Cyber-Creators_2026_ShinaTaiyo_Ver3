@@ -237,8 +237,8 @@ public:
 		const bool& GetUseSwapVtxXZ()const { return bSwapVtxXZ; }
 
 		//処理
-		void AddScaleProcess();//拡大率加算処理
-		void MultiScaleProcess();//拡大率乗算処理
+		void AddScaleProcess(CObject * pObj);//拡大率加算処理
+		void MultiScaleProcess(CObject * pObj);//拡大率乗算処理
 		void DecideVtxMaxMinProcess();//拡大率を参照して頂点の最大最小を決める処理
 	};
 
@@ -295,9 +295,9 @@ public:
 		//位置更新関係
 		//===================================
 		void SetUseUpdatePos(bool bUse) { bUseUpdatePos = bUse; }//位置の更新を使用するかどうか
-		void GravityProcess();                                   //重力の処理
+		void GravityProcess(CObject * pObj);                                   //重力の処理
 		void MultiSpeedProcess();                                //乗算加速処理
-		void AddSpeedProcess();                                  //加速処理
+		void AddSpeedProcess(CObject * pObj);                    //加速処理
 		//=================================================================================================================
 	};
 

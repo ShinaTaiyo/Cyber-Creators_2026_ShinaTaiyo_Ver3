@@ -305,16 +305,23 @@ void CManager::Uninit()
 //=======================
 void CManager::Update()
 {
-	m_pRenderer->Update();     //レンダラー
-	m_pInputKeyboard->Update();//キー入力
-	m_pInputJoypad->Update();  //ジョイパッド入力
-	m_pInputMouse->Update();   //マウス入力
-	m_pCamera->Update();       //カメラ
-	m_pLight->Update();        //ライト
-	if (m_pScene != nullptr)
-	{
-		m_pScene->Update();        //シーンの更新処理
-	}
+	m_pInputKeyboard->Update(); //キー入力
+	m_pInputJoypad->Update();   //ジョイパッド入力
+	m_pInputMouse->Update();    //マウス入力
+
+	if (m_pScene != nullptr)    
+	{						    
+		m_pScene->Update();     //シーンの更新処理
+	}		
+
+	CObject::UpdateAll();       //全てのオブジェクトの更新処理を行う
+
+	m_pCamera->Update();        //カメラ
+	m_pLight->Update();         //ライト
+
+	m_pRenderer->Update();      //レンダラー
+
+	CObject::ChengeTimeScaleFrameCntProcess();//タイムスケールを変える時間をカウントする処理
 }
 //===================================================
 

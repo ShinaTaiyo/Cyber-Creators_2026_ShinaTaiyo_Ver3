@@ -111,7 +111,7 @@ CWireHead* CWireHead::Create(D3DXVECTOR3 Pos, D3DXVECTOR3 Rot, D3DXVECTOR3 Move,
 	pWireHead->GetLifeInfo().SetAutoSubLife(true);             //‘Ì—Í‚ðŽ©“®“I‚ÉŒ¸‚ç‚·
 	
 
-	int nIdx = CManager::GetObjectXInfo()->Regist("data\\MODEL\\Wire_Head\\Wire_Head_000.x");//ƒ‚ƒfƒ‹î•ñ‚ð“o˜^
+	int nIdx = CManager::GetObjectXInfo()->Regist("data\\MODEL\\Wire_Head\\Wire_Head_001.x");//ƒ‚ƒfƒ‹î•ñ‚ð“o˜^
 
     //ƒ‚ƒfƒ‹î•ñ‚ðŠ„‚è“–‚Ä‚é
 	pWireHead->BindObjectXInfo(CManager::GetObjectXInfo()->GetMesh(nIdx),

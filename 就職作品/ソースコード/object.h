@@ -138,6 +138,10 @@ public:
 	//フレーム関係
 	//=================================================
 	int GetCntFrame() { return m_nCntFrame; }                                         //出現してからのフレーム数をカウントする
+	static void SetTimeScale(TYPE Type, float fTimeScale,int nChengeFrame);           //タイムスケールと変更時間を設定する
+	static void ChengeTimeScaleFrameCntProcess();                                     //タイムスケールを変更するフレーム数をカウントする処理
+	static const float& GetTimeScale(CObject * pObj);                                      //タイムスケールを取得する
+	static const float GetDeltaTimeScale(CObject * pObj);                             //タイムスケールとデルタタイム両方を掛けた値を取得
 	//================================================================================================
 
 	//=================================================
@@ -153,7 +157,9 @@ protected:
 private:
 	static CObject* m_apObject[m_nMAXPRIORITY][m_nMAXOBJECT];//オブジェクト管理
 	static bool m_bActivationReleaseAll;                     //ReleaseAllを発動するかどうか
-
+	static float s_fTimeScale[static_cast<int>(TYPE::MAX)];  //タイプごとのタイムスケール
+	static int s_nChengeTimeScaleFrame[static_cast<int>(TYPE::MAX)];//タイムスケールを変更する時間
+	static int s_nChengeTimeScaleFrameCnt[static_cast<int>(TYPE::MAX)];//タイムスケールを変更する時間をカウントする
     //描画プライオリティ
 	static constexpr int s_nDrawPriority[static_cast<int>(TYPE::MAX)] = 
 	{
@@ -224,6 +230,18 @@ private:
 	//フレーム関係
 	//=================================================
 	int m_nCntFrame;                                         //出現してからのフレーム数をカウントする!
+	//================================================================================================
+
+	//=================================================
+	//フレーム関係
+	//=================================================
+	static bool s_bAlreadyInitTimeScale;//タイムスケールを既に初期化したかどうか
+	//================================================================================================
+
+	//=================================================
+	//関数
+	//=================================================
+	static void InitTimeScale();//タイムスケールを初期化する
 	//================================================================================================
 };
 

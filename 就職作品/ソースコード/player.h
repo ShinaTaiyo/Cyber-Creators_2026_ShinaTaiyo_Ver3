@@ -14,11 +14,10 @@
 #include "main.h"
 #include "character.h"
 #include "lockon.h"
-#include "ui.h"
+#include "gauge.h"
 #include "player_actionmode.h"
 #include "player_actionmode_mainstate.h"
 #include "wire.h"
-#include "gauge.h"
 //==========================================
 
 //======================
@@ -26,6 +25,7 @@
 //======================
 class CPlayerAbnormalState;
 class CPlayerAbnormalState_KnockBack;
+class CUi; // UI
 
 //===========================================
 //プレイヤー3Dクラス

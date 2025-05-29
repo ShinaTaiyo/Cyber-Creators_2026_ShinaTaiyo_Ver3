@@ -99,7 +99,7 @@ void CWire::Update()
 	D3DXVECTOR3 Up = { 0.0f,1.0f,0.0f };//基準となる上方向ベクトル（外積の処理で使う）
 
 	if (std::abs(Dir.x * Up.x + Dir.y * Up.y + Dir.z * Up.z) > 0.99f) {
-		Up = { 1.0f, 0.0f, 0.0f }; // 平行に近い場合は別の基準(X方向)
+		Up = { 1.0f, 0.0f, 0.0f }; // 平行に近い場合は別の基準(X方向)（どちらの基準ベクトルでも結果に大きな差はなし）
 	}
 
 	if (m_bUseUpdate == true && m_pPlayer != nullptr)

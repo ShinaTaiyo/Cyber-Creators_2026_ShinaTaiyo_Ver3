@@ -108,14 +108,14 @@ void CObjectX::Update()
 {
 	CalculateSenterPos();                        //モデルの中心点を求める
 										         
-	m_SizeInfo.AddScaleProcess();                //拡大率加算処理
-	m_SizeInfo.MultiScaleProcess();              //拡大率乗算処理
+	m_SizeInfo.AddScaleProcess(this);                //拡大率加算処理
+	m_SizeInfo.MultiScaleProcess(this);              //拡大率乗算処理
 	m_SizeInfo.DecideVtxMaxMinProcess();         //頂点の最大最小を決める処理
 										         
 	m_DrawInfo.ChengeColorProcess(this);         //色を変える処理
 	if (m_RotInfo.GetUseAddRot() == true)
 	{//向きの加算処理
-		m_RotInfo.Rot += m_RotInfo.AddRot;
+		m_RotInfo.Rot += m_RotInfo.AddRot * GetDeltaTimeScale(this);
 	}
 
 	m_LifeInfo.AutoSubLifeProcess();             //体力を自動的に減らす処理
@@ -124,8 +124,8 @@ void CObjectX::Update()
 	m_LifeInfo.RatioLifeAlphaColorProcess(this); //体力の割合に応じて透明度を変える処理
 
 	m_MoveInfo.MultiSpeedProcess();              //乗算加速処理
-	m_MoveInfo.AddSpeedProcess();                //加速処理
-	m_MoveInfo.GravityProcess();                 //重力処理
+	m_MoveInfo.AddSpeedProcess(this);                //加速処理
+	m_MoveInfo.GravityProcess(this);                 //重力処理
 
 	UpdatePos();                                 //位置の更新を行う
 
@@ -184,7 +184,7 @@ void CObjectX::Draw()
 	//=======================================
 	//描画の調整
 	//=======================================
-	if (m_DrawInfo.Color.a < 1.0f)
+	if (m_DrawInfo.Color.a < 1.0f && CScene::GetMode() == CScene::MODE_GAME)
 	{
     	pDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);//TRUEだと透明度と背景のブレンドが行われる、FALSEだと完全に不透明な描画になる
 		pDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);     //描画するオブジェクトの色の影響度を決める,D3DBLEND_SRCALPHA：(R,G,B) * a(オブジェクトの透明度に応じた色)
@@ -349,8 +349,7 @@ void CObjectX::SetDamage(int nDamage, int nHitStopTime)
 //================================================
 void CObjectX::CalculateSenterPos()
 {
-	m_PosInfo.SenterPos = m_PosInfo.Pos;//中心点を求める
-	m_PosInfo.SenterPos.y += (m_SizeInfo.VtxMax.y + m_SizeInfo.VtxMin.y) / 2;//最大頂点と最小頂点の距離を求め、その半分を足す
+	m_PosInfo.SenterPos = m_PosInfo.Pos + (m_SizeInfo.VtxMax + m_SizeInfo.VtxMin) * 0.5f;//最大頂点と最小頂点の距離を求め、その半分を足す
 }
 //================================================================================================================================================
 
@@ -411,7 +410,8 @@ void CObjectX::UpdatePos()
 		}
 
 		//位置の設定
-		GetPosInfo().SetPos(Pos + m_MoveInfo.Move);
+		D3DXVECTOR3 ResultMove = m_MoveInfo.GetMove();
+		GetPosInfo().SetPos(Pos + ResultMove * GetDeltaTimeScale(this));//１秒あたりに進む予定の距離にデルタタイムを掛ける
 
 		//1f後の位置の設定
 		GetPosInfo().SetPosFuture(Pos + m_MoveInfo.Move);
@@ -637,6 +637,8 @@ void CObjectX::ChengeEditPos()
 	D3DXVECTOR3 Move = D3DXVECTOR3(0.0f,0.0f,0.0f);
 	SetColor(D3DXCOLOR(1.0f,0.0f,0.0f,0.5f),3,true,true,false);           //色を半透明にする
 	CInputKeyboard* pInput = CManager::GetInputKeyboard();
+	CCamera* pCamera = CManager::GetCamera(); // カメラへのポインタ
+	const D3DXVECTOR3& Rot = pCamera->GetRot(); // カメラの向き
 	//===========================
 	//位置を支点に固定
 	//===========================
@@ -673,7 +675,7 @@ void CObjectX::ChengeEditPos()
 	}
 	else
 	{//XZ平面移動
-		CCalculation::CaluclationMove(false,m_PosInfo.Pos,Move,5.0f, CCalculation::MOVEAIM_XZ, m_RotInfo.Rot.y);
+		CCalculation::CaluclationMove(false,m_PosInfo.Pos,Move,5.0f, CCalculation::MOVEAIM_XZ, Rot.y,m_RotInfo.Rot.y);
 	}
 
 	//支点も一緒に移動
@@ -1053,7 +1055,7 @@ void CObjectX::SizeInfo::SetUseAddScale(D3DXVECTOR3 CopyAddScale, bool bUse)
 //============================================================================
 //拡大率加算処理
 //============================================================================
-void CObjectX::SizeInfo::AddScaleProcess()
+void CObjectX::SizeInfo::AddScaleProcess(CObject* pObj)
 {
 	if (bUseAddScaling == true)
 	{//拡大率の加算を行うなら
@@ -1065,13 +1067,13 @@ void CObjectX::SizeInfo::AddScaleProcess()
 //============================================================================
 //拡大率乗算処理
 //============================================================================
-void CObjectX::SizeInfo::MultiScaleProcess()
+void CObjectX::SizeInfo::MultiScaleProcess(CObject* pObj)
 {
 	if (bUseMultiScale == true)
 	{//拡大率の乗算を行うなら
-		Scale.x *= MultiScale.x;
-		Scale.y *= MultiScale.y;
-		Scale.z *= MultiScale.z;
+		Scale.x *= MultiScale.x * GetDeltaTimeScale(pObj);
+		Scale.y *= MultiScale.y * GetDeltaTimeScale(pObj);
+		Scale.z *= MultiScale.z * GetDeltaTimeScale(pObj);
 	}
 }
 //================================================================================================================================================
@@ -1109,12 +1111,12 @@ void CObjectX::SizeInfo::DecideVtxMaxMinProcess()
 //============================================================================
 //重力の処理
 //============================================================================
-void CObjectX::MoveInfo::GravityProcess()
+void CObjectX::MoveInfo::GravityProcess(CObject* pObj)
 {
 	if (bUseGravity == true)
 	{//重力を使用するなら
 		const D3DXVECTOR3& Move = GetMove();
-		SetMove(Move + D3DXVECTOR3(0.0f, -fGravityPower, 0.0f));
+		SetMove(Move + D3DXVECTOR3(0.0f, -fGravityPower * GetDeltaTimeScale(pObj), 0.0f));
 	}
 }
 
@@ -1134,11 +1136,11 @@ void CObjectX::MoveInfo::MultiSpeedProcess()
 //==================================
 //乗算加速処理
 //==================================
-void CObjectX::MoveInfo::AddSpeedProcess()
+void CObjectX::MoveInfo::AddSpeedProcess(CObject* pObj)
 {
 	if (bUseAddSpeed == true)
 	{//速度の加算を行うなら
-		Move += AddSpeed;
+		Move += AddSpeed * GetDeltaTimeScale(pObj);
 	}
 }
 //================================================================================================================================================

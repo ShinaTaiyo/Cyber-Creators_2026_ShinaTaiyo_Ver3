@@ -29,19 +29,38 @@
 //====================================================================
 //静的メンバ宣言
 //====================================================================
-const float CCamera::m_BESIDECAMERALENGTH = 570.0f;//ビサイドビューのカメラの距離
-const float CCamera::s_fINITIAL_LENGTH = 200.0f;   //カメラとの最初の距離
-bool CCamera::s_bCAMERACONTROLLMOUSE = false;      //デバッグ時にカメラをマウスで動かすかどうか
-int CCamera::s_nSENSITIVITYLEVEL = 10;              //カメラの感度レベル
+const float CCamera::m_BESIDECAMERALENGTH = 570.0f; // ビサイドビューのカメラの距離
+const float CCamera::s_fINITIAL_LENGTH = 250.0f;    // カメラとの最初の距離
+bool CCamera::s_bCAMERACONTROLLMOUSE = false;       // デバッグ時にカメラをマウスで動かすかどうか
+int CCamera::s_nSENSITIVITYLEVEL = 10;              // カメラの感度レベル
 //====================================================================================================
 
 //====================================================================
 //コンストラクタ
 //====================================================================
-CCamera::CCamera() : m_SupportPos(D3DXVECTOR3(0.0f,0.0f,0.0f)),m_fLength(s_fINITIAL_LENGTH), m_fTurningRotSpeed(0.0f),m_fTurningSpeedY(0.0f),m_PosV(D3DXVECTOR3(0.0f,0.0f,0.0f)),
-m_PosR(D3DXVECTOR3(0.0f,0.0f,0.0f)),m_VecU(D3DXVECTOR3(0.0f,0.0f,0.0f)),m_Rot(D3DXVECTOR3(0.0f,0.0f,0.0f)),m_mtxProjection(),m_mtxView(),m_CameraType(CAMERATYPE_BIRD),m_DifferenceLength(D3DXVECTOR3(0.0f,0.0f,0.0f)),
-m_ZoomSpeed(D3DXVECTOR3(0.0f,0.0f,0.0f)),m_nShakeFrame(0),m_ModeTime(0),m_fShakePower(0.0f),m_fAddLength(0.0f),m_AddPosR(D3DXVECTOR3(0.0f,0.0f,0.0f)),m_AddPosV(D3DXVECTOR3(0.0f,0.0f,0.0f))
-,m_State(CAMERASTATE::NORMAL),m_pCameraState(DBG_NEW CCameraState_Normal()),m_pCameraLengthState(DBG_NEW CCameraLengthState())
+CCamera::CCamera() : 
+	m_SupportPos(D3DXVECTOR3(0.0f,0.0f,0.0f)),
+	m_fLength(s_fINITIAL_LENGTH), 
+	m_fTurningRotSpeed(0.0f),
+	m_fTurningSpeedY(0.0f),
+	m_PosV(D3DXVECTOR3(0.0f,0.0f,0.0f)),
+    m_PosR(D3DXVECTOR3(0.0f,0.0f,0.0f)),
+	m_VecU(D3DXVECTOR3(0.0f,0.0f,0.0f)),
+	m_Rot(D3DXVECTOR3(0.0f,0.0f,0.0f)),
+	m_mtxProjection(),m_mtxView(),
+	m_CameraType(CAMERATYPE_BIRD),
+	m_DifferenceLength(D3DXVECTOR3(0.0f,0.0f,0.0f)),
+    m_ZoomSpeed(D3DXVECTOR3(0.0f,0.0f,0.0f)),
+	m_nShakeFrame(0),
+	m_ModeTime(0),
+	m_fShakePower(0.0f),
+	m_fAddLength(0.0f),
+	m_AddPosR(D3DXVECTOR3(0.0f,0.0f,0.0f)),
+	m_AddPosV(D3DXVECTOR3(0.0f,0.0f,0.0f))
+,   m_State(CAMERASTATE::NORMAL),
+    m_pCameraState(DBG_NEW CCameraState_Normal()),
+	m_pCameraLengthState(DBG_NEW CCameraLengthState()),
+	m_Pos(D3DXVECTOR3(0.0f,0.0f,0.0f))
 {
 #ifdef _DEBUG
 	if (s_bDEBUGCAMERACONTROLLMOUSE)
@@ -77,7 +96,7 @@ HRESULT CCamera::Init()
 	m_PosV = D3DXVECTOR3(0.0f, 200.0f,-350.0f);       //支点
 	m_PosR = D3DXVECTOR3(0.0f,0.0f,0.0f);             //注視点
 	m_VecU = D3DXVECTOR3(0.0f, 1.0f, 0.0f);           //上方向ベクトル（法線）
-	m_Rot = D3DXVECTOR3(-D3DX_PI * 0.5f,0.0f,0.0f);   //向き
+	m_Rot = D3DXVECTOR3(0.0f,0.0f,0.0f);              //向き
 	m_mtxProjection = {};                             //プロジェクションマトリックス
 	m_mtxView = {};                                   //ビューマトリックス
 	m_CameraType = CAMERATYPE_BIRD;                   //カメラモードの種類
@@ -157,49 +176,48 @@ void CCamera::Update()
 		}
 	}
 
-	//Pitchは前側に範囲を制限
-	if (m_Rot.x < -D3DX_PI + 0.01f)
+	// Pitchは前側に範囲を制限
+	if (m_Rot.x < -D3DX_PI * 0.5f)
 	{
-		m_Rot.x = -D3DX_PI + 0.01f;
+		m_Rot.x = -D3DX_PI * 0.5f + 0.01f;
 	}
-	if (m_Rot.x > -0.01f)
+	if (m_Rot.x > D3DX_PI * 0.5f)
 	{
-		m_Rot.x = -0.01f;
+		m_Rot.x = D3DX_PI * 0.5f - 0.01f;
 	}
 
-	
-
-	//ジンバルロックを回避する
+	// 向き調整
 	m_Rot.x = CCalculation::CorrectionRot(m_Rot.x);
 	m_Rot.y = CCalculation::CorrectionRot(m_Rot.y);
 	m_Rot.z = CCalculation::CorrectionRot(m_Rot.z);
 
 	//===============================================================================
 
-	//デバッグ表示
+	// デバッグ表示
 	CManager::GetDebugText()->PrintDebugText("カメラの向き：%f %f %f\n", m_Rot.x, m_Rot.y, m_Rot.z);
 	CManager::GetDebugText()->PrintDebugText("カメラの視点：%f %f %f\n", m_PosV.x, m_PosV.y, m_PosV.z);
 	CManager::GetDebugText()->PrintDebugText("カメラの注視点：%f %f %f\n", m_PosR.x, m_PosR.y, m_PosR.z);
 	CManager::GetDebugText()->PrintDebugText("カメラとの距離：%f\n",m_fAddLength);
 
-	//カメラの通常の注視点を設定し続ける
+	// カメラの通常の注視点を設定し続ける
 	NormalCameraMove();
 
+	// シーンがゲームの時のみ行う処理
 	if (CScene::GetMode() == CScene::MODE_GAME)
-	{//シーンがゲームの時のみ行う処理
+	{
+		//視点が０以下なら全ての影を描画しない
 		if (m_PosV.y < 0.0f)
-		{//視点が０以下なら全ての影を描画しない
+		{
 			CObjectX::SetCommonDraw(false);
 		}
+		// それ以外なら全ての影を描画
 		else
-		{//それ以外なら全ての影を描画
+		{
 			CObjectX::SetCommonDraw(true);
 		}
 	}
+
 	MakeTransparent();//カメラと中止点と重なったオブジェクトを透明にする処理
-
-	//=================================================================================================================================
-
 }
 //====================================================================================================
 
@@ -272,7 +290,22 @@ void CCamera::SetCamera()
 	pDevice->SetTransform(D3DTS_VIEW,&m_mtxView);
 
 }
-//====================================================================================================
+
+//====================================================================
+// 位置取得
+//====================================================================
+const D3DXVECTOR3& CCamera::GetPos() const
+{
+	return m_Pos;
+}
+
+//====================================================================
+// 位置設定
+//====================================================================
+void CCamera::SetPos(D3DXVECTOR3 Pos)
+{
+	m_Pos = Pos;
+}
 
 //====================================================================
 //カメラ設定処理
@@ -309,26 +342,54 @@ void CCamera::ChengeLengthState(CCameraLengthState* pCameraLengthState)
 //====================================================================
 void CCamera::NormalCameraMove()
 {
-	D3DXVECTOR3 RotVec = CCalculation::RadToVec(m_Rot);
+	// === 変数 ===
+
+	CPlayer* pPlayer = CGame::GetPlayer(); // プレイヤーへのポインタ
+	
+	// === 処理 ===
+
+	m_PosV = { 0.0f,0.0f,0.0f }; // 視点初期化
+	m_PosR = { 0.0f,0.0f,0.0f }; // 注視点初期化
+    
+	// モードによってカメラを変える
 	switch (CScene::GetMode())
 	{
 	case CScene::MODE_TITLE://シーンがタイトルなら
-		m_PosR = CTitle::GetPlayer()->GetPosInfo().GetPos() + D3DXVECTOR3(100.0f,75.0f,0.0f);//プレイヤーを左側に設定するためにカメラをプレイヤーの右側に設定
-		m_PosV = m_PosR + RotVec * m_fLength;//注視点からの向きのベクトルに距離をかけて視点を設定
+		m_Pos = CTitle::GetPlayer()->GetPosInfo().GetPos() + D3DXVECTOR3(100.0f,75.0f,0.0f); // プレイヤーを左側に設定するためにカメラをプレイヤーの右側に設定
 		break;
 	case CScene::MODE_GAME://通常はプレイヤーの位置を軸に動く(カメラの向きを使い旋回する）
-		if (CGame::GetPlayer() != nullptr)
+
+		// === 処理 ===
+
+		// プレイヤーがいるなら
+		if (pPlayer != nullptr)
 		{
-			m_PosR = CGame::GetPlayer()->GetPosInfo().GetPos() + D3DXVECTOR3(sinf(m_Rot.y + D3DX_PI * 0.5f) * 30.0f, 60.0f,cosf(m_Rot.y + D3DX_PI * 0.5f) * 30.0f) + m_AddPosR;//FPS風にカメラから見たキャラクターの位置を左にずらすため値を加算する
-			m_PosV = m_PosR + RotVec * m_fLength;//注視点からの向きのベクトルに距離をかけて視点を設定
+			m_Pos = pPlayer->GetPosInfo().GetPos(); // 位置をプレイヤーに設定
+
+			// 注視点を位置から前方に設定し、FPS風にカメラから見たキャラクターの位置を左にずらすため値を加算する
+			m_Pos += D3DXVECTOR3(sinf(m_Rot.y + D3DX_PI * 0.5f) * 30.0f, 60.0f,cosf(m_Rot.y + D3DX_PI * 0.5f) * 30.0f);
 		}
-		break;
-	case CScene::MODE_EDIT://シーンがエディットだったら
-		m_PosV = m_PosR + RotVec * (m_fLength);//注視点からの向きのベクトルに距離をかけて視点を設定
 		break;
 	default:
 		break;
 	}
+
+	// 視点
+	m_PosV += {
+		m_Pos.x - sinf(m_Rot.y) * cosf(m_Rot.x) * m_fLength,
+		m_Pos.y - sinf(m_Rot.x) * m_fLength,
+		m_Pos.z - cosf(m_Rot.y) * cosf(m_Rot.x) * m_fLength
+	};
+
+	// 注視点
+	m_PosR += {
+		m_Pos.x + sinf(m_Rot.y) * cosf(m_Rot.x) * m_fLength,
+		m_Pos.y + sinf(m_Rot.x) * m_fLength,
+		m_Pos.z + cosf(m_Rot.y) * cosf(m_Rot.x) * m_fLength
+	};
+
+	// デバッグ表示
+	CManager::GetDebugText()->PrintDebugText("カメラの向き：X = %f、Y = %f、Z = %f\n", m_Rot.x, m_Rot.y, m_Rot.z);
 }
 //====================================================================================================
 
@@ -524,7 +585,7 @@ void CCameraState_Normal::Process(CCamera* pCamera)
 			}
 			fResultSensitivity = s_fMAX_STICKSENSITIVITY * (fMagnification * CCamera::GetSensitivityLevel());//感度レベルに応じて調整
 			//スティックを押した方向にカメラの向きを向かせる
-			CManager::GetCamera()->SetRot(pCamera->GetRot() + D3DXVECTOR3(cosf(CManager::GetInputJoypad()->GetRStickAimRot() + D3DX_PI) * fResultSensitivity,
+			CManager::GetCamera()->SetRot(pCamera->GetRot() + D3DXVECTOR3(cosf(CManager::GetInputJoypad()->GetRStickAimRot()) * fResultSensitivity,
 				sinf(CManager::GetInputJoypad()->GetRStickAimRot()) * fResultSensitivity, 0.0f));
 		}
 
@@ -543,7 +604,7 @@ void CCameraState_Normal::Process(CCamera* pCamera)
 						CGame::GetTutorial()->SetSuccessCheck(CTutorial::CHECK::CAMERACONTROLL);//カメラを動かすチュートリアルを完了
 					}
 					//向きを加算する
-					CManager::GetCamera()->SetRot(pCamera->GetRot() + D3DXVECTOR3(fAddPitch,
+					CManager::GetCamera()->SetRot(pCamera->GetRot() + D3DXVECTOR3(-fAddPitch,
 						fAddYaw, 0.0f));
 				}
 			}

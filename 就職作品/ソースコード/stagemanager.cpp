@@ -230,7 +230,7 @@ void CStageManager::LoadMapTxt(int nMapNum)
 		}
 		else if (Reading_Buff == "SETBGMODEL")
 		{//”wŒiƒ‚ƒfƒ‹
-			pObj = CBgModel::Create(CBgModel::BGMODELTYPE::BILL_00, D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), false);//”wŒiƒ‚ƒfƒ‹‚ð¶¬
+			pObj = CBgModel::Create(CBgModel::TYPE::BILL_00, D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), false);//”wŒiƒ‚ƒfƒ‹‚ð¶¬
 		}
 		else if (Reading_Buff == "SETSHOTWEAKENEMY")
 		{//ŽËŒ‚‚ÉŽã‚¢“G
@@ -489,7 +489,7 @@ void CStageManagerState_NewObject::Process(CStageManager* pStageManager)
 		}
 
 		//’Ž‹“_‚ðŒ»Ý•ÒW‚µ‚Ä‚¢‚éƒIƒuƒWƒFƒNƒg‚ÉŒÅ’è
-		CManager::GetCamera()->SetPosR(static_cast<CObjectX*>(m_pManagerObject)->GetPosInfo().GetPos());
+		CManager::GetCamera()->SetPos(static_cast<CObjectX*>(m_pManagerObject)->GetPosInfo().GetPos());
 
 		//Œ»Ý‚ÌƒuƒƒbƒN‚ÌŽí—Þ‚ð•ÏX‚·‚é
 		TypeChenge(pStageManager);
@@ -612,7 +612,7 @@ void CStageManagerState_NewObject::ChengeObject(CStageManager* pStageManager)
 		m_pManagerObject = CBlock::Create(CBlock::BLOCKTYPE::NORMAL, 10, pStageManager->GetSavePos(),pStageManager->GetSaveRot(),pStageManager->GetSaveScale(),false);
 		break;
 	case CObject::MANAGEROBJECTTYPE::BGMODEL://”wŒiƒ‚ƒfƒ‹
-		m_pManagerObject = CBgModel::Create(CBgModel::BGMODELTYPE::BILL_00, pStageManager->GetSavePos(), pStageManager->GetSaveRot(), pStageManager->GetSaveScale(),false);
+		m_pManagerObject = CBgModel::Create(CBgModel::TYPE::BILL_00, pStageManager->GetSavePos(), pStageManager->GetSaveRot(), pStageManager->GetSaveScale(),false);
 		break;
 	case CObject::MANAGEROBJECTTYPE::SHOTWEAKENEMY://ŽËŒ‚‚ÉŽã‚¢“G
 		m_pManagerObject = CShotWeakEnemy::Create(CShotWeakEnemy::SHOTWEAKENEMYTYPE::NORMAL, 10, 0, pStageManager->GetSavePos(), pStageManager->GetSaveRot(), pStageManager->GetSaveScale());

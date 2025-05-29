@@ -58,8 +58,10 @@ CPlayerMove::~CPlayerMove()
 //=====================================================================================================
 void CPlayerMove::MoveProcess(CPlayer* pPlayer)
 {
+	// 回避中なら通常移動はさせない
 	if (m_bDodge == false)
-	{//回避中なら絶対に通常移動はさせない
+	{
+		// === 変数 ===
 		const D3DXVECTOR3& Move = pPlayer->GetMoveInfo().GetMove();//移動量
 		D3DXVECTOR3 AddMove = D3DXVECTOR3(0.0f, 0.0f, 0.0f);       //加算する移動量
 		bool bMove = false;                                        //移動しているかどうか
@@ -69,11 +71,10 @@ void CPlayerMove::MoveProcess(CPlayer* pPlayer)
 		CObjectX::PosInfo& PosInfo = pPlayer->GetPosInfo();        //位置情報
 		D3DXVECTOR3 NextPos = PosInfo.GetPos();                    //位置
 		CCamera* pCamera = CManager::GetCamera();                  //カメラ
-		//移動しているかどうかを取得。移動しているならAddMoveに値が入る
-		bMove = CCalculation::CaluclationMove(true, NextPos,AddMove, 10.0f, CCalculation::MOVEAIM_XZ, RotAim.y);
+		const D3DXVECTOR3& CameraRot = pCamera->GetRot(); // カメラの向き
 
-		//移動方向にプレイヤーの向きを合わせる
-		pPlayer->GetRotInfo().SetRot(D3DXVECTOR3(pPlayer->GetRotInfo().GetRot().x,pCamera->GetRot().y, pPlayer->GetRotInfo().GetRot().z));
+		//移動しているかどうかを取得。移動しているならAddMoveに値が入る
+		bMove = CCalculation::CaluclationMove(true, NextPos,AddMove, 10.0f, CCalculation::MOVEAIM_XZ, CameraRot.y, RotAim.y);
 
 		pPlayer->GetMoveInfo().SetUseInteria(true, CObjectX::GetNormalInertia());//慣性を使用する
 		pPlayer->GetMoveInfo().SetUseGravity(true, CObjectX::GetNormalGravity());//重力を使用する
@@ -399,43 +400,63 @@ CPlayerAttack_Dive::~CPlayerAttack_Dive()
 //=====================================================================================================
 void CPlayerAttack_Dive::AttackProcess(CPlayer* pPlayer)
 {
-	CUi* pDivePossibleUi = pPlayer->GetDivePossibleNum();//ダイブ可能回数表示へのポインタ
-	CUi* pDiveGaugeFrameUi = pPlayer->GetDiveGaugeFrame();//ダイブゲージフレームへのポインタ
+	// === 変数 ===
 
-	//ダイブゲージの機能の取得
-	CUIComposite_Container* pDiveGaugeFrameUiCompositeContainer = pDiveGaugeFrameUi->GetUiCompositeContainer();                //ゲージフレームのコンポジットパターンのコンテナを取得する
-	CUIComposite_Gauge* pDiveGaugeUi_CompositeGauge = pDiveGaugeFrameUiCompositeContainer->GetChildren<CUIComposite_Gauge>();  //ゲージの機能を取得する
+	CUi* pDivePossibleUi = pPlayer->GetDivePossibleNum();  // ダイブ可能回数表示へのポインタ
+	CUi* pDiveGaugeFrameUi = pPlayer->GetDiveGaugeFrame(); // ダイブゲージフレームへのポインタ
 
-	//ダイブ可能回数の機能の取得
-	CUIComposite_Container* pDivePossibleUiCompositeContainer = pDivePossibleUi->GetUiCompositeContainer();                           //ダイブ可能回数のUIのコンポジットパターンのコンテナを取得する
-	CUIComposite_Numeric* pDivePossibleUiComposite_Numeric = pDivePossibleUiCompositeContainer->GetChildren<CUIComposite_Numeric>();  //数字表示の機能を取得する
+	// ダイブゲージの機能の取得
+	CUIComposite_Container* pDiveGaugeFrameUiCompositeContainer = pDiveGaugeFrameUi->GetUiCompositeContainer();                // ゲージフレームのコンポジットパターンのコンテナを取得する
+	CUIComposite_Gauge* pDiveGaugeUi_CompositeGauge = pDiveGaugeFrameUiCompositeContainer->GetChildren<CUIComposite_Gauge>();  // ゲージの機能を取得する
 
+	// ダイブ可能回数の機能の取得
+	CUIComposite_Container* pDivePossibleUiCompositeContainer = pDivePossibleUi->GetUiCompositeContainer();                           // ダイブ可能回数のUIのコンポジットパターンのコンテナを取得する
+	CUIComposite_Numeric* pDivePossibleUiComposite_Numeric = pDivePossibleUiCompositeContainer->GetChildren<CUIComposite_Numeric>();  // 数字表示の機能を取得する
+
+	// === 処理 ===
+
+	// ゲージ情報が存在していたら
 	if (pDiveGaugeUi_CompositeGauge != nullptr)
-	{//ゲージ情報が存在していたら
-		CGauge* pDiveGauge = pDiveGaugeUi_CompositeGauge->GetGauge();         //ダイブゲージフレームのゲージへのポインタ
-		CSound* pSound = CManager::GetSound();                                //サウンド情報へのポインタ
-		CWireHead* pWireHead = pPlayer->GetWire()->GetWireHead();             //ワイヤーの頭へのポインタ
+	{
+		// === 変数 ===
+
+		CGauge* pDiveGauge = pDiveGaugeUi_CompositeGauge->GetGauge(); // ダイブゲージフレームのゲージへのポインタ
+		CWireHead* pWireHead = pPlayer->GetWire()->GetWireHead();     // ワイヤーの頭へのポインタ
+		CSound* pSound = CManager::GetSound();    // サウンド情報へのポインタ
+		CCamera* pCamera = CManager::GetCamera(); // カメラへのポインタ
+
+		// === 処理 ===
+
+		// ダイブゲージがたまっていたら爆発攻撃を発動
 		if (pDivePossibleUiComposite_Numeric->GetValue() > 0)
-		{//ダイブゲージがたまっていたら爆発攻撃を発動
-			//爆発攻撃を生成
+		{
+			// === 変数 ===
+
+			// 爆発攻撃を生成
 			CAttackPlayer* pAttackPlayer = CAttackPlayer::Create(CAttack::ATTACKTYPE::EXPLOSION, CAttack::TARGETTYPE::ENEMY, CAttack::COLLISIONTYPE::SQUARE, false, true, 50, 30, 100, pPlayer->GetPosInfo().GetPos(), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.1f, 0.1f, 0.1f),
 				D3DXVECTOR3(1.0f, 1.0f, 1.0f));
-			pAttackPlayer->GetSizeInfo().SetUseAddScale(D3DXVECTOR3(0.4f, 0.4f, 0.4f), true);                                 //拡大率の加算をする
-			pAttackPlayer->SetColor(D3DXCOLOR(1.0f, 1.0f, 0.0f, 1.0f), 2, false, false, false);                               //色合いを設定
-			pAttackPlayer->GetLifeInfo().SetUseRatioLifeAlpha(true);                                                          //体力割合に応じて透明度を変更
-			pAttackPlayer->SetCollisionRelease(false);                                                                        //衝突したときに破棄しない
-			CGame::GetTutorial()->SetSuccessCheck(CTutorial::CHECK::TAKEDIVE);                                                //ダイブ攻撃のチュートリアルを完了
-			pDivePossibleUiComposite_Numeric->SetValue(pDivePossibleUiComposite_Numeric->GetValue() - 1, pDivePossibleUi);    //ダイブ可能回数を減らす
-			CManager::GetSound()->PlaySoundB(CSound::SOUND_LABEL::SE_EXPLOSION_000);
 
-			//目的の向きまで少しづつ動かす（カメラの前は-D3DX_PI * 0.5f,プレイヤーはデフォルトの向きが異なるので、Rot.y + D3DX_PI)
-			CManager::GetCamera()->ChengeState(DBG_NEW CCameraState_TurnAround(D3DXVECTOR3(-D3DX_PI * 0.5f, pPlayer->GetRotInfo().GetRot().y + D3DX_PI, 0.0f), 0.1f));
+			// === 処理 ===
+
+			pAttackPlayer->GetSizeInfo().SetUseAddScale(D3DXVECTOR3(0.4f, 0.4f, 0.4f), true);   // 拡大率の加算をする
+			pAttackPlayer->SetColor(D3DXCOLOR(1.0f, 1.0f, 0.0f, 1.0f), 2, false, false, false); // 色合いを設定
+			pAttackPlayer->GetLifeInfo().SetUseRatioLifeAlpha(true); // 体力割合に応じて透明度を変更
+			pAttackPlayer->SetCollisionRelease(false); // 衝突したときに破棄しない
+			CGame::GetTutorial()->SetSuccessCheck(CTutorial::CHECK::TAKEDIVE);       // ダイブ攻撃のチュートリアルを完了
+			CManager::GetSound()->PlaySoundB(CSound::SOUND_LABEL::SE_EXPLOSION_000); // 爆発音を出す
+			pDivePossibleUiComposite_Numeric->SetValue(pDivePossibleUiComposite_Numeric->GetValue() - 1, pDivePossibleUi); // ダイブ可能回数を減らす
 
 			//爆発を見せたいので、カメラと注視点の距離を一定時間遠くする
-			CManager::GetCamera()->ChengeLengthState(DBG_NEW CCameraLengthState_Gradually(300.0f, 0.1f, 60));
+			CManager::GetCamera()->ChengeLengthState(DBG_NEW CCameraLengthState_Gradually(400.0f, 0.1f, 60));
+
+			// ダイブ攻撃を発動した瞬間にスローにする
+			CObject::SetTimeScale(CObject::TYPE::ENEMY, 0.1f, 60);
+			CObject::SetTimeScale(CObject::TYPE::PLAYER, 0.1f, 60);
+			CObject::SetTimeScale(CObject::TYPE::ATTACK, 0.1f, 60);
+			CObject::SetTimeScale(CObject::TYPE::PARTICLE, 0.1f, 60);
 		}
-		pWireHead->GetDrawInfo().SetUseDraw(false);              //ワイヤーの頭の描画をオフにする
-		pPlayer->ChengeAttackMode(DBG_NEW CPlayerAttack_Dont()); //爆発し終わったので、攻撃状態を「なし」に戻す
+		pWireHead->GetDrawInfo().SetUseDraw(false);              // ワイヤーの頭の描画をオフにする
+		pPlayer->ChengeAttackMode(DBG_NEW CPlayerAttack_Dont()); // ダイブ攻撃状態が終わったので、攻撃状態を「なし」に戻す
 	}
 
 }

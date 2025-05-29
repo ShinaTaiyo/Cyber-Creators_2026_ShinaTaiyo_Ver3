@@ -42,7 +42,7 @@ CResult::~CResult()
 HRESULT CResult::Init()
 {
 	CScene::Init();             //シーン初期化処理
-	CBg::Create(CBg::BG_RESULT);//リザルト背景を生成	
+	CBg::Create(CBg::TYPE::RESULT);//リザルト背景を生成	
 	CUi* pUi = nullptr;         //UIへのポインタ
 	if (CGame::GetGameClear() == true)
 	{//ゲームをクリアしていたら

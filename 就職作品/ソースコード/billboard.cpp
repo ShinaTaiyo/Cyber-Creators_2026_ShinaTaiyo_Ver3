@@ -143,15 +143,14 @@ void CBillboard::Update(void)
 
 	m_nAnimationCnt++;
 	m_nCntTime++;        //出現してからの時間をカウントする
-	m_nLife--;           //体力を減らし続ける
-
+	m_nLife -= 1 * static_cast<int>(GetDeltaTimeScale(this) + 0.1f);//体力を減らし続ける（deltatimeとtimescaleを計算して１以下なら体力を減らさない)
 	//========================================
 	//支点を軸にカーブがONだったら
 	//========================================
 	if (m_bUseLengthCurve == true)
 	{
-		m_fAddRot += m_fCurveSpeed;//向きをカーブ速度分加算する
-		m_fSupportCurveLength += m_fAddCurveLength;//カーブする距離を加算する
+		m_fAddRot += m_fCurveSpeed * GetDeltaTimeScale(this);//向きをカーブ速度分加算する
+		m_fSupportCurveLength += m_fAddCurveLength * GetDeltaTimeScale(this);//カーブする距離を加算する
 		m_Pos.x = sinf(m_fAddRot + m_fStartRot) * m_fSupportCurveLength + m_SupportPos.x;
 		m_Pos.y = cosf(m_fAddRot + m_fStartRot) * m_fSupportCurveLength + m_SupportPos.y;
 	}
@@ -171,8 +170,8 @@ void CBillboard::Update(void)
 	//========================================
 	if (m_bUseGravity == true)
 	{//重力を加算し、現在の重力分Y座標を加算する
-		m_fGravityPower += m_fAddGravity;
-		m_Move.y += m_fGravityPower;
+		m_fGravityPower += m_fAddGravity * GetDeltaTimeScale(this);
+		m_Move.y += m_fGravityPower * GetDeltaTimeScale(this);
 	}
 	//==============================================================================================
 
@@ -195,11 +194,11 @@ void CBillboard::Update(void)
 	{
 		if (m_bMultiplication == false)
 		{//乗算OFF
-			m_Move += D3DXVECTOR3(m_fAddSpeed,m_fAddSpeed,0.0f);
+			m_Move += D3DXVECTOR3(m_fAddSpeed,m_fAddSpeed,0.0f) * GetDeltaTimeScale(this);
 		}
 		else
 		{//乗算ON
-			m_Move *= m_fAddSpeed;
+			m_Move *= powf(m_fAddSpeed,GetDeltaTimeScale(this));//指数関数敵減速
 		}
 	}
 	//==============================================================================================
@@ -209,7 +208,7 @@ void CBillboard::Update(void)
 	//移動量の更新
 	//========================================
 	m_PosOld = m_Pos;//1f前の位置
-	m_Pos += m_Move; //位置の更新
+	m_Pos += m_Move * GetDeltaTimeScale(this); //位置の更新
 	//==============================================================================================
 
 	//========================================
@@ -217,7 +216,7 @@ void CBillboard::Update(void)
 	//========================================
 	if (m_bUsePolygonRot == true)
 	{//向きを加算する
-		m_Rot.z += m_fPolygonRotPower;
+		m_Rot.z += m_fPolygonRotPower * GetDeltaTimeScale(this);
 	}
 	//==============================================================================================
 
@@ -558,7 +557,7 @@ void CBillboard::HormingProcess()
 		}
 
 		//==============================================================================================
-		m_fRotMove += fRotDiff * 0.05f;//移動方向の補正
+		m_fRotMove += fRotDiff * 0.05f * GetDeltaTimeScale(this);//移動方向の補正
 
 		//移動量の更新
 		m_Move.x = sinf(m_fRotMove) * m_fSpeed;

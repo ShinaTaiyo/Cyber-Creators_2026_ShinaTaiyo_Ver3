@@ -81,7 +81,7 @@ void CLockon::Uninit()
 void CLockon::Update()
 {
 	D3DXVECTOR3 Rot = GetRot();//Œü‚«
-	Rot.z += 0.02f;//ƒ|ƒŠƒSƒ“‚ğ‰ñ“]‚³‚¹‚é
+	Rot.z += 0.02f * GetDeltaTimeScale(this);//ƒ|ƒŠƒSƒ“‚ğ‰ñ“]‚³‚¹‚é
 	SetRot(Rot);//Œü‚«‚ğİ’è‚·‚é
 
 	//ˆÚ“®ˆ—

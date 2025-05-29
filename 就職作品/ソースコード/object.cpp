@@ -23,6 +23,10 @@ CObject* CObject::m_apObject[CObject::m_nMAXPRIORITY][CObject::m_nMAXOBJECT] = {
 CObject* CObject::m_pTop[CObject::m_nMAXPRIORITY] = {};
 CObject* CObject::m_pCur[CObject::m_nMAXPRIORITY] = {};
 bool CObject::m_bActivationReleaseAll = false;            //ReleaseAllを発動するかどうか
+float CObject::s_fTimeScale[static_cast<int>(CObject::TYPE::MAX)] = {};//タイプごとのタイムスケール
+bool CObject::s_bAlreadyInitTimeScale = false;//タイムスケールを初期化したかどうか
+int CObject::s_nChengeTimeScaleFrame[static_cast<int>(CObject::TYPE::MAX)] = {};//タイムスケールを変更する時間
+int CObject::s_nChengeTimeScaleFrameCnt[static_cast<int>(CObject::TYPE::MAX)] = {};//タイムスケールを変更する時間をカウントする
 //====================================================
 
 //=====================================================
@@ -85,6 +89,7 @@ CObject::~CObject()
 //=====================================================
 HRESULT CObject::Init()
 {
+	InitTimeScale();//タイムスケールを初期化する
 	return S_OK;
 }
 //======================================================================================================================
@@ -378,5 +383,69 @@ CObject* CObject::ManagerChengeObject(bool bAim)
 CObject* CObject::ManagerSaveObject()
 {
 	return this;
+}
+//============================================================================================================================================
+
+//=======================================================================
+//タイムスケールを初期化する
+//=======================================================================
+void CObject::InitTimeScale()
+{
+	if (!s_bAlreadyInitTimeScale)
+	{//１度だけ静的メンバを初期化(for分使いたいのでここに書く)
+		for (int nCnt = 0; nCnt < static_cast<int>(TYPE::MAX); nCnt++)
+		{
+			s_fTimeScale[nCnt] = 1.0f;//TimeScaleを1,0fに初期化する
+		}
+		s_bAlreadyInitTimeScale = true;
+	}
+}
+//============================================================================================================================================
+
+//=======================================================================
+//タイムスケールを設定する
+//=======================================================================
+void CObject::SetTimeScale(TYPE Type, float fTimeScale, int nChengeFrame)
+{
+	s_fTimeScale[static_cast<int>(Type)] = fTimeScale;              //タイムスケールを設定
+	s_nChengeTimeScaleFrame[static_cast<int>(Type)] = nChengeFrame; //タイムスケールを変更するフレーム数を設定
+	s_nChengeTimeScaleFrameCnt[static_cast<int>(Type)] = 0;         //タイムスケールを変更するフレーム数のカウントを初期化
+}
+//============================================================================================================================================
+
+//=======================================================================
+//タイムスケールを変更するフレーム数をカウントする処理
+//=======================================================================
+void CObject::ChengeTimeScaleFrameCntProcess()
+{
+	for (int nCnt = 0; nCnt < static_cast<int>(TYPE::MAX); nCnt++)
+	{
+		if (s_nChengeTimeScaleFrameCnt[nCnt] < s_nChengeTimeScaleFrame[nCnt])
+		{//タイムスケール変更時間までカウントする
+			s_nChengeTimeScaleFrameCnt[nCnt]++;
+		}
+		else
+		{//変更時間に達したらタイムスケールを元に戻す
+			s_fTimeScale[nCnt] = 1.0f;
+		}
+	}
+}
+//============================================================================================================================================
+
+//=======================================================================
+//タイムスケールを取得する
+//=======================================================================
+const float& CObject::GetTimeScale(CObject* pObj)
+{
+	return s_fTimeScale[static_cast<int>(pObj->GetType())];
+}
+//============================================================================================================================================
+
+//=======================================================================
+//タイムスケールとデルタタイム両方掛けた値を取得する
+//=======================================================================
+const float CObject::GetDeltaTimeScale(CObject* pObj)
+{
+	return 60 * GetDeltaTime() * CObject::GetTimeScale(pObj);
 }
 //============================================================================================================================================

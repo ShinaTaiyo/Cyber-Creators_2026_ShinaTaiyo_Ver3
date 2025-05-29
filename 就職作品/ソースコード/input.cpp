@@ -493,6 +493,7 @@ bool CInputJoypad::GetLStickPress(const int nDivisionRot,float fDirectionRot)
 		normalizedMagnitude = 0.0;
 		bActive = false;
 	}
+
 	return bActive;
 }
 //===============================================================

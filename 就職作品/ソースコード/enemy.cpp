@@ -1157,8 +1157,8 @@ void CEnemy::EditSensingRange()
 	D3DXVECTOR3 RandPos = { 0.0f,0.0f,0.0f };
 
 	RandPos.x = m_fSensingRange * sinf(fRadXZ) * cosf(fRadY);//X方向の長さに対して、球の側面に出すために、Y方向の高さの比（高さを底面の比としてかける）
-	RandPos.z = m_fSensingRange * cosf(fRadXZ) * cosf(fRadY);//Z方向の長さに対して、球の側面に出すために、Y方向の高さの比（高さを底面の比としてかける）
 	RandPos.y = m_fSensingRange * sinf(fRadY);               //Y方向の高さを求める
+	RandPos.z = m_fSensingRange * cosf(fRadXZ) * cosf(fRadY);//Z方向の長さに対して、球の側面に出すために、Y方向の高さの比（高さを底面の比としてかける）
 
 	//索敵範囲を表すためにパーティクルを索敵距離の位置にランダムで出す
 	CParticle::Create(CParticle::TYPE00_NORMAL, 200, 30.0f, 30.0f,Pos + RandPos,
@@ -1217,6 +1217,7 @@ HRESULT CShotWeakEnemy::Init()
 		false,false,1, 60, 200, GetPosInfo().GetPos(), D3DXVECTOR3(0.0f,D3DX_PI * fRatioRot, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1.0f, 1.0f, 1.0f));//剣を生成
 	m_pMagicSword->SetUseDeath(false);//剣の死亡フラグをオフにする
 
+	SetColor(D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f), 300000, true, true, false);//デバッグ用に透明にする
 	//剣を回す方向を決める
 	if (bAim == false)
 	{
@@ -1651,7 +1652,7 @@ void CShotWeakEnemy::SwordCollision()
 {
 	if (m_pMagicSword != nullptr && CGame::GetPlayer() != nullptr)
 	{//剣とプレイヤーが存在していたら
-		if (CCollision::RectAngleCollisionXZ(m_pMagicSword, CGame::GetPlayer()))
+		if (CCollision::RectAngleCollisionXZ(m_pMagicSword,CGame::GetPlayer()))
 		{//XZ方向の斜めの当たり判定を行う
 
 			//XZ方向のベクトルを求める
@@ -2351,7 +2352,7 @@ void CDiveWeakEnemy::AttackProcess()
 		    	1, 60, 200, ShotPos, D3DXVECTOR3(0.0f, 0.0f, 0.0f), Aim, GetSizeInfo().GetScale() * 0.5f);//生成処理
 		    
 		    pAttackEnemy->GetBoundInfo().SetActive(true, D3DXVECTOR3(0.0f, 10.0f, 0.0f), true, 0.5f);     //バウンドさせる
-		    pAttackEnemy->SetExtrusionCollisioin(true);                                                   //押し出し判定を行い、
+		    pAttackEnemy->SetExtrusionCollision(true);                                                    //押し出し判定を行い、
 		    pAttackEnemy->SetHitOtherThanLibing(false);                                                   //敵やプレイヤー以外との当たり判定は行わない
 		}
 	}

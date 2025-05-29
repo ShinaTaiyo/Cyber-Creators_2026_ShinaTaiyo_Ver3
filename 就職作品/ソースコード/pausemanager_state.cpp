@@ -317,7 +317,7 @@ void CPauseState_CameraSensitivity::CameraSensitivity()
 	const D3DXVECTOR3& StickPos = m_pSensitivityLevelStick->GetPos();  //レベルスティックの位置
 	const float fStickWidth = m_pSensitivityLevelStick->GetWidth();    //スティックの横幅
 	const D3DXVECTOR3& VarPos = m_pNowSensitivityLevelVar->GetPos();   //レベルバーの位置
-	float fDivisionStickWidth = fStickWidth / nMaxSensitivityLevel;                      //スティックの横幅
+	float fDivisionStickWidth = fStickWidth / nMaxSensitivityLevel;    //スティックの横幅
 	float fVarWidth = m_pNowSensitivityLevelVar->GetWidth() / 2;       //レベルバーの横幅
 	m_pNowSensitivityLevelVar->SetPos(D3DXVECTOR3(StickPos.x - fStickWidth / 2 + fVarWidth + fDivisionStickWidth * m_nSensitivitLevel, StickPos.y, 0.0f));
 

@@ -98,12 +98,12 @@ void CParticle::Update()
 	//加速がONだったら
 	if (m_bAddSpeed == true)
 	{
-		Move *= m_fAddSpeed;
+		Move *= m_fAddSpeed * GetDeltaTimeScale(this);
 	}
 
 	if (m_bGravity == true)
 	{//重力を使用するなら
-		Move.y += m_fGravity;
+		Move.y += m_fGravity * GetDeltaTimeScale(this);
 	}
 
 	fAlpha = (float)(nLife) / (float)(nMaxLife);       //色の透明度を体力の割合で決定
@@ -157,10 +157,11 @@ void CParticle::Draw()
 	//================================================
 	//描画の調整
 	//================================================
+	
 	//ライトを無効にする
 	pDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
 
-	//Zバッファに書き込まない（重なり方に違和感がなくなる）
+	////Zバッファに書き込まない
 	pDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
 
 	//アルファテストを有効(アルファ値が０より大きい場合に描画する）
@@ -168,20 +169,14 @@ void CParticle::Draw()
 	pDevice->SetRenderState(D3DRS_ALPHAREF, 0);
 	pDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATER);
 
-	//=======================================================================================================================================
-
-
 	//aブレンディングを加算合成に設定
 	pDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
 	pDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
 	pDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+	//=======================================================================================================================================
 
 	CBillboard::Draw();
 
-	//aブレンディングを元に戻す
-	pDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
-	pDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-	pDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 	//================================================
 	//描画の調整を元に戻す
 	//================================================
@@ -194,6 +189,11 @@ void CParticle::Draw()
 
 	//アルファテスト無効に戻す
 	pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+
+	//aブレンディングを元に戻す
+	pDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+	pDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+	pDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 	//=======================================================================================================================================
 }
 //================================================================

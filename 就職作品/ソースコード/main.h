@@ -99,4 +99,5 @@ typedef struct
 	D3DXVECTOR2 tex;//テクスチャ座標
 }VERTEX_3D;
 int GetFPS();
+const float& GetDeltaTime();//デルタタイムを取得する
 #endif

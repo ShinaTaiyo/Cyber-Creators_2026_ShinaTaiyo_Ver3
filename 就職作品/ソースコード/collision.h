@@ -44,6 +44,9 @@ public:
 	//ŽÎ‚ß‚Ì“–‚½‚è”»’èXZ
 	static bool RectAngleCollisionXZ(CObjectX* pMyObj, CObjectX* pComObj);
 
+	//XZ•ûŒü‚ÌOBB‚Ì“–‚½‚è”»’è
+	static bool RectOBB_XZ(CObjectX* pMyObj, CObjectX* pComObj);
+
 	//“_‚ªAABB‚Ì’†‚É“ü‚Á‚Ä‚¢‚é‚©‚Ç‚¤‚©
 	static bool IsPointInsideAABB(const D3DXVECTOR3 & Point,CObjectX * pComObjX);
 

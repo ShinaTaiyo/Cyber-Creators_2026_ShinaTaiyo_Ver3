@@ -179,7 +179,7 @@ void CObject2D::Update()
 		}
 	}
 
-	m_rot.z += m_fPolygonRotSpeed;//ƒ|ƒŠƒSƒ“‚ğ‰ñ“]‚³‚¹‚é
+	m_rot.z += m_fPolygonRotSpeed * GetDeltaTimeScale(this);//ƒ|ƒŠƒSƒ“‚ğ‰ñ“]‚³‚¹‚é
 
 	//=============================================
 	//ƒ|ƒŠƒSƒ“‚Ìo‚µ•û‚ğí—Ş‚É‚æ‚Á‚ÄŒˆ‚ß‚é
@@ -294,7 +294,7 @@ void CObject2D::Update()
 	m_pVtxBuff->Unlock();
 
 	//ˆÊ’u‚ÌXV
-	m_pos += m_Move;
+	m_pos += m_Move * GetDeltaTimeScale(this);
 
 	CObject::Update();
 }
@@ -400,7 +400,7 @@ void CObject2D::ScaleProcess()
 {	
 	if (m_bUseAddScale == true)
 	{
-		m_Scale += m_AddScale;//Šg‘å—¦‚ğ‰ÁZ‚·‚é
+		m_Scale += m_AddScale * GetDeltaTimeScale(this);//Šg‘å—¦‚ğ‰ÁZ‚·‚é
 	}
 
 	if (m_bUseScale == true)
@@ -426,7 +426,7 @@ void CObject2D::FloatingProcess()
 			m_fFloatingAddSpeed *= -1;
 		}
 
-      	m_fFloatingSpeed += m_fFloatingAddSpeed;//‘¬“x‚ğ‘‚â‚µ‘±‚¯‚é
+      	m_fFloatingSpeed += m_fFloatingAddSpeed * GetDeltaTimeScale(this);//‘¬“x‚ğ‘‚â‚µ‘±‚¯‚é
 		m_Move.x = sinf(m_fFloatingRot) * m_fFloatingSpeed;
 		m_Move.y = cosf(m_fFloatingRot) * m_fFloatingSpeed;
 	}

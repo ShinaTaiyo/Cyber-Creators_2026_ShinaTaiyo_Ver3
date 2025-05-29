@@ -12,6 +12,7 @@
 #include "object2d.h"
 #include "renderer.h"
 #include "player.h"
+#include "debugtext.h"
 #include "manager.h"
 #include <time.h>
 #include <stdio.h>
@@ -36,6 +37,7 @@
 //=============================================
 CManager* g_pManager = nullptr;
 int g_nCountFPS = 0;//FPSカウンタ
+float g_fDeltaTime = 0;//デルタタイム
 //======================================================================================================================================
 
 //=============================================
@@ -150,9 +152,10 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hInstancePrev, _
 
 			if ((dwCurrentTime - dwExecLastTime) >= (1000 / 60))
 			{//６０分の１秒経過
-				dwExecLastTime = dwCurrentTime;//処理開始の時刻
 				//現在時刻を保存
-
+			    g_fDeltaTime = (dwCurrentTime - dwExecLastTime) / 1000.0f;//デルタタイムを求める
+				dwExecLastTime = dwCurrentTime;//処理開始の時刻
+				g_pManager->GetDebugText()->PrintDebugText("デルタタイム：%f\n", g_fDeltaTime);
 			    //更新処理
 				g_pManager->Update();
 				//描画処理
@@ -230,4 +233,9 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 int GetFPS()
 {
 	return g_nCountFPS;
+}
+
+const float& GetDeltaTime()
+{
+	return g_fDeltaTime;//デルタタイムを取得する
 }

@@ -145,17 +145,21 @@ float CCalculation::CalculationCollectionRot2D(float fMyRot, float fRotAim, floa
 //=========================================================
 //移動方向への角度を計算する
 //=========================================================
-bool CCalculation::CaluclationMove(bool bUseStick, D3DXVECTOR3& Pos, D3DXVECTOR3& Move, float fSpeed, MOVEAIM MoveAim, float& fRot)
+bool CCalculation::CaluclationMove(bool bUseStick, D3DXVECTOR3& Pos, D3DXVECTOR3& Move, float fSpeed, MOVEAIM MoveAim, float fAddMoveRot, float& fRot)
 {
-	float fCameraRot = CManager::GetCamera()->GetRot().y;           //カメラの向きを取得
-	float fMoveX = 0.0f;                                            //X方向の移動量
-	float fMoveZ = 0.0f;                                            //Z方向の移動量
-	bool bMove = false;                                             //移動しているかどうか 
-	bool bUseController = true;                                     //コントローラーを使用するかどうか
-	bMove = CManager::GetInputJoypad()->GetLStickPress(8, 0.0f);    //コントローラーの入力
-	D3DXVECTOR3 PosFuture = { 0.0f,0.0f,0.0f };                     //1f後の位置
+	// === 変数 ===
+	float fMoveX = 0.0f; // X方向の移動量
+	float fMoveZ = 0.0f; // Z方向の移動量
+	bool bMove = false;  // 移動しているかどうか 
+	bool bUseController = true; // コントローラーを使用するかどうか
+	bMove = CManager::GetInputJoypad()->GetLStickPress(8, 0.0f); // コントローラーの入力
+	D3DXVECTOR3 PosFuture = { 0.0f,0.0f,0.0f }; // 1f後の位置
+
+	// === 処理 ===
+
+	// この時点でコントローラーの入力がされていない場合、キー入力の受付を開始
 	if (bMove == false)
-	{//この時点でコントローラーの入力がされていない場合、キー入力の受付を開始
+	{
 		bUseController = false;//コントローラーは使用しない
 		if (CManager::GetInputKeyboard()->GetPress(DIK_W) == true || CManager::GetInputJoypad()->GetPress(CInputJoypad::JOYKEY::UP) == true)
 		{//前へのベクトル
@@ -184,40 +188,47 @@ bool CCalculation::CaluclationMove(bool bUseStick, D3DXVECTOR3& Pos, D3DXVECTOR3
 			bMove = false;//待機状態
 		}
 	}
+	// 移動状態なら
 	if (bMove == true)
-	{//移動状態なら
+	{
 		float fMoveRot = 0.0f;//移動する向きを決める
-		//カメラを基準に向きを決める
+
+		// コントローラーの左スティックから角度を求める
 		if (bUseController == true)
 		{
-			fMoveRot = CManager::GetInputJoypad()->GetLStickAimRot();                     //左スティックの向きを取得する
+			fMoveRot = CManager::GetInputJoypad()->GetLStickAimRot();
 		}
+		// 比から角度を求める（Z軸の正方向が前なので、Z軸を基準「右引数」にX方向の角度「左引数」を求める）
 		else
-		{//比から角度を求める（Z軸の正方向が前なので、Z軸を基準「右引数」にX方向の角度「左引数」を求める）
+		{
 			fMoveRot = atan2f(fMoveX, fMoveZ);
 		}
+
+		fMoveRot += fAddMoveRot; // 向きを加算し補正
+
+		// どの面を軸に移動するかを決める
 		switch (MoveAim)
-		{//どの面を軸に移動するかを決める
-		case MOVEAIM_XY://XY方向を基準に移動する（移動方向をカメラ基準で決める)
-			Move.x = sinf(fMoveRot + fCameraRot) * fSpeed;
-			Move.y = cosf(fMoveRot + fCameraRot) * fSpeed;
+		{
+		case MOVEAIM_XY: // XY方向を基準に移動する
+			Move.x = sinf(fMoveRot) * fSpeed;
+			Move.y = cosf(fMoveRot) * fSpeed;
 			break;
-		case MOVEAIM_XZ://XZ方向を基準に移動する
-			Move.x = sinf(fMoveRot + fCameraRot) * fSpeed;
-			Move.z = cosf(fMoveRot + fCameraRot) * fSpeed;
+		case MOVEAIM_XZ: // XZ方向を基準に移動する
+			Move.x = sinf(fMoveRot) * fSpeed;
+			Move.z = cosf(fMoveRot) * fSpeed;
 			break;
-		case MOVEAIM_ZY://ZY方向を基準に移動する
-			Move.z = sinf(fMoveRot + fCameraRot) * fSpeed;
-			Move.y = cosf(fMoveRot + fCameraRot) * fSpeed;
+		case MOVEAIM_ZY: // ZY方向を基準に移動する
+			Move.z = sinf(fMoveRot) * fSpeed;
+			Move.y = cosf(fMoveRot) * fSpeed;
 			break;
 		default:
 			break;
 		}
 
-		//1f後の位置を計算
+		// 1f後の位置を計算
 		PosFuture = Pos + Move;
 
-		//1f後の位置と現在の位置のベクトルから向くべき角度を求める
+		// 1f後の位置と現在の位置のベクトルから向くべき角度を求める
 		fRot = atan2f(PosFuture.x - Pos.x, PosFuture.z - Pos.z);
 	}
 	return bMove;
@@ -325,22 +336,24 @@ D3DXCOLOR CCalculation::CalRaibowColor()
 D3DXVECTOR3* CCalculation::CalcScreenToWorld(D3DXVECTOR3* pout, float Sx, float Sy, float fZ, int Screen_w, int Screen_h, D3DXMATRIX* View, D3DXMATRIX* Prj)
 {
 	// 各行列の逆行列を算出（ビュー、プロジェクションマトリックスの逆行列をかけるのは、カメラの位置に2DのUIが出ていると定義できるから)
-	//逆行列とは、値に値-1をかけ、掛け合わされる前に戻すこと
+	// 逆行列とは、値に値-1をかけ、掛け合わされる前に戻すこと
 	D3DXMATRIX InvView, InvPrj, VP, InvViewport;
-	D3DXMatrixInverse(&InvView, NULL, View);//ビューマトリックスとの逆光列をかけてワールド座標を求める
+	D3DXMatrixInverse(&InvView, NULL, View);//ビューマトリックスとの逆光列をかけてワールド座標を求める（ビューマトリックスの向きや位置に応じて変換されているので）
 	D3DXMatrixInverse(&InvPrj, NULL, Prj);  //プロジェクションマトリックスとの逆行列（見え方（平行投影、視野角など）を変えているので、逆行列を掛け合わせ、もとに戻す必要がある）
 	D3DXMatrixIdentity(&VP);
 
-	//スケーリングの値を変えている。スクリーン座標の中心を画面中央にする
-	VP._11 = Screen_w / 2.0f; VP._22 = -Screen_h / 2.0f;//スクリーン座標系では、通常上方向が正になるので、座標変換する際に-にしている
-	VP._41 = Screen_w / 2.0f; VP._42 = Screen_h / 2.0f;//スクリーン座標系では、通常上方向が正になるので、座標変換する際に-にしている
-	D3DXMatrixInverse(&InvViewport, NULL, &VP);
+	// スケーリングの値を変えている。スクリーン座標の中心を画面中央にする（NDC座標を使用して変換するので、スクリーン座標は０～１２８０、なお、
+	//NDC座標はー１～１だから、変換する際に合わせる必要がある(１２８０　＝　６４０）、（０　＝　ー６４０)
+	VP._11 = Screen_w / 2.0f; VP._22 = -Screen_h / 2.0f;//スケーリング成分（Xそのまま、Yは上を正に）
+	VP._41 = Screen_w / 2.0f; VP._42 = Screen_h / 2.0f; //平行移動成分（中心を原点に合わせる)
+	D3DXMatrixInverse(&InvViewport, NULL, &VP);//NDC座標に合わせる
 
 	//自分
-	D3DXVECTOR3 MyPos = D3DXVECTOR3(Sx,Sy,fZ);
+	D3DXVECTOR3 MyPos = D3DXVECTOR3(Sx,Sy,fZ);//スクリーン座標と深度値
 
 	// 逆変換
-	D3DXMATRIX tmp = InvViewport * InvPrj * InvView;//ワールド座標を求める
+	D3DXMATRIX tmp = InvViewport * InvPrj * InvView;// ワールド座標を求める（InvViewport「スクリーン座標→NDC座標」、InvPrj「NDC座標→ビュー空間」、InvView「ビュー空間→ワールド座標」)
+	                                                //この行列に深度値とスクリーン座標を合わせることで、深度値に合わせた座標変換が可能になる)
 	D3DXVec3TransformCoord(pout, &MyPos, &tmp);     //位置を求める
 	return pout;
 }
@@ -355,12 +368,13 @@ D3DXVECTOR3 CCalculation::CalcWorldToScreenNoViewport(D3DXVECTOR3 worldPos, D3DX
 	D3DXVECTOR4 ClipSpacePos;
 	D3DXMATRIX mtxTrans;
 
-	mtxTrans = viewMatrix * projectionMatrix;
-	D3DXVec3Transform(&ClipSpacePos, &worldPos, &mtxTrans);
+	mtxTrans = viewMatrix * projectionMatrix; // ビューポート、プロジェクション変換
+	D3DXVec3Transform(&ClipSpacePos, &worldPos, &mtxTrans); // 上記の変換した時のワールド座標の位置を求める
 
-	//透視除算（クリップ座標からNDC空間へ）
+	//透視除算（クリップ座標からNDC空間へ）（本来はGPUが勝手にやるが、データとしては出ないので自分で求める)
 	if (ClipSpacePos.w != 0.0f)
-	{
+	{//X、Y、Zは、カメラからの相対的な位置を表している（変換された位置)。
+	 //Wは、カメラからの距離（深度情報）を表している
 		ClipSpacePos.x /= ClipSpacePos.w;
 		ClipSpacePos.y /= ClipSpacePos.w;
 		ClipSpacePos.z /= ClipSpacePos.w;
@@ -368,9 +382,9 @@ D3DXVECTOR3 CCalculation::CalcWorldToScreenNoViewport(D3DXVECTOR3 worldPos, D3DX
 
 	//スクリーン座標へ変換
 	D3DXVECTOR3 ScreenPos;
-	ScreenPos.x = (ClipSpacePos.x * 0.5f + 0.5f) * screenWidth;
-	ScreenPos.y = (1.0f - (ClipSpacePos.y * 0.5f + 0.5f)) * screenHeight;
-	ScreenPos.z = ClipSpacePos.z;//深度値（０～１）の範囲
+	ScreenPos.x = (ClipSpacePos.x * 0.5f + 0.5f) * screenWidth;           //真ん中を０にするため＋０．５ｆ、ー１なら左端、＋１なら右端となる
+	ScreenPos.y = (1.0f - (ClipSpacePos.y * 0.5f + 0.5f)) * screenHeight; //真ん中を０にするため＋０．５ｆ、下が正となり、上が０となるので、１の時は０になる、ー１の時は１となる
+	ScreenPos.z = ClipSpacePos.z;                                         //深度値（０～１）の範囲
 
 	return ScreenPos;
 }
@@ -428,10 +442,9 @@ D3DXVECTOR3 CCalculation::CalcVec(D3DXVECTOR3 MyPos, D3DXVECTOR3 AimPos, bool bN
 D3DXVECTOR3 CCalculation::RadToVec(const D3DXVECTOR3& Rot)
 {
 	D3DXVECTOR3 RotToVec = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-	//上を０とするため、Y軸はcosを基準にする。XZ平面と比を合わせるため、XZの位置を求めるときは、sinをかける
-	RotToVec.x = sinf(Rot.x) * sinf(Rot.y);
-	RotToVec.y = cosf(Rot.x);
-	RotToVec.z = sinf(Rot.x) * cosf(Rot.y);
+	RotToVec.x = cosf(Rot.x) * sinf(Rot.y);
+	RotToVec.y = sinf(Rot.x);
+	RotToVec.z = cosf(Rot.x) * cosf(Rot.y);
 
 	D3DXVec3Normalize(&RotToVec, &RotToVec);
 	return RotToVec;

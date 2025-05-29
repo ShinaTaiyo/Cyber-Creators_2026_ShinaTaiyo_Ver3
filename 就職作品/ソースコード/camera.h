@@ -54,6 +54,10 @@ public:
 	void Uninit();                                                                        //終了処理
 	void Update();                                                                        //更新処理
 	void SetCamera();                                                                     //カメラの設定
+
+	// 位置
+	const D3DXVECTOR3& GetPos() const; // 取得
+	void SetPos(D3DXVECTOR3 Pos);      // 設定
 													                                      
 	void SetPosR(D3DXVECTOR3 PosR) { m_PosR = PosR; }                                     //注視点を設定する
 	void SetRot(const D3DXVECTOR3 Rot) { m_Rot = Rot; }                                   //向きを設定
@@ -95,75 +99,76 @@ public:
 	D3DXMATRIX* GetMtxProjection() { return &m_mtxProjection; }                           //プロジェクションマトリックスを取得
 	//==========================================================================================================================================
 private:
-	//======================================
-    //静的メンバ宣言
-    //======================================
-	static const float m_BESIDECAMERALENGTH;                                              //ビサイドモードのカメラの距離
-	static const float s_fINITIAL_LENGTH;                                                 //最初の距離
-	static constexpr int s_nMAX_SENSITIVITYLEVEL = 20;                                    //最大感度レベル
-	static int s_nSENSITIVITYLEVEL;                                                       //カメラの感度レベル
-	static bool s_bCAMERACONTROLLMOUSE;                                                   //カメラをマウスで操作するかどうか（Debugでは使わないかもしれないが、Releaseでは必ず使う)
-	static constexpr bool s_bDEBUGCAMERACONTROLLMOUSE = false;                            //デバッグ時にもカメラをマウスで操作するかどうか（カメラを使用するとカーソルが固定されてしまうので、使用するかを決める)
-	//==========================================================================================================================================
+	// === 静的メンバ変数 ===
 
-	//======================================
-	//変数宣言
-	//======================================
-	D3DXVECTOR3 m_PosV;                           //視点!
-	D3DXVECTOR3 m_PosR;                           //注視点!
-	D3DXVECTOR3 m_AddPosR;                        //加算注視点
-	D3DXVECTOR3 m_AddPosV;                        //加算視点
-	D3DXVECTOR3 m_VecU;                           //上方向ベクトル!
-	D3DXVECTOR3 m_Rot;                            //向き!
-	D3DXMATRIX m_mtxProjection;                   //プロジェクション行列!!
-	D3DXMATRIX m_mtxView;                         //ビューマトリックス!
-	CAMERATYPE m_CameraType;                      //カメラモードの種類!
-	D3DXVECTOR3 m_DifferenceLength;               //差分!
-	D3DXVECTOR3 m_ZoomSpeed;                      //ズームする速さ!
-	D3DXVECTOR3 m_SupportPos;                     //参考位置!
+	static const float 
+		m_BESIDECAMERALENGTH, // ビサイドモードのカメラの距離
+        s_fINITIAL_LENGTH;    // 最初の距離
+	static constexpr int s_nMAX_SENSITIVITYLEVEL = 20; // 最大感度レベル
+	static int s_nSENSITIVITYLEVEL;     // カメラの感度レベル
+	static bool s_bCAMERACONTROLLMOUSE; // カメラをマウスで操作するかどうか（Debugでは使わないかもしれないが、Releaseでは必ず使う)
+	static constexpr bool s_bDEBUGCAMERACONTROLLMOUSE = true; // デバッグ時にもカメラをマウスで操作するかどうか（カメラを使用するとカーソルが固定されてしまうので、使用するかを決める)
 
-	CAMERASTATE m_State;                          //状態名
-	CCameraState* m_pCameraState;                 //カメラの状態クラス
-	CCameraLengthState* m_pCameraLengthState;     //カメラの距離の状態クラス
+	// === メンバ変数 ===
 
-	float m_fLength;                              //距離!
-	float m_fAddLength;                           //追加距離!
-	float m_fTurningRotSpeed;                     //旋回速度!
-	float m_fTurningSpeedY;                       //旋回中のY方向の移動量!
+	D3DXVECTOR3
+		m_PosV,    // 視点!
+		m_PosR,    // 注視点!
+		m_Pos,     // 位置
+		m_AddPosR, // 加算注視点
+		m_AddPosV, // 加算視点
+		m_VecU,    // 上方向ベクトル!
+		m_Rot,     // 向き!
+		m_DifferenceLength, // 差分!
+		m_ZoomSpeed,  // ズームする速さ!
+		m_SupportPos; // 参考位置!
 
-	int m_nShakeFrame;                            //カメラを揺らすフレーム数!
-	int m_ModeTime;                               //カメラモードの時間!
-	float m_fShakePower;                          //カメラを揺らす力!
-	//==========================================================================================================================================
+	D3DXMATRIX 
+		m_mtxProjection, // プロジェクション行列
+	    m_mtxView;       // ビューマトリックス
 
-	//======================================
-	//プロトタイプ宣言
-	//======================================
-	void NormalCameraMove();                      //普通のカメラの注視点を設定し続ける
-	void MakeTransparent();                       //すごく近いオブジェクトを透明にする処理
-	//==========================================================================================================================================
+	CAMERATYPE m_CameraType; // カメラモードの種類
+	CAMERASTATE m_State; // 状態名
+	CCameraState* m_pCameraState; // カメラの状態クラス
+	CCameraLengthState* m_pCameraLengthState; // カメラの距離の状態クラス
+
+	float 
+		m_fLength,          // 距離!
+	    m_fAddLength,       // 追加距離!
+	    m_fTurningRotSpeed, // 旋回速度!
+     	m_fTurningSpeedY,   // 旋回中のY方向の移動量!
+	    m_fShakePower;      // カメラを揺らす力!
+
+	int
+		m_nShakeFrame, // カメラを揺らすフレーム数
+		m_ModeTime;    // カメラモードの時間
+
+	// === メンバ関数 ===
+
+	void NormalCameraMove(); // 普通のカメラの注視点を設定し続ける
+	void MakeTransparent();  // すごく近いオブジェクトを透明にする処理
 };
 
 //カメラの状態スーパークラス
 class CCameraState
 {
 public:
-	CCameraState() {};                          //コンストラクタ
-	virtual ~CCameraState() {};                 //デストラクタ
-	virtual void Process(CCamera* pCamera) {};  //処理
+	CCameraState() {};                          // コンストラクタ
+	virtual ~CCameraState() {};                 // デストラクタ
+	virtual void Process(CCamera* pCamera) {};  // 処理
 };
 
 //普通の状態
 class CCameraState_Normal : public CCameraState
 {
 public:
-	CCameraState_Normal();         //コンストラクタ
-	~CCameraState_Normal();        //デストラクタ
-	void Process(CCamera* pCamera);//処理
+	CCameraState_Normal();          // コンストラクタ
+	~CCameraState_Normal();         // デストラクタ
+	void Process(CCamera* pCamera); // 処理
 private:
-	static const float s_fNORMAL_AROUNDROTSPEED;  //カメラの回転速度
-	static constexpr float s_fMAX_STICKSENSITIVITY = 0.08f;//スティックの最大感度
-	static constexpr float s_fMAX_MOUSESENSITIVITY = 0.01f;//マウス最大感度
+	static const float s_fNORMAL_AROUNDROTSPEED;  // カメラの回転速度
+	static constexpr float s_fMAX_STICKSENSITIVITY = 0.08f; // スティックの最大感度
+	static constexpr float s_fMAX_MOUSESENSITIVITY = 0.01f; // マウス最大感度
 };
 
 //狙った向きを向かせる
