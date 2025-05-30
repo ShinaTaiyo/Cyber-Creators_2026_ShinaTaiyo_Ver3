@@ -1,0 +1,1724 @@
+#------------------------------------------------------------------------------
+# パーツ情報
+#------------------------------------------------------------------------------
+
+# 体
+PARTSSET
+	POSx 0.000000
+	POSy 17.00000
+	POSz 0.000000
+	ROTx 0.000000
+	ROTy 0.000000
+	ROTz 0.000000
+	TYPE	0
+	PARENT	-1
+END_PARTSSET
+
+# 右上腕
+PARTSSET
+	POSx -10.0000
+	POSy 20.00000
+	POSz 0.000000
+	ROTx 0.000000
+	ROTy 0.000000
+	ROTz 0.000000
+	TYPE	1
+	PARENT	0
+END_PARTSSET
+
+# 右下腕
+PARTSSET
+	POSx -6.000000
+	POSy 0.000000
+	POSz 0.000000
+	ROTx 0.000000
+	ROTy 0.000000
+	ROTz 0.000000
+	TYPE	2
+	PARENT	1
+END_PARTSSET
+
+# 右手
+PARTSSET
+	POSx -7.000000
+	POSy 0.000000
+	POSz 0.000000
+	ROTx 0.000000
+	ROTy 0.000000
+	ROTz 0.000000
+	TYPE	3
+	PARENT	2
+END_PARTSSET
+
+# 左上腕
+PARTSSET
+	POSx 10.000000
+	POSy 20.000000
+	POSz 0.000000
+	ROTx 0.000000
+	ROTy 0.000000
+	ROTz 0.000000
+	TYPE	4
+	PARENT	0
+END_PARTSSET
+
+# 左下腕
+PARTSSET
+	POSx 6.000000
+	POSy 0.000000
+	POSz 0.000000
+	ROTx 0.000000
+	ROTy 0.000000
+	ROTz 0.000000
+	TYPE	5
+	PARENT	4
+END_PARTSSET
+
+# 左手
+PARTSSET
+	POSx 7.000000
+	POSy 0.000000
+	POSz 0.000000
+	ROTx 0.000000
+	ROTy 0.000000
+	ROTz 0.000000
+	TYPE	6
+	PARENT	5
+END_PARTSSET
+
+# 右上脚
+PARTSSET
+	POSx 5.000000
+	POSy 0.000000
+	POSz 0.000000
+	ROTx 0.000000
+	ROTy 0.000000
+	ROTz 0.000000
+	TYPE	7
+	PARENT	0
+END_PARTSSET
+
+# 右下脚
+PARTSSET
+	POSx 0.000000
+	POSy -5.00000
+	POSz 0.000000
+	ROTx 0.000000
+	ROTy 0.000000
+	ROTz 0.000000
+	TYPE	8
+	PARENT	7
+END_PARTSSET
+
+# 右足
+PARTSSET
+	POSx 0.000000
+	POSy -8.00000
+	POSz 0.000000
+	ROTx 0.000000
+	ROTy 0.000000
+	ROTz 0.000000
+	TYPE	9
+	PARENT	8
+END_PARTSSET
+
+# 左上脚
+PARTSSET
+	POSx -5.00000
+	POSy 0.00000
+	POSz 0.000000
+	ROTx 0.000000
+	ROTy 0.000000
+	ROTz 0.000000
+	TYPE	10
+	PARENT	0
+END_PARTSSET
+
+# 左下脚
+PARTSSET
+	POSx 0.000000
+	POSy -5.00000
+	POSz 0.000000
+	ROTx 0.000000
+	ROTy 0.000000
+	ROTz 0.000000
+	TYPE	11
+	PARENT	10
+END_PARTSSET
+
+# 左足
+PARTSSET
+	POSx 0.000000
+	POSy -8.00000
+	POSz 0.000000
+	ROTx 0.000000
+	ROTy 0.000000
+	ROTz 0.000000
+	TYPE	12
+	PARENT	11
+END_PARTSSET
+
+# 右翼
+PARTSSET
+	POSx -3.00000
+	POSy 12.00000
+	POSz 7.000000
+	ROTx 0.000000
+	ROTy 0.000000
+	ROTz 0.000000
+	TYPE	13
+	PARENT	0
+END_PARTSSET
+
+# 左翼
+PARTSSET
+	POSx 3.000000
+	POSy 12.00000
+	POSz 7.000000
+	ROTx 0.000000
+	ROTy 0.000000
+	ROTz 0.000000
+	TYPE	14
+	PARENT	0
+END_PARTSSET
+
+END_PARTS
+
+#------------------------------------------------------------------------------
+# モーション情報
+#------------------------------------------------------------------------------
+#----------------------------------------
+#  ニュートラル[0] 
+#----------------------------------------
+MOTIONSET	0
+	LOOP	0	# ループする(0)、ループしない(1)
+	KEYSET			# --- << KEY : 0 / 1 >> ---
+		FRAME	40
+		KEY #----- [ 0 ] -----
+			POSx	0.0
+			POSy	0.0
+			POSz	-0.10
+			ROTx	-0.13
+			ROTy	0.0
+			ROTz	0.0
+		END_KEY
+
+		KEY #----- [ 1 ] -----
+			POSx	0.0
+			POSy	0.0
+			POSz	0.0
+			ROTx	0.0
+			ROTy	0.0
+			ROTz	1.01
+		END_KEY
+
+		KEY #----- [ 2 ] -----
+			POSx	0.0
+			POSy	0.0
+			POSz	0.0
+			ROTx	0.0
+			ROTy	0.0
+			ROTz	0.0
+		END_KEY
+
+		KEY #----- [ 3 ] -----
+			POSx	0.0
+			POSy	0.0
+			POSz	0.0
+			ROTx	0.0
+			ROTy	0.0
+			ROTz	0.0
+		END_KEY
+
+		KEY #----- [ 4 ] -----
+			POSx	0.0
+			POSy	0.0
+			POSz	0.0
+			ROTx	0.0
+			ROTy	0.0
+			ROTz	-1.04
+		END_KEY
+		
+		KEY #----- [ 5 ] -----
+			POSx	0.0
+			POSy	0.0
+			POSz	0.0
+			ROTx	0.0
+			ROTy	0.0
+			ROTz	0.0
+		END_KEY
+		
+		KEY #----- [ 6 ] -----
+			POSx	0.0
+			POSy	0.0
+			POSz	0.0
+			ROTx	0.0
+			ROTy	0.0
+			ROTz	-0.75
+		END_KEY
+
+		KEY #----- [ 7 ] -----
+			POSx	0.0
+			POSy	0.0
+			POSz	0.0
+			ROTx	0.06
+			ROTy	0.0
+			ROTz	0.0
+		END_KEY
+		
+		KEY #----- [ 8 ] -----
+			POSx	0.0
+			POSy	0.0
+			POSz	0.0
+			ROTx	-0.0
+			ROTy	0.0
+			ROTz	0.0
+		END_KEY
+		
+		KEY #----- [ 9 ] -----
+			POSx	0.0
+			POSy	0.0
+			POSz	0.0
+			ROTx	-0.06
+			ROTy	0.0
+			ROTz	0.0
+		END_KEY
+		
+		KEY #----- [ 10 ] -----
+			POSx	0.0
+			POSy	0.0
+			POSz	0.0
+			ROTx	0.06
+			ROTy	0.0
+			ROTz	0.0
+		END_KEY
+
+		KEY #----- [ 11 ] -----
+			POSx	0.0
+			POSy	0.0
+			POSz	0.0
+			ROTx	0.03
+			ROTy	0.0
+			ROTz	0.0
+		END_KEY
+
+		KEY #----- [ 12 ] -----
+			POSx	0.0
+			POSy	0.0
+			POSz	0.0
+			ROTx	-0.06
+			ROTy	0.0
+			ROTz	0.0
+		END_KEY
+		
+		KEY #----- [ 13 ] -----
+			POSx	0.0
+			POSy	0.0
+			POSz	0.0
+			ROTx	0.0
+			ROTy	0.0
+			ROTz	0.0
+		END_KEY
+
+		KEY #----- [ 14 ] -----
+			POSx	0.0
+			POSy	0.0
+			POSz	0.0
+			ROTx	0.0
+			ROTy	0.0
+			ROTz	0.0
+		END_KEY
+	END_KEYSET
+
+	KEYSET			# --- << KEY : 1 / 1 >> ---
+		FRAME	40
+		KEY #----- [ 0 ] -----
+			POSx	0.0
+			POSy	0.0
+			POSz	-0.10
+			ROTx	-0.0
+			ROTy	0.0
+			ROTz	0.0
+		END_KEY
+
+		KEY #----- [ 1 ] -----
+			POSx	0.0
+			POSy	0.0
+			POSz	0.0
+			ROTx	0.0
+			ROTy	0.0
+			ROTz	0.88
+		END_KEY
+
+		KEY #----- [ 2 ] -----
+			POSx	0.0
+			POSy	0.0
+			POSz	0.0
+			ROTx	0.0
+			ROTy	0.0
+			ROTz	0.0
+		END_KEY
+
+		KEY #----- [ 3 ] -----
+			POSx	0.0
+			POSy	0.0
+			POSz	0.0
+			ROTx	0.0
+			ROTy	0.0
+			ROTz	0.0
+		END_KEY
+
+		KEY #----- [ 4 ] -----
+			POSx	0.0
+			POSy	0.0
+			POSz	0.0
+			ROTx	0.0
+			ROTy	0.0
+			ROTz	-0.91
+		END_KEY
+		
+		KEY #----- [ 5 ] -----
+			POSx	0.0
+			POSy	0.0
+			POSz	0.0
+			ROTx	0.0
+			ROTy	0.0
+			ROTz	0.0
+		END_KEY
+		
+		KEY #----- [ 6 ] -----
+			POSx	0.0
+			POSy	0.0
+			POSz	0.0
+			ROTx	0.0
+			ROTy	0.0
+			ROTz	0.0
+		END_KEY
+
+		KEY #----- [ 7 ] -----
+			POSx	0.0
+			POSy	0.0
+			POSz	0.0
+			ROTx	-0.13
+			ROTy	0.0
+			ROTz	0.0
+		END_KEY
+		
+		KEY #----- [ 8 ] -----
+			POSx	0.0
+			POSy	0.0
+			POSz	0.0
+			ROTx	0.06
+			ROTy	0.0
+			ROTz	0.0
+		END_KEY
+
+		KEY #----- [ 9 ] -----
+			POSx	0.0
+			POSy	0.0
+			POSz	0.0
+			ROTx	-0.06
+			ROTy	0.0
+			ROTz	0.0
+		END_KEY
+		
+		KEY #----- [ 10 ] -----
+			POSx	0.0
+			POSy	0.0
+			POSz	0.0
+			ROTx	-0.09
+			ROTy	0.0
+			ROTz	0.0
+		END_KEY
+
+		KEY #----- [ 11 ] -----
+			POSx	0.0
+			POSy	0.0
+			POSz	0.0
+			ROTx	0.03
+			ROTy	0.0
+			ROTz	0.0
+		END_KEY
+
+		KEY #----- [ 12 ] -----
+			POSx	0.0
+			POSy	0.0
+			POSz	0.0
+			ROTx	-0.06
+			ROTy	0.0
+			ROTz	0.0
+		END_KEY
+		
+		KEY #----- [ 13 ] -----
+			POSx	0.0
+			POSy	0.0
+			POSz	0.0
+			ROTx	0.0
+			ROTy	0.0
+			ROTz	0.0
+		END_KEY
+
+		KEY #----- [ 14 ] -----
+			POSx	0.0
+			POSy	0.0
+			POSz	0.0
+			ROTx	0.0
+			ROTy	0.0
+			ROTz	0.0
+		END_KEY
+	END_KEYSET
+END_MOTIONSET
+	
+#========================================
+#  移動[1] 
+#========================================
+MOTIONSET	1
+	LOOP	0	# ループする(0)、ループしない(1)
+	KEYSET			# --- << KEY : 0 / 1 >> ---
+		FRAME	8
+		KEY	# ----- [ 0 ] -----
+			POSx 0.00
+			POSy 1.00
+			POSz 0.00
+			ROTx -0.56
+			ROTy -0.02
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 1 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.63
+			ROTz 0.63
+		END_KEY
+
+		KEY	# ----- [ 2 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx -0.01
+			ROTy 0.00
+			ROTz -0.01
+		END_KEY
+
+		KEY	# ----- [ 3 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx -0.00
+			ROTy 0.01
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 4 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.01
+			ROTy -0.63
+			ROTz -0.62
+		END_KEY
+
+		KEY	# ----- [ 5 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy -0.01
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 6 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 1.51
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 7 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx -0.05
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 8 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx -0.60
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 9 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx -0.92
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 10 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 11 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx -0.79
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 12 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx -0.75
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 13 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 14 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+	END_KEYSET
+
+	KEYSET			# --- << KEY : 1 / 4 >> ---
+		FRAME	10
+		KEY	# ----- [ 0 ] -----
+			POSx 0.00
+			POSy 1.00
+			POSz 0.00
+			ROTx -0.56
+			ROTy -0.02
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 1 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.78
+			ROTz 0.63
+		END_KEY
+
+		KEY	# ----- [ 2 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx -0.01
+			ROTy 0.00
+			ROTz -0.01
+		END_KEY
+
+		KEY	# ----- [ 3 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx -0.00
+			ROTy 0.01
+			ROTz 0.06
+		END_KEY
+
+		KEY	# ----- [ 4 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.01
+			ROTy -0.79
+			ROTz -0.62
+		END_KEY
+
+		KEY	# ----- [ 5 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy -0.01
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 6 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 1.51
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 7 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx -0.05
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 8 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx -0.60
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 9 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx -0.92
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 10 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 11 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx -0.79
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 12 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx -0.75
+			ROTy 0.00
+			ROTz 0.10
+		END_KEY
+
+		KEY	# ----- [ 13 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.63
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 14 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy -0.63
+			ROTz 0.00
+		END_KEY
+	END_KEYSET
+END_MOTIONSET
+
+#========================================
+#  アクション[2] 
+#========================================
+MOTIONSET	2
+	LOOP	1	# ループする(0)、ループしない(1)
+	KEYSET			# --- << KEY : 0 / 6 >> ---
+		FRAME	8
+		KEY	# ----- [ 0 ] -----
+			POSx 0.00
+			POSy 14.40
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 1 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.38
+		END_KEY
+
+		KEY	# ----- [ 2 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 3 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 4 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz -0.38
+		END_KEY
+
+		KEY	# ----- [ 5 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 6 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 7 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx -0.72
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 8 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 9 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 10 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx -0.72
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 11 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 12 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 13 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 14 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+	END_KEYSET
+
+	KEYSET			# --- << KEY : 1 / 7 >> ---
+		FRAME	6
+		KEY	# ----- [ 0 ] -----
+			POSx 0.00
+			POSy 32.40
+			POSz 0.00
+			ROTx 0.00
+			ROTy -0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 1 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.91
+		END_KEY
+
+		KEY	# ----- [ 2 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 3 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 4 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz -0.91
+		END_KEY
+
+		KEY	# ----- [ 5 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 6 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 7 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx -0.72
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 8 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 9 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 10 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx -0.72
+			ROTy 0.00
+			ROTz 0.19
+		END_KEY
+
+		KEY	# ----- [ 11 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 12 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 13 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.82
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 14 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy -0.82
+			ROTz 0.00
+		END_KEY
+	END_KEYSET
+
+	KEYSET			# --- << KEY : 2 / 7 >> ---
+		FRAME	20
+		KEY	# ----- [ 0 ] -----
+			POSx 0.00
+			POSy 50.30
+			POSz 0.00
+			ROTx 0.00
+			ROTy -0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 1 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.38
+		END_KEY
+
+		KEY	# ----- [ 2 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 3 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 4 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz -0.38
+		END_KEY
+
+		KEY	# ----- [ 5 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 6 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 7 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx -0.72
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 8 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 9 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 10 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx -0.72
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 11 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 12 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 13 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.41
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 14 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy -0.41
+			ROTz 0.00
+		END_KEY
+	END_KEYSET
+
+	KEYSET			# --- << KEY : 3 / 7 >> ---
+		FRAME	10
+		KEY	# ----- [ 0 ] -----
+			POSx 0.00
+			POSy 60.10
+			POSz -7.30
+			ROTx -2.10
+			ROTy -0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 1 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.09
+		END_KEY
+
+		KEY	# ----- [ 2 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 3 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 4 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz -0.09
+		END_KEY
+
+		KEY	# ----- [ 5 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 6 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 7 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 8 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 9 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 10 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 11 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 12 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 13 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.41
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 14 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy -0.41
+			ROTz 0.00
+		END_KEY
+	END_KEYSET
+
+	KEYSET			# --- << KEY : 4 / 7 >> ---
+		FRAME	10
+		KEY	# ----- [ 0 ] -----
+			POSx 0.00
+			POSy 14.80
+			POSz -83.30
+			ROTx -2.10
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 1 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.09
+		END_KEY
+
+		KEY	# ----- [ 2 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 3 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 4 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz -0.09
+		END_KEY
+
+		KEY	# ----- [ 5 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 6 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 7 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 8 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 9 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 10 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 11 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 12 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 13 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.41
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 14 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy -0.41
+			ROTz 0.00
+		END_KEY
+	END_KEYSET
+
+	KEYSET			# --- << KEY : 5 / 7 >> ---
+		FRAME	20
+		KEY	# ----- [ 0 ] -----
+			POSx 0.00
+			POSy 41.40
+			POSz -41.60
+			ROTx -1.38
+			ROTy -0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 1 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.47
+		END_KEY
+
+		KEY	# ----- [ 2 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 3 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 4 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz -0.47
+		END_KEY
+
+		KEY	# ----- [ 5 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 6 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 7 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.13
+		END_KEY
+
+		KEY	# ----- [ 8 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 9 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 10 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz -0.13
+		END_KEY
+
+		KEY	# ----- [ 11 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 12 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 13 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.41
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 14 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy -0.41
+			ROTz 0.00
+		END_KEY
+	END_KEYSET
+
+	KEYSET			# --- << KEY : 6 / 7 >> ---
+		FRAME	20
+		KEY	# ----- [ 0 ] -----
+			POSx 0.00
+			POSy -0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy -0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 1 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.82
+		END_KEY
+
+		KEY	# ----- [ 2 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 3 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 4 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz -0.82
+		END_KEY
+
+		KEY	# ----- [ 5 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 6 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 7 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.13
+		END_KEY
+
+		KEY	# ----- [ 8 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 9 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 10 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz -0.13
+		END_KEY
+
+		KEY	# ----- [ 11 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 12 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.00
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 13 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy 0.41
+			ROTz 0.00
+		END_KEY
+
+		KEY	# ----- [ 14 ] -----
+			POSx 0.00
+			POSy 0.00
+			POSz 0.00
+			ROTx 0.00
+			ROTy -0.41
+			ROTz 0.00
+		END_KEY
+	END_KEYSET
+END_MOTIONSET

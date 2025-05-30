@@ -1,0 +1,40 @@
+#-------------------------------------------
+#
+#敵を読み込む
+#Author:ShinaTaiyo
+#
+#-------------------------------------------
+
+#-------------------------------------------
+#読み込む敵の種類数
+#-------------------------------------------
+NUM_ENEMY 12
+
+#-------------------------------------------
+#モデルのパス
+#-------------------------------------------
+ENEMY_FILENAME data//ENEMY//00_noobSlime.x        #[0]弱スライム
+ENEMY_FILENAME data//ENEMY//01_angrySlime.x  #[1]怒りスライム
+ENEMY_FILENAME data//ENEMY//02_swordSlime.x    #[2]剣スライム
+ENEMY_FILENAME data//ENEMY//03_hammerSlime.x    #[3]ハンマースライム
+ENEMY_FILENAME data//ENEMY//04_orangeSlime.x #[4]オレンジスライム
+ENEMY_FILENAME data//ENEMY//05_greenSlime.x #[5]オレンジスライム
+ENEMY_FILENAME data//ENEMY//06_whiteSlime.x #[6]ホワイトスライム
+ENEMY_FILENAME data//ENEMY//07_turquoiseSlime.x #[7]ターコイズスライム
+ENEMY_FILENAME data//ENEMY//08_engelSlime.x #[8]エンジェルスライム
+ENEMY_FILENAME data//ENEMY//09_darkSlime.x #[9]ダークスライム
+ENEMY_FILENAME data//ENEMY//10_RainbowSlime.x #[10]レインボースライム
+ENEMY_FILENAME data//ENEMY//11_TreasureSlime.x #[11]トレジャースライム
+
+#-------------------------------------------
+#モデル情報
+#-------------------------------------------
+
+
+
+
+
+
+ENDSCRIPT #この行は絶対消さない！
+
+

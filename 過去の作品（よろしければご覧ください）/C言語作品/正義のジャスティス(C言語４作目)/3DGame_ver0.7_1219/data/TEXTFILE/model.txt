@@ -1,0 +1,33 @@
+#-------------------------------------------
+#
+#モデルを読み込む
+#Author:ShinaTaiyo
+#
+#-------------------------------------------
+
+#-------------------------------------------
+#読み込むモデルの最大数
+#-------------------------------------------
+NUM_MODEL 8
+
+#-------------------------------------------
+#モデルのパス
+#-------------------------------------------
+MODEL_FILENAME data//MODEL//bill.x        #[0]ビル
+MODEL_FILENAME data//MODEL//BigBriddge.x  #[1]橋
+MODEL_FILENAME data//MODEL//ship_000.x    #[2]船
+MODEL_FILENAME data//MODEL//fountain.x    #[3]噴水
+MODEL_FILENAME data//MODEL//brueflower.x  #[4]青い花
+MODEL_FILENAME data//MODEL//bgBlock_000.x #[5]背景ブロック１
+MODEL_FILENAME data//MODEL//ibitree.x #[6]いびつな木
+MODEL_FILENAME data//MODEL//fonship_000.x #[7]巡水船
+
+
+
+#-------------------------------------------
+#モデル情報
+#-------------------------------------------
+
+ENDSCRIPT #この行は絶対消さない！
+
+
