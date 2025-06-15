@@ -110,68 +110,37 @@ public:
 	static const int& GetMaxDiveNum() { return s_nMaxDiveNum; }//最大ダイブ可能回数を取得する
 	//===============================================================================================
 private:
-	//================================================
-	//静的メンバ
-	//================================================
+	// == 静的メンバ変数 ===
+
 	static constexpr float m_fNORMALATTACK_SPEED = 10.0f;   //通常攻撃の移動量を設定
-	static const int s_nNORMAL_MAXLIFE;                     //プレイヤーの通常最大体力
-	static const int s_nMaxDiveNum;                         //プレイヤーの最大ダイブ数
-	//===============================================================================================
+	static const int 
+		s_nNORMAL_MAXLIFE, // プレイヤーの通常最大体力
+        s_nMaxDiveNum;     // プレイヤーの最大ダイブ数
 
-	//================================================
-	//変数宣言
-	//================================================
-	float m_fRotAim;                             //目的の向き
-	bool m_bCollision;                           //当たり判定が成功したかどうか
-	bool m_bDamage;                              //ダメージを受けたかどうか
-										         
-	//他クラスインスタンス			   	         
-	ACTIONMODE m_NowActionMode;                  //現在のアクションモード
-	CLockon* m_pLockOn;                          //ロックオンカーソル
-	CUi* m_pModeDisp;                            //モード表示UI
-	CWire* m_pWire;                              //ワイヤー
-	CGauge* m_pHpGauge;                          //体力ゲージ
-	CUi* m_pDivePossibleNum;                     //ダイブ可能回数UI
-	CUi* m_pDiveGaugeFrame;                      //ダイブゲージのフレーム
-										         
-	//行動状態							         
-	CPlayerMove* m_pMove;                        //移動処理
-	CPlayerAttack* m_pAttack;                    //攻撃処理
-	CPlayerActionMode* m_pPlayerActionMode;      //プレイヤーアクションモード(メインのステートクラス)
-											     
-	//状態異常ステート						     
-	CPlayerAbnormalState* m_pAbnormalState;      //状態異常
+	// === メンバ変数 ===
 
-	//===============================================================================================
+	float m_fRotAim;  // 目的の向き
+	bool 
+		m_bCollision, // 当たり判定が成功したかどうか
+	    m_bDamage;    // ダメージを受けたかどうか									            	         
+	ACTIONMODE m_NowActionMode; // 現在のアクションモード
+	CLockon* m_pLockOn; // ロックオンカーソル
+	CUi* m_pModeDisp; // モード表示UI
+	CWire* m_pWire;   // ワイヤー
+	CGauge* m_pHpGauge; //体力ゲージ
+	CUi* m_pDivePossibleNum; // ダイブ可能回数UI
+	CUi* m_pDiveGaugeFrame;  // ダイブゲージのフレーム				         
+	CPlayerMove* m_pMove;   // 移動処理
+	CPlayerAttack* m_pAttack; // 攻撃処理
+	CPlayerActionMode* m_pPlayerActionMode; // プレイヤーアクションモード(メインのステートクラス)								     
+	CPlayerAbnormalState* m_pAbnormalState; // 状態異常
 
+	// === メンバ関数 ===
 
-	//================================================
-	//プロトタイプ宣言
-	//================================================
-
-	//=============================
-	//位置系
-	//=============================
-	void AdjustRot();//向き調整処理
-	//================================================
-
-	//=============================
-	//モードチェンジ
-	//=============================
-	void ActionModeChengeProcess();//アクションモードを変更する
-	//==============================================================================================
-
-	//=============================
-	//演出
-	//=============================
-	void DiveGaugeMaxEffect();//ダイブゲージがマックスになった時にエフェクトを出す
-	//==============================================================================================
-
-	//=============================
-	//判定系
-	//=============================
-	void CollisionProcess();//当たり判定処理全般
-	//===============================================================================================
+	void AdjustRot(); // 向き調整処理
+	void ActionModeChengeProcess(); // アクションモードを変更する
+	void DiveGaugeMaxEffect(); // ダイブゲージがマックスになった時にエフェクトを出す
+	void CollisionProcess();   // 当たり判定処理全般
 };
 
 //===================================================

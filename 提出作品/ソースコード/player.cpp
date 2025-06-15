@@ -28,6 +28,9 @@
 #include "ui.h"
 #include "particle2d.h"
 #include "debugtext.h"
+#include "wire.h"
+#include "wire_head.h"
+#include "combo.h"
 #include "sound.h"
 #include "tutorial.h"
 #include "collision.h"
@@ -72,6 +75,11 @@ HRESULT CPlayer::Init()
                                                       
     GetLifeInfo().SetAutoSubLife(false);              //自動的に体力を減らすかどうか
     GetMoveInfo().SetUseGravity(true,1.0f);           //重力を使用する
+
+    // OBB挙動確認用処理
+    {
+        //GetRotInfo().SetUseAddRot(true, D3DXVECTOR3(0.01f, 0.01f, 0.01f)); // 自動的に回転させる
+    }
 
     if (CScene::GetMode() == CScene::MODE::MODE_GAME)
     {//ゲームシーンなら

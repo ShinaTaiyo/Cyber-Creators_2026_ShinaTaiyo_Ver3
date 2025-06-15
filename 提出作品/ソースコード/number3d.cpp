@@ -116,9 +116,9 @@ CNumber3D* CNumber3D::Create(float fWidth, float fHeight, D3DXVECTOR3 pos, D3DXV
 	pNumber3D->CBillboard::bindTexture(pTextureClass->GetAddress(pNumber3D->GetTextureIndex()));//テクスチャをセットする　
 	pNumber3D->CBillboard::SetPos(pos);                                                         //オブジェクト２Ｄの位置を設定
 	pNumber3D->SetSupportPos(pos);                                                              //召喚位置を設定
-	pNumber3D->CBillboard::SetSize(fWidth, fHeight);                                            //ポリゴンのサイズを設定
+	pNumber3D->CBillboard::SetSize(D3DXVECTOR3(fWidth, fHeight, 0.0f));       // ポリゴンのサイズを設定
+	pNumber3D->CBillboard::SetFormarSize(D3DXVECTOR3(fWidth, fHeight, 0.0f)); // ポリゴンの元のサイズを設定
 	pNumber3D->CObject::SetType(CObject::TYPE::NUMBER3D);                                       //オブジェクトの種類を決める
-	pNumber3D->CBillboard::SetFormarSize(fWidth, fHeight);                                      //ポリゴンの元のサイズを設定
 	pNumber3D->SetAnimInfo(10, 1,col, false);                                                   //アニメーション情報を設定
 	pNumber3D->SetMove(move);                                                                   //移動量を設定
 	return pNumber3D;

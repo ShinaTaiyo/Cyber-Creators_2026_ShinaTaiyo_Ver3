@@ -1,233 +1,165 @@
-//==================================================================================
+//===================================================================================================================
 //
-//６月５日：ビルボードを作成する[billboard.h]
-//Author:ShinaTaiyo
+// ２０２５年６月１日：コードを綺麗にする[bgModel.h]
+// Author:ShinaTaiyo
 //
-//===================================================================================
+//===================================================================================================================
+
+//*******************************************************************************************************************
+// ２重インクルード防止
+//*******************************************************************************************************************
 #ifndef _BILLBOARD_H_
 #define _BILLBOARD_H_
 
-//===================================================================================
-//インクルード
-//===================================================================================
+//*******************************************************************************************************************
+// インクルード
+//*******************************************************************************************************************
 #include "main.h"
 #include "object.h"
 
-//===================================================================================
-
-//===================================================================================
-//前方宣言
-//===================================================================================
-class CEnemy;
-class CObjectX;
-
-//===================================================================================
-//ビルボードクラス
-//===================================================================================
+//*******************************************************************************************************************
+// ビルボードクラス
+//*******************************************************************************************************************
 class CBillboard : public CObject
 {
 public:
-	CBillboard(int nPri = 6, bool bUseintPri = false, CObject::TYPE type = CObject::TYPE::NONE, CObject::OBJECTTYPE ObjType = CObject::OBJECTTYPE::OBJECTTYPE_BILLBOARD);                                              //コンストラクタ
-	~CBillboard();                                                              //デストラクタ
-	HRESULT Init(void) override;                                                //初期化処理
-	void Uninit(void) override;                                                 //終了処理
-	void Update(void) override;                                                 //更新処理
-	void Draw(void) override;                                                   //描画処理
-	void SetDeath() override;                                                   //死亡フラグ設定処理
-	void bindTexture(LPDIRECT3DTEXTURE9 pTexture);                              //テクスチャを割り当てる
+	// === 特殊関数 ===
 
-	bool CollisionSquare(D3DXVECTOR3 pos,D3DXVECTOR3 VtxMax,D3DXVECTOR3 VtxMin);//正方形の当たり判定を取る
+	// コンストラクタ
+	CBillboard(
+		int nPri = 6, // 自分で決めるプライオリティ
+		bool bUseintPri = false, // 自分でプライオリティを決めるかどうか
+		CObject::TYPE type = CObject::TYPE::NONE, // タイプ
+		CObject::OBJECTTYPE ObjType = CObject::OBJECTTYPE::OBJECTTYPE_BILLBOARD // オブジェクトタイプ
+	);
 
-	//================================================
-	//座標関係
-	//================================================
-	D3DXVECTOR3 & GetPos() { return m_Pos; }                                    //位置を取得する
-	D3DXVECTOR3& GetPosOld() { return m_PosOld; }                               //1f前の位置を取得
-	void SetPos(D3DXVECTOR3 pos) { m_Pos = pos; }                               //位置を設定する
-	void SetSupportPos(D3DXVECTOR3 Pos) { m_SupportPos = Pos; }                 //召喚位置を設定する
-	D3DXVECTOR3& GetSupportPos() { return m_SupportPos; }                       //召喚位置を取得する
-	void SetMove(D3DXVECTOR3 Move) { m_Move = Move; }                           //移動量を設定する
-	D3DXVECTOR3& GetMove() { return m_Move; }                                   //移動量を取得する
-	//=======================================================================================================
+	~CBillboard(); // デストラクタ
+     
+	// === ライフサイクルメンバ関数 ===
 
-	//================================================
-	//サイズ関係
-	//================================================
-	float &GetWidth() { return m_fWidth; }                                      //横幅を取得する
-	float &GetHeight() { return m_fHeight; }                                    //高さを取得する
-	float& GetFormarWidth() { return m_fFormarWidth; }                          //元の横幅を取得する
-	float& GetFormarHeight() { return m_fFormarHeight; }                        //元の高さを取得する
-	void SetSize(float fWidth, float fHeight);                                  //サイズを設定する
-	void SetFormarSize(float fFormarWidth, float fFormarHeight);                //元の大きさを設定する
-	void SetScale(D3DXVECTOR3 Scale) { m_Scale = Scale; }                       //拡大率を設定
-	const D3DXVECTOR3& GetScale() const { return m_Scale; }                     //拡大率を取得
-	void SetUseAddScale(bool bUse, D3DXVECTOR3 AddScale) { m_AddScale = AddScale; m_bUseAddScale = bUse; }            //加算拡大率
-	const D3DXVECTOR3& GetAddScale() const { return m_AddScale; }               //加算拡大率を取得
-	//=======================================================================================================
+	HRESULT Init(void) override; //  初期化処理
+	void Uninit(void) override;  //  終了処理
+	void Update(void) override;  //  更新処理
+	void Draw(void) override;    //  描画処理
+	void SetDeath() override;    //  死亡フラグ設定処理
 
+	// === メンバ関数 ===
 
-	void SetColor(D3DXCOLOR col);                                                             //色合いを設定する
-	D3DXCOLOR GetColor() { return m_Col; }                                                    //色を取得する
-	void SetTextureIndex(int nIdx) { m_nTextureIndex = nIdx; }                                //テクスチャ番号をセットする
-	int GetTextureIndex() { return m_nTextureIndex; }                                         //テクスチャ番号を取得する
-	void SetAnimInfo(int nMaxAnimationPattern, int nAnimationChange,D3DXCOLOR col,bool bAnim);//アニメーション関係の設定
-	void SetAnim(int nAnim) { m_nAnimaionPattern = nAnim; }                                   //アニメーション番号を設定
-	D3DXMATRIX& GetMtxWorld() { return m_mtxWorld; }                                          //ワールドマトリックスを取得する
-	LPDIRECT3DVERTEXBUFFER9& GetVtxBuff() { return m_pVtxBuff; }                              //頂点バッファを取得する
-	LPDIRECT3DTEXTURE9& GetTexture() { return m_pTexture; }                                   //テクスチャを取得する
+	void bindTexture(LPDIRECT3DTEXTURE9 pTexture); // テクスチャを割り当てる
 
-	void SetUseGravity(float fGravity);                                                       //重力を設定
-	void SetAddGravity(float fAddGravity) { m_fAddGravity = fAddGravity; };                   //加算する重力を設定
-	void SetUseHorming(float fSpeed);                                                         //ホーミングするかどうかを設定
-	void SetUseAddSpeed(bool bUseAddSpeed, bool bMultiplication, float fAddSpeed);            //加速するかどうかを設定
+	// 位置
+	const D3DXVECTOR3& GetPos() const; // 取得
+	void SetPos(D3DXVECTOR3 pos);      // 設定
 
-	//====================================================
-	//カーブ関係
-	//====================================================
-	void SetUseLengthCurve(bool bUse, float fStartRot, float fCurveSpeed, float fAddCurveLength,float fSupportLength);
-    //====================================================================================================================
+	// 1f前の位置
+	const D3DXVECTOR3& GetPosOld() const; // 取得
+	void SetPosOld(D3DXVECTOR3 PosOld);   // 設定
 
-	//====================================================
-	//回転関係
-	//====================================================
-	void SetUsePolygonRot(bool bUse, float fRotPower) { m_bUsePolygonRot = bUse; m_fPolygonRotPower = fRotPower; }//ポリゴンを回転させるかどうかを設定
-	//====================================================================================================================
+	// 召喚位置
+	const D3DXVECTOR3& GetSupportPos() const; // 取得
+	void SetSupportPos(D3DXVECTOR3 Pos);      // 設定
 
-	//==============================
-	//点滅関係
-	//==============================
-	void SetUseBlinking(bool bUse, int nMaxBlinkingFrame, float fLimitBlinkingRatio) {
-		m_bUseBlinking = bUse;                                   //点滅を使用するかどうか
-		m_nMaxBlinkingFrame = nMaxBlinkingFrame;                 //点滅最大フレーム
-		m_fLimitBlinkingRatio = fLimitBlinkingRatio;             //点滅させる濃さのリミット
-	}
-	//==============================================================================================================================================================
+	// 移動量
+	void SetMove(D3DXVECTOR3 Move) { m_Move = Move; } // 設定
+	D3DXVECTOR3& GetMove() { return m_Move; }         // 取得
 
-	//====================================================
-	//描画関係
-	//====================================================
-	void SetUseDraw(bool bDraw) { m_bDraw = bDraw; }                            //描画するかどうかを設定する
-	bool& GetUseDraw() { return m_bDraw; }                                      //描画するかどうかを取得する
-	//====================================================================================================================
+	// サイズ
+	const D3DXVECTOR3& GetSize() const; // 取得
+	void SetSize(D3DXVECTOR3 Size);     // 設定
 
-	void SetLife(int nLife) { m_nLife = nLife; }                                //体力を設定
-	void SetMaxLife(int nLife) { m_nMaxLife = nLife; }                          //最大体力を設定
+	// 元のサイズ
+	const D3DXVECTOR3& GetFormarSize() const;   // 取得
+	void SetFormarSize(D3DXVECTOR3 FormarSize); // 設定
 
-	int& GetLife() { return m_nLife; }                                          //体力を取得
-	int& GetMaxLife() { return m_nMaxLife; }                                    //最大体力を取得
-private:			
-	static const int m_nMAX_MAT = 50;                                           //マテリアルの最大数
-	void HormingProcess();                                                      //ホーミングの処理
+	// 拡大率
+	void SetScale(D3DXVECTOR3 Scale);    // 設定
+	const D3DXVECTOR3& GetScale() const; // 取得
 
-	LPDIRECT3DVERTEXBUFFER9 m_pVtxBuff;                                         //頂点バッファへのポインタ!
-	LPDIRECT3DTEXTURE9 m_pTexture;                                              //テクスチャへのポインタ!
+	// 加算拡大率
+	void SetUseAddScale(bool bUse, D3DXVECTOR3 AddScale); // 設定
+	const D3DXVECTOR3& GetAddScale() const; // 取得
 
-	//=======================================================
-	//座標系
-	//=======================================================
-	D3DXVECTOR3 m_Pos;                                                          //位置!
-	D3DXVECTOR3 m_PosOld;                                                       //1f前の位置!
-	D3DXVECTOR3 m_SupportPos;                                                   //召喚位置を設定!
-	D3DXVECTOR3 m_Move;                                                         //移動量!
-	D3DXVECTOR3 m_Rot;                                                          //向き!
-	float m_fSpeed;
-    //==========================================================================================
+	// 色合い
+	void SetColor(D3DXCOLOR col);       // 設定
+	const D3DXCOLOR & GetColor() const; // 取得
 
-	D3DXMATRIX m_mtxWorld;                                                      //ワールド変換行列!
-	D3DXCOLOR m_Col;                                                            //色合い!
+	// テクスチャ番号
+	void SetTextureIndex(int nIdx);      // 設定
+	const int & GetTextureIndex() const; // 取得
+	void SetAnimInfo(int nMaxAnimationPattern, int nAnimationChange,D3DXCOLOR col,bool bAnim); // アニメーション関係設定
+	void SetAnim(int nAnim) { m_nAnimaionPattern = nAnim; } // アニメーションパターン設定
+	D3DXMATRIX& GetMtxWorld() { return m_mtxWorld; } // ワールドマトリックス取得
+	LPDIRECT3DVERTEXBUFFER9& GetVtxBuff() { return m_pVtxBuff; } // 頂点バッファ取得
+	LPDIRECT3DTEXTURE9& GetTexture() { return m_pTexture; }      // テクスチャ取得
 
-	//=======================================================
-	//サイズ関係
-	//=======================================================
-	float m_fWidth;                                                             //横幅!
-	float m_fFormarWidth;                                                       //元の横幅!
-	float m_fHeight;                                                            //高さ!
-	float m_fFormarHeight;                                                      //元の高さ!
-	int m_nLife;                                                                //体力!
-	int m_nMaxLife;                                                             //最大体力!
-	D3DXVECTOR3 m_Scale;                                                        //拡大率
+	void SetUseGravity(float fGravity); // 重力を設定
+	void SetAddGravity(float fAddGravity); // 加算重力設定
+	void SetUseAddSpeed(bool bUseAddSpeed, bool bMultiplication, float fAddSpeed); // 加速するかどうか設定
+	void SetUsePolygonRot(bool bUse, float fRotPower); // ポリゴンを回転させるかどうかを設定
 
-	D3DXVECTOR3 m_AddScale;                                                     //加算拡大率
-	bool m_bUseAddScale;                                                        //加算拡大率を使用するかどうか
-	//==========================================================================================
+	// 描画するかどうか
+	const bool& GetUseDraw() const; // 取得
+	void SetUseDraw(bool bDraw);    // 設定
 
-   
-	//=======================================================
-	//アニメーション関係
-	//=======================================================
-	float m_fAnimationSplit;                                                    //アニメーション１分割当たりの値!
-	int m_nAnimaionPattern;                                                     //アニメーションパターン!
-	int m_nAnimationCnt;                                                        //アニメーションカウント!
-	int m_nMaxAnimationPattern;                                                 //アニメーションパターンの最大数!
-	int m_nAnimationChange;                                                     //アニメーションを変えるカウント数!
-	bool m_bAnimFlag;                                                           //アニメーションをするかどうか!
-	int m_nTextureIndex;                                                        //テクスチャ番号!
-	int m_nCntTime;          //出現してからの時間をカウントする!
-	//==========================================================================================
+	// 体力
+	const int& GetLife() const; // 取得
+	void SetLife(int nLife);    // 設定
 
-	//========================================
-	//カーブ系
-	//========================================
-	bool m_bUseCurve;           //カーブ弾にするかどうか!
-	bool m_bUseLengthCurve;     //視点を軸にカーブするかどうか!
-	float m_fAddCurveLength;    //支点からの距離を伸ばす値!
-	float m_fCurveSpeed;        //カーブするスピード!
-	float m_fSupportCurveLength;//視点を軸に回転する距離を決める!
-	float m_fAddRot;            //向きの補正!
-	float m_fStartRot;          //最初の向き!
-	//=======================================================================================================
+	// 最大体力
+	const int& GetMaxLife() const; // 取得
+	void SetMaxLife(int nLife);    // 設定
+private:	
+	// === メンバ変数 ===
 
-	//========================================
-	//回転関係
-	//========================================
-	bool m_bUsePolygonRot;   //ポリゴンを回転させるかどうか!
-	float m_fPolygonRotPower;//ポリゴンの回転量!
-	//=======================================================================================================
+	LPDIRECT3DVERTEXBUFFER9 m_pVtxBuff; // 頂点バッファへのポインタ
 
+	LPDIRECT3DTEXTURE9 m_pTexture;      // テクスチャへのポインタ
 
-	//========================================
-	//描画関係
-	//========================================
-	bool m_bDraw;               //描画するかどうか!
-	//=======================================================================================================
+	D3DXVECTOR3
+		m_Pos,    // 位置
+		m_PosOld, // 1f前の位置
+		m_Move,   // 移動量
+		m_Rot,    // 向き!
+		m_Scale,  // 拡大率
+		m_AddScale,   // 加算拡大率
+		m_SupportPos, // 召喚位置を設定
+		m_Size,       // サイズ
+		m_FormarSize; // 元のサイズ
 
-	//====================================================
-	//点滅関係
-	//====================================================
-	int m_nCntBlinkingFrame;     //点滅用のカウント!
-	int m_nMaxBlinkingFrame;     //点滅用の最大カウント数!
-	bool m_bBlinkingAim;         //カウントを増やすか減らすかを決める!
-	bool m_bUseBlinking;         //点滅させるかどうか!
-	float m_fLimitBlinkingRatio; //点滅させる色の濃さのリミット!
-	void BlinkingProcess();      //点滅させる処理
-	//====================================================================================================================
+	D3DXMATRIX m_mtxWorld; // ワールド変換行列
 
-	//===============================
-	//重力系
-	//===============================
-	bool m_bUseGravity;      //重力を使用するかどうか!
-	float m_fGravityPower;   //重力の大きさ!
-	float m_fAddGravity;     //加算する重力!
-	float m_fGravity;        //重力!
-	//================================================================================
+	D3DXCOLOR m_Col; // 色合い
 
-	//===============================
-	//ホーミング系
-	//===============================
-	bool m_bUseHorming;      //ホーミングを使用するかどうか!
-	float m_fRotMove;        //向きへの移動量!
-	//================================================================================
+	int
+		m_nLife,    // 体力
+		m_nMaxLife, // 最大体力
+		m_nAnimationCnt,    //アニメーションカウント
+		m_nAnimaionPattern, // アニメーションパターン
+		m_nMaxAnimationPattern, // アニメーションパターン最大数
+		m_nAnimationChange,     // アニメーションを変えるカウント数
+		m_nTextureIndex, // テクスチャ番号!
+		m_nCntTime;      // 出現してからの時間カウント
 
-	//===============================
-	//加速系
-	//===============================
-	bool m_bUseAddSpeed;     //加速を使用するかどうか!
-	float m_fAddSpeed;       //加速度!
-	bool m_bMultiplication;  //速度を乗算させるかどうか!
-	//================================================================================
+	float
+		m_fSpeed,           // 速度
+		m_fAnimationSplit,  //アニメーション１分割当たりの値
+		m_fAddRot,          // 向きの補正
+		m_fStartRot,        // 最初の向き
+		m_fPolygonRotPower, // ポリゴンの回転量
+		m_fGravityPower, // 重力の大きさ
+		m_fAddGravity,   // 加算する重力
+		m_fGravity,      // 重力
+		m_fAddSpeed;     // 加速度
 
+	bool 
+        m_bDraw,           // 描画するかどうか
+        m_bAnimFlag,       // アニメーションをするかどうか
+        m_bUseGravity,     // 重力を使用するかどうか
+		m_bUseAddScale,    // 加算拡大を使用するかどうか
+        m_bUseAddSpeed,    // 加速を使用するかどうか
+        m_bUsePolygonRot,  // ポリゴンを回転させるかどうか
+        m_bMultiplication; // 速度を乗算させるかどうか
 };
-//===================================================================================
 
 
 #endif

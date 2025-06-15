@@ -16,12 +16,16 @@
 #include "debugtext.h"
 #include "collision.h"
 #include "damage.h"
+#include "bgModel.h"
 #include "particle.h"
+#include "camera.h"
+#include "score.h"
 #include "phasemanager.h"
 #include "input.h"
 #include "effect.h"
+#include "combo.h"
+#include "player.h"
 #include "block.h"
-#include "camera.h"
 #include "attack.h"
 //============================================================================================================================================
 
@@ -88,12 +92,15 @@ void CEnemy::Uninit()
 //====================================================================================
 void CEnemy::Update()
 {
+	// シーンが「ゲーム」だったら更新処理を開始
 	if (CScene::GetMode() == CScene::MODE_GAME)
-	{//シーンが「ゲーム」だったら
-		const D3DXVECTOR3& Rot = GetRotInfo().GetRot();                           //向き
-		const D3DXVECTOR3& Pos = GetPosInfo().GetPos();                           //位置
-		const D3DXVECTOR3& PlayerPos = CGame::GetPlayer()->GetPosInfo().GetPos(); //プレイヤーの位置
-		float fLength = CCalculation::CalculationLength(Pos, PlayerPos);          //距離
+	{
+		// === 処理に使用する情報を宣言、初期化 ===
+
+		const D3DXVECTOR3& Rot = GetRotInfo().GetRot(); // 向き
+		const D3DXVECTOR3& Pos = GetPosInfo().GetPos(); // 位置
+		const D3DXVECTOR3& PlayerPos = CGame::GetPlayer()->GetPosInfo().GetPos(); // プレイヤーの位置
+		float fLength = Calculation::Length::ToGoalPos(Pos, PlayerPos); // プレイヤーとの距離
 
 		m_nCntTime++;                                                             //時間をカウントする
 		m_nJumpCoolTime++;                                                        //ジャンプまでのクールタイムをカウントする
@@ -543,18 +550,32 @@ void CEnemy::SetVecMoveAiInfo(vector<CAIModel*> vec)
 //====================================================================================
 void CEnemy::ChasePlayer()
 {
-	const D3DXVECTOR3& PlayerPos = CGame::GetPlayer()->GetPosInfo().GetPos();//プレイヤーの位置
-	const D3DXVECTOR3& Pos = GetPosInfo().GetPos();                          //敵の位置
-	float fLengthPlayer = CCalculation::CalculationLength(PlayerPos, Pos);   //プレイヤーとの距離を求める
-	D3DXVECTOR3 Aim = PlayerPos - Pos;                                       //ベクトルを求める
-	D3DXVec3Normalize(&Aim, &Aim);                                           //求めたベクトルを正規化        
-	float fRot = atan2f(Aim.x, Aim.z);                                       //ベクトルの角度を求める
+	// === 処理に使用する情報を宣言、初期化 ===
 
-	D3DXVECTOR3 Move = CCalculation::HormingVecRotXZ(m_fRotMove, GetPosInfo().GetPos(), CGame::GetPlayer()->GetPosInfo().GetSenterPos(), 0.1f, m_fNormalSpeed);//プレイヤーの位置に向かってホーミング風に移動する
-	GetRotInfo().SetRot(D3DXVECTOR3(GetRotInfo().GetRot().x, m_fRotMove, GetRotInfo().GetRot().z));//徐々にプレイヤーに向きを合わせていく
-	GetMoveInfo().SetMove(D3DXVECTOR3(Move.x, GetMoveInfo().GetMove().y, Move.z));                 //上記の処理で求めた移動量を設定
+	const D3DXVECTOR3&
+		PlayerPos = CGame::GetPlayer()->GetPosInfo().GetPos(), // プレイヤーの位置
+		Pos = GetPosInfo().GetPos(); // 自身の位置
+	float
+		fLengthPlayer = Calculation::Length::ToGoalPos(PlayerPos, Pos), // プレイヤーとの距離を求める
+		fRot = 0.0f; // ベクトルの角度
+
+	D3DXVECTOR3 VecToPlayer = PlayerPos - Pos; // プレイヤーへのベクトルを求める
+
+	// === プレイヤーを追いかける処理を開始 ===
+
+	D3DXVec3Normalize(&VecToPlayer, &VecToPlayer);  // 求めたベクトルを正規化        
+	fRot = atan2f(VecToPlayer.x, VecToPlayer.z);    // ベクトルの角度を求める
+
+	// 徐々にプレイヤーに向きを合わせていく
+	GetRotInfo().SetRot(D3DXVECTOR3(GetRotInfo().GetRot().x, m_fRotMove, GetRotInfo().GetRot().z));
+
+	// プレイヤーの位置に向かってホーミング風に移動させます
+	D3DXVECTOR3 Move = Calculation::Move::HormingToGoalPosXZ(
+		m_fRotMove, GetPosInfo().GetPos(), CGame::GetPlayer()->GetPosInfo().GetSenterPos(), 0.1f, m_fNormalSpeed);
+
+	// 上記の処理で求めた移動量を設定
+	GetMoveInfo().SetMove(D3DXVECTOR3(Move.x, GetMoveInfo().GetMove().y, Move.z));
 }
-//============================================================================================================================================
 
 //====================================================================================
 //敵が倒されたときの演出
@@ -734,25 +755,28 @@ void CEnemy::AIMoveProcess()
 		CObjectX::RotInfo& RotInfo = GetRotInfo();//向き情報を取得
 		const D3DXVECTOR3& Rot = RotInfo.GetRot();//向きを取得
 		float fAddRotY = 0.0f;//Y方向の加算向き
-		float fLengthPlayer = CCalculation::CalculationLength(CGame::GetPlayer()->GetPosInfo().GetPos(), GetPosInfo().GetPos());//プレイヤーとの距離
+
+		// プレイヤーとの距離
+		float fLengthPlayer = Calculation::Length::ToGoalPos(CGame::GetPlayer()->GetPosInfo().GetPos(), GetPosInfo().GetPos());
 		//=========================================================================================================================================
 
+		// 移動AIの数が0より大きければそれに向かって動く処理を開始
 		if (m_VecMoveAi.size() > 0)
-		{//移動AIの数が0より大きければ
+		{
 			auto it = m_VecMoveAi.begin();//最初のポインタを取得
 
 			advance(it, m_nIdxMoveAi);//指定している番号まで進める
 
-			float fLength = CCalculation::CalculationLength(GetPosInfo().GetPos(), (*it)->GetPosInfo().GetPos());//距離を測る
+			float fLength = Calculation::Length::ToGoalPos(GetPosInfo().GetPos(), (*it)->GetPosInfo().GetPos());//距離を測る
 
-			//現在目的地にしている移動AIへの角度を求める
-			float fRot = atan2f((*it)->GetPosInfo().GetPos().x - GetPosInfo().GetPos().x, (*it)->GetPosInfo().GetPos().z - GetPosInfo().GetPos().z);
+			// 現在目的地にしている移動AIへの角度を求める
+			float fRotToMoveAi = atan2f((*it)->GetPosInfo().GetPos().x - GetPosInfo().GetPos().x, (*it)->GetPosInfo().GetPos().z - GetPosInfo().GetPos().z);
 
-			//上記で求めた角度を敵の向いている方向とする
-			RotInfo.SetRot(D3DXVECTOR3(Rot.x,CCalculation::CalculationCollectionRot2D(Rot.y, fRot, 0.1f, false),Rot.z));//向きを徐々に目的地へ合わせていく
+			// 移動AI方向へ徐々に向きを線形補間する
+			RotInfo.SetRot(D3DXVECTOR3(Rot.x,Calculation::Rot::Lerp(Rot.y, fRotToMoveAi, 0.1f),Rot.z));
 
 			//現在向いている方向へ移動する
-			GetMoveInfo().SetMove(D3DXVECTOR3(sinf(fRot) * m_fNormalSpeed, GetMoveInfo().GetMove().y, cosf(fRot) * m_fNormalSpeed));
+			GetMoveInfo().SetMove(D3DXVECTOR3(sinf(Rot.y) * m_fNormalSpeed, GetMoveInfo().GetMove().y, cosf(Rot.y) * m_fNormalSpeed));
 
 			if (fLength < m_fNormalSpeed + 50.0f)
 			{//距離が通常移動速度 + 50.0fより近くなれば
@@ -784,7 +808,7 @@ void CEnemy::AIMoveProcess()
 //====================================================================================
 void CEnemy::BattleMoveProcess()
 {
-	float fLengthPlayer = CCalculation::CalculationLength(CGame::GetPlayer()->GetPosInfo().GetPos(), GetPosInfo().GetPos());//プレイヤーとの距離を求める
+	float fLengthPlayer = Calculation::Length::ToGoalPos(CGame::GetPlayer()->GetPosInfo().GetPos(), GetPosInfo().GetPos());//プレイヤーとの距離を求める
 
 	ChasePlayer();//プレイヤーを追いかける処理
 
@@ -811,7 +835,15 @@ void CEnemy::ChengeMove(CEnemyMove* pEnemyMove)
 	//代入する
 	m_pEnemyMove = pEnemyMove;
 }
-//============================================================================================================================================
+
+//====================================================================================
+// ダメージを設定
+//====================================================================================
+void CEnemy::SetDamage(int nDamage, int nHitStopTime)
+{
+	SetColor(D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f), nHitStopTime, false, false, false); // 色合いを設定
+	CObjectX::SetDamage(nDamage, nHitStopTime); // オブジェクトXのダメージ設定処理
+}
 
 //====================================================================================
 //レイが当たったかどうかを判定する
@@ -821,7 +853,7 @@ void CEnemy::RayCollision()
 	if (CScene::GetMode() == CScene::MODE_GAME)
 	{//シーンが「ゲーム」だったら
 		CObjectX* pObjX = nullptr;//オブジェクトXへのポインタを初期化
-		D3DXVECTOR3 Ray = CCalculation::RadToVec(D3DXVECTOR3(GetRotInfo().GetRot().x, GetRotInfo().GetRot().y,0.0f) - D3DXVECTOR3(D3DX_PI * 0.5f,0.0f,0.0f));//手前側にレイを飛ばす
+		D3DXVECTOR3 Ray = Calculation::Vec::RadTo(D3DXVECTOR3(GetRotInfo().GetRot().x, GetRotInfo().GetRot().y,0.0f) - D3DXVECTOR3(D3DX_PI * 0.5f,0.0f,0.0f));//手前側にレイを飛ばす
 
 		for (int nCntPri = 0; nCntPri < m_nMAXPRIORITY; nCntPri++)
 		{//オブジェクトリストを検索する
@@ -858,7 +890,7 @@ void CEnemy::RayCollision()
 			const D3DXVECTOR3& PlayerPos = CGame::GetPlayer()->GetPosInfo().GetPos();//プレイヤーの位置
 			const D3DXVECTOR3& Pos = GetPosInfo().GetPos();//敵の位置
 
-			float fDot = CCalculation::DetermineSide3D(Pos, ObjectAim, D3DXVECTOR3(0.0f, 1.0f, 0.0f), PlayerPos);//当たったオブジェクトに対してプレイヤーがどちら側にいるかを計算する
+			float fDot = Calculation::Vec::DetermineSide(Pos, ObjectAim, D3DXVECTOR3(0.0f, 1.0f, 0.0f), PlayerPos); // 当たったオブジェクトに対してプレイヤーがどちら側にいるかを計算する
 			D3DXVECTOR3 Aim = PlayerPos - Pos;//プレイヤーと敵のベクトルを取る
 			D3DXVec3Normalize(&Aim, &Aim);//ベクトルを正規化する
 			float fRot = atan2f(Aim.x, Aim.z);//XZ平面のベクトルの角度を求める
@@ -936,7 +968,7 @@ void CEnemy::CollisionDetectionProcess()
 	D3DXVECTOR3 MyVtxMax = GetSizeInfo().GetVtxMax(); //自分の最大頂点
 
 	//自分自身の位置とXの最大頂点との距離を取る
-	float fMyCornarDistance = CCalculation::CalculationLength(MyPos,MyPos + D3DXVECTOR3(MyVtxMax.x, 0.0f, 0.0f));
+	float fMyCornarDistance = Calculation::Length::ToGoalPos(MyPos,MyPos + D3DXVECTOR3(MyVtxMax.x, 0.0f, 0.0f));
 
 	for (int nCntPri = 0; nCntPri < m_nMAXPRIORITY; nCntPri++)
 	{//オブジェクトリストを検索する
@@ -954,9 +986,9 @@ void CEnemy::CollisionDetectionProcess()
 					D3DXVec3Normalize(&AimVec, &AimVec);//XZ方向のベクトルを正規化
 					const D3DXVECTOR3& ComPos = pObjX->GetPosInfo().GetPos();                                            //相手の位置
 					const D3DXVECTOR3& ComVtxMaxX = ComPos + D3DXVECTOR3(pObjX->GetSizeInfo().GetVtxMax().x, 0.0f, 0.0f);//相手のXの最大頂点の位置
-					float fLength = CCalculation::CalculationLength(MyPos, pObjX->GetPosInfo().GetPos());//敵又はプレイヤーとの距離をとる
+					float fLength = Calculation::Length::ToGoalPos(MyPos, pObjX->GetPosInfo().GetPos());//敵又はプレイヤーとの距離をとる
 
-					float fComCornarDistance = CCalculation::CalculationLength(ComPos, ComVtxMaxX);//相手の位置と相手のXの最大頂点との距離を取る
+					float fComCornarDistance = Calculation::Length::ToGoalPos(ComPos, ComVtxMaxX);//相手の位置と相手のXの最大頂点との距離を取る
 
 					float fTotalLength = (fComCornarDistance + fMyCornarDistance);//自分と相手の中心点からの距離を足す
 					if (fLength < fTotalLength &&
@@ -1217,7 +1249,6 @@ HRESULT CShotWeakEnemy::Init()
 		false,false,1, 60, 200, GetPosInfo().GetPos(), D3DXVECTOR3(0.0f,D3DX_PI * fRatioRot, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1.0f, 1.0f, 1.0f));//剣を生成
 	m_pMagicSword->SetUseDeath(false);//剣の死亡フラグをオフにする
 
-	SetColor(D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f), 300000, true, true, false);//デバッグ用に透明にする
 	//剣を回す方向を決める
 	if (bAim == false)
 	{
@@ -1254,6 +1285,8 @@ void CShotWeakEnemy::Update()
 	{//剣が存在していたら
 		m_pMagicSword->GetPosInfo().SetPos(GetPosInfo().GetPos());//剣の中心を常に敵の位置に固定
 	}
+
+	CManager::GetDebugText()->PrintDebugText("射撃に弱い敵のアルファ値：%f\n", GetDrawInfo().Color.a);
 
 	SwordCollision();//剣の当たり判定を行う
 }
@@ -1590,7 +1623,7 @@ void CShotWeakEnemy::BattleMoveProcess()
 //====================================================================================
 void CShotWeakEnemy::AttackProcess()
 {
-	float fLength = CCalculation::CalculationLength(GetPosInfo().GetPos(), CGame::GetPlayer()->GetPosInfo().GetPos()); //自分とプレイヤーの距離
+	float fLength = Calculation::Length::ToGoalPos(GetPosInfo().GetPos(), CGame::GetPlayer()->GetPosInfo().GetPos()); //自分とプレイヤーの距離
 	float fLengthY = CGame::GetPlayer()->GetPosInfo().GetPos().y - GetPosInfo().GetPos().y;                            //自分とプレイヤーのY軸の距離
 	const bool& bAction = GetAction();                                                                                 //攻撃状態かどうか
 	const int& nPatternTime = GetPatternTime();                                                                        //攻撃パターンに入ってからの時間を取得する
@@ -1624,7 +1657,8 @@ void CShotWeakEnemy::AttackProcess()
 			{//このパターンに入ってから４５フレーム後、狙った方向に突進する
 				GetMoveInfo().SetUseInteria(true, 0.05f);//慣性を使用し、かなり弱くする
 
-				GetMoveInfo().SetMove(CCalculation::Calculation3DVec(GetPosInfo().GetPos(),m_SaveAimPos, 30.0f));//パターン０で狙った位置に突進
+				GetMoveInfo().SetMove(
+					Calculation::Move::DirrectionToTarget(GetPosInfo().GetPos(),m_SaveAimPos, 30.0f)); // パターン０で狙った位置に突進
 				SetPattern(nPattern + 1);//パターン番号を次に進める
 				SetPatternTime(0);       //パターン時間をリセットする
 			}
@@ -1652,7 +1686,7 @@ void CShotWeakEnemy::SwordCollision()
 {
 	if (m_pMagicSword != nullptr && CGame::GetPlayer() != nullptr)
 	{//剣とプレイヤーが存在していたら
-		if (CCollision::RectAngleCollisionXZ(m_pMagicSword,CGame::GetPlayer()))
+		if (CCollision::OBBToOBB(m_pMagicSword,CGame::GetPlayer()))
 		{//XZ方向の斜めの当たり判定を行う
 
 			//XZ方向のベクトルを求める
@@ -1680,7 +1714,8 @@ void CShotWeakEnemy::DefeatStaging()
 	{//体力がなくなっていたら
 		for (int nCnt = 0; nCnt < 60; nCnt++)
 		{//パーティクルを召喚
-			CParticle* pParticle = CParticle::Create(CParticle::TYPE::TYPE00_NORMAL, 120, 80.0f, 80.0f, GetPosInfo().GetPos(), CCalculation::Rand3DVec(200, 10),
+			CParticle* pParticle = CParticle::Create(
+				CParticle::TYPE::TYPE00_NORMAL, 120, 80.0f, 80.0f, GetPosInfo().GetPos(), Calculation::Move::Rand3D(200, 10),
 				D3DXCOLOR(0.0f, 1.0f, 1.0f, 1.0f), true);
 			pParticle->SetUseAddSpeed(true, true, 0.9f);//少しずつ減速させる
 		}
@@ -1744,7 +1779,7 @@ void CShotWeakEnemy::RayCollisionJumpOverOnHit()
 
 				if (CCollision::RayIntersectsAABBCollisionPos(RayOrigin, RayDir, ComPos + ComVtxMin, ComPos + ComVtxMax, RayCollisionPos))
 				{//レイがオブジェクトに当たっていたら
-					fLength = CCalculation::CalculationLength(RayOrigin, RayCollisionPos);//レイの支店とレイが当たった位置を出す
+					fLength = Calculation::Length::ToGoalPos(RayOrigin, RayCollisionPos);//レイの支店とレイが当たった位置を出す
 					if (fLength < 100.0f)
 					{
 						float fLengthY = (ComPos.y + ComVtxMax.y) - Pos.y;//Y軸の距離を取り、目標のジャンプ距離を求める
@@ -2280,7 +2315,7 @@ void CDiveWeakEnemy::BattleMoveProcess()
 //====================================================================================
 void CDiveWeakEnemy::AttackProcess()
 {
-	float fLength = CCalculation::CalculationLength(GetPosInfo().GetPos(), CGame::GetPlayer()->GetPosInfo().GetPos());
+	float fLength = Calculation::Length::ToGoalPos(GetPosInfo().GetPos(), CGame::GetPlayer()->GetPosInfo().GetPos());
 	const bool& bAction = GetAction();
 	if (fLength < GetSensingRange() && bAction == false)
 	{//索敵範囲にいる場合、攻撃を開始する
@@ -2306,11 +2341,15 @@ void CDiveWeakEnemy::AttackProcess()
 		float fRotAim = atan2f(PlayerPos.x - Pos.x, PlayerPos.z - Pos.z);   //Z方向を基準にプレイヤーへの角度（目的の角度）を計算する
 		//========================================================================================================
 
-		RotInfo.SetRot(D3DXVECTOR3(Rot.x, CCalculation::CalculationCollectionRot2D(Rot.y, fRotAim, 0.007f, false), Rot.z));//向きをプレイヤーへ超少しずつ合わせていく
-		MoveInfo.SetMove(D3DXVECTOR3(sinf(fRotAim) * fNormalSpeed, Move.y, cosf(fRotAim) * fNormalSpeed));                 //プレイヤーに向かって移動させる
+		// 向きをプレイヤーへ少しずつ線形補間する
+		RotInfo.SetRot(D3DXVECTOR3(Rot.x, Calculation::Rot::Lerp(Rot.y, fRotAim, 0.007f), Rot.z));
 
+		// プレイヤーに向かって移動させる
+		MoveInfo.SetMove(D3DXVECTOR3(sinf(fRotAim) * fNormalSpeed, Move.y, cosf(fRotAim) * fNormalSpeed)); 
+
+		// フレーム数が攻撃頻度へ達したら攻撃を発射する　
 		if (GetCntTime() % s_nATTACK_FREQUENCY == 0)
-		{//攻撃を発射
+		{
 
 		    //==============
 		    //使用変数
@@ -2319,8 +2358,7 @@ void CDiveWeakEnemy::AttackProcess()
 			D3DXVECTOR3 Aim = { 0.0f,0.0f,0.0f };                                      //狙う方向
 			D3DXVECTOR3 ShotPos = Pos + D3DXVECTOR3(0.0f, VtxMax.y, 0.0f);             //発射位置
 			D3DXVECTOR3 AddRot = { 0.0f,0.0f,0.0f };                                   //加算する向き
-			D3DXVECTOR2 YawPitch = CCalculation::VectorToYawPitch(ShotPos, PlayerPos); //目的地への角度(YawとPitch)を取得
-			//========================================================================================================
+			D3DXVECTOR2 YawPitch = Calculation::Rot::VectorToYawPitch(ShotPos, PlayerPos); // 目的地への角度(YawとPitch)を取得
 
 			//Yawの補正（狙える方向に制限をつける)
 			if (YawPitch.y > Rot.y + 0.5f)
@@ -2381,7 +2419,8 @@ void CDiveWeakEnemy::DefeatStaging()
 		for (int nCnt = 0; nCnt < 60; nCnt++)
 		{
 			//パーティクルを召喚
-			CParticle* pParticle = CParticle::Create(CParticle::TYPE::TYPE00_NORMAL, 120, 80.0f, 80.0f, GetPosInfo().GetPos(), CCalculation::Rand3DVec(200, 10),
+			CParticle* pParticle = CParticle::Create(
+				CParticle::TYPE::TYPE00_NORMAL, 120, 80.0f, 80.0f, GetPosInfo().GetPos(), Calculation::Move::Rand3D(200, 10),
 				D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f), true);
 
 			//パーティクルを少しずつ原則させる
@@ -2529,21 +2568,21 @@ CEnemyMove_Frightened::CEnemyMove_Frightened(CEnemy* pEnemy, D3DXVECTOR3 StopPos
 	D3DXVECTOR3 ScreenPos = D3DXVECTOR3(0.0f, 0.0f,0.0f);//スクリーン座標格納用
 
 	//敵のスクリーン座標を取得する
-	ScreenPos = CCalculation::CalcWorldToScreenNoViewport(pEnemy->GetPosInfo().GetSenterPos(), *CManager::GetCamera()->GetMtxView(), *CManager::GetCamera()->GetMtxProjection(),
+	ScreenPos = Calculation::Conversion::WorldToScreen(pEnemy->GetPosInfo().GetSenterPos(), *CManager::GetCamera()->GetMtxView(), *CManager::GetCamera()->GetMtxProjection(),
 		SCREEN_WIDTH,SCREEN_HEIGHT);
 
-	pEnemy->SetState(CEnemy::STATE::FRIGHTENDED);//怯え状態にする
+	pEnemy->SetState(CEnemy::STATE::FRIGHTENDED); // 怯え状態にする
 
-	//ロックオン表示を上記で求めたスクリーン座標に召喚する
+	// ロックオン表示を上記で求めたスクリーン座標に召喚する
 	m_pLockOn = CUi::Create(CUi::UITYPE::TARGET_000,false,CObject2D::POLYGONTYPE::SENTERROLLING, 200.0f, 200.0f, 100, true, D3DXVECTOR3(ScreenPos.x, ScreenPos.y, 0.0f),
 		D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(0.0f, 1.0f, 1.0f, 1.0f));
 
-	pEnemy->SetAction(false);        //攻撃をオフにする
-	pEnemy->SetPossibleAttack(false);//攻撃を不能にする
+	pEnemy->SetAction(false);         // アクション不能にする　
+	pEnemy->SetPossibleAttack(false); // 攻撃を不能にする
 	 
-	m_pLockOn->SetPolygonRotSpeed(0.1f);                         //ロックオン表示の回転速度を設定
-	m_pLockOn->SetUseAddScale(D3DXVECTOR2(-0.01f, -0.01f), true);//ロックオン表示を少しずつ縮小する
-	m_pLockOn->SetUseDeath(false);                               //ロックオン表示の死亡フラグを使用しない
+	m_pLockOn->SetPolygonRotSpeed(0.1f);                          // ロックオン表示の回転速度を設定
+	m_pLockOn->SetUseAddScale(D3DXVECTOR2(-0.01f, -0.01f), true); // ロックオン表示を少しずつ縮小する
+	m_pLockOn->SetUseDeath(false);                                // ロックオン表示の死亡フラグを使用しない
 }
 //============================================================================================================================================
 
@@ -2566,39 +2605,47 @@ CEnemyMove_Frightened::~CEnemyMove_Frightened()
 //====================================================================================
 void CEnemyMove_Frightened::Process(CEnemy* pEnemy)
 {
-	//怯えている間は怯え始めた位置を中心にランダムに位置を設定する
+	// === 処理に使用する情報を宣言、初期化 ===
+	
+	// 怯えている間は怯え始めた位置を中心にランダムに位置を設定する
 	float fX = static_cast<float>(rand() % 50 - 25);
 	float fY = static_cast<float>(rand() % 50 - 25);
 	float fZ = static_cast<float>(rand() % 50 - 25);
-	pEnemy->GetPosInfo().SetPos(m_StopPos + D3DXVECTOR3(fX, fY, fZ)); //怯えさせる
-	pEnemy->GetMoveInfo().SetMove(D3DXVECTOR3(0.0f,0.0f,0.0f));       //移動量を0にする
-	m_nStateTime--;                                                   //この状態になっている時間をカウントダウンする
-	pEnemy->EndAttackPattern();                                       //怯え状態の時は行動不能にしたいので、攻撃パターンを終了させつづける
 
-	if (m_pLockOn != nullptr)
+	// === 怯え処理を開始 ===
+
+	pEnemy->GetPosInfo().SetPos(m_StopPos + D3DXVECTOR3(fX, fY, fZ)); // 怯えさせる
+	pEnemy->GetMoveInfo().SetMove(D3DXVECTOR3(0.0f,0.0f,0.0f));       // 移動量を0にする
+	pEnemy->EndAttackPattern(); // 怯え状態の時は行動不能にしたいので、攻撃パターンを終了させつづける
+
+	// ロックオンへのポインタが存在するなら怯え状態の敵にロックオン表示を出す
+	if (m_pLockOn)
 	{
-		D3DXVECTOR3 ScreenPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);//スクリーン座標格納用
+		D3DXVECTOR3 ScreenPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f); // スクリーン座標格納用
 
-		//敵の中心位置のスクリーン座標を取得
-		ScreenPos = CCalculation::CalcWorldToScreenNoViewport(pEnemy->GetPosInfo().GetSenterPos(), *CManager::GetCamera()->GetMtxView(), *CManager::GetCamera()->GetMtxProjection(),
+		// 敵の中心位置のスクリーン座標を取得
+		ScreenPos = Calculation::Conversion::WorldToScreen(pEnemy->GetPosInfo().GetSenterPos(), *CManager::GetCamera()->GetMtxView(), *CManager::GetCamera()->GetMtxProjection(),
 			SCREEN_WIDTH, SCREEN_HEIGHT);
 
-		m_pLockOn->SetPos(ScreenPos);//怯え状態にした敵のスクリーン座標にUIを表示
+		m_pLockOn->SetPos(ScreenPos); // 怯え状態にした敵のスクリーン座標にUIを表示
 		if (m_pLockOn->GetScale().x < 0.0f && m_pLockOn->GetScale().y < 0.0f)
-		{//拡大率が０以下になったら
-			m_pLockOn->SetUseDeath(true);//死亡フラグを使用する
-			m_pLockOn->SetDeath();       //死亡フラグを設定する
-			m_pLockOn = nullptr;         //ロックオン表示を初期化する
+		{// 拡大率が０以下になったら
+			m_pLockOn->SetUseDeath(true); // 死亡フラグを使用する
+			m_pLockOn->SetDeath();        // 死亡フラグを設定する
+			m_pLockOn = nullptr;          // ロックオン表示を初期化する
 		}
 	}
 
+	// この状態になる残り時間がなくなったら元の状態に戻す
 	if (m_nStateTime < 1)
-	{//この状態になる残り時間がなくなったら
-		pEnemy->SetPossibleAttack(true);            //攻撃を可能に戻す
-		pEnemy->GetPosInfo().SetPos(m_StopPos);     //怯え状態になった位置に設定
-		pEnemy->SetState(CEnemy::STATE::NORMAL);    //状態異常を普通に戻す
-		pEnemy->ChengeMove(DBG_NEW CEnemyMove_AI());//AI移動処理に戻す
+	{
+		pEnemy->SetPossibleAttack(true);             // 攻撃を可能に戻す
+		pEnemy->GetPosInfo().SetPos(m_StopPos);      // 怯え状態になった位置に設定
+		pEnemy->SetState(CEnemy::STATE::NORMAL);     // 状態異常を普通に戻す
+		pEnemy->ChengeMove(DBG_NEW CEnemyMove_AI()); // AI移動処理に戻す
 	}
+
+	m_nStateTime--; // この状態になっている時間をカウントダウンする
 }
 //============================================================================================================================================
 
@@ -3106,7 +3153,8 @@ void CIdleEnemy::DefeatStaging()
 	{//体力がなくなっていて、死亡フラグを使用するなら
 		for (int nCnt = 0; nCnt < 60; nCnt++)
 		{//パーティクルを召喚
-			CParticle* pParticle = CParticle::Create(CParticle::TYPE::TYPE00_NORMAL, 120, 80.0f, 80.0f, GetPosInfo().GetPos(), CCalculation::Rand3DVec(200, 10),
+			CParticle* pParticle = CParticle::Create(
+				CParticle::TYPE::TYPE00_NORMAL, 120, 80.0f, 80.0f, GetPosInfo().GetPos(), Calculation::Move::Rand3D(200, 10),
 				D3DXCOLOR(0.678f, 1.0f, 0.184f, 1.0f), true);
 			pParticle->SetUseAddSpeed(true, true, 0.9f);//徐々に減速させる
 		}
@@ -3143,24 +3191,29 @@ CEnemyMove_OverJumpObj::~CEnemyMove_OverJumpObj()
 //===================================================================================
 void CEnemyMove_OverJumpObj::Process(CEnemy* pEnemy)
 {
-	CObjectX::PosInfo& PosInfo = pEnemy->GetPosInfo();     //位置情報を取得
-	const D3DXVECTOR3& Pos = PosInfo.GetPos();             //位置
-	const D3DXVECTOR3& SenterPos = PosInfo.GetSenterPos(); //中心位置
-	m_nCntTime++;//この状態になってからの時間をカウントする
+	// === 処理に必要な情報を宣言、初期化 ===
 
-	//パーティクルを召喚する
+	CObjectX::PosInfo& PosInfo = pEnemy->GetPosInfo();     // 位置情報を取得
+	const D3DXVECTOR3& Pos = PosInfo.GetPos();             // 位置
+	const D3DXVECTOR3& SenterPos = PosInfo.GetSenterPos(); // 中心位置
+	m_nCntTime++; // この状態になってからの時間をカウントする
+
+	// 溜め演出のパーティクルを召喚する
 	CParticle::SummonChargeParticle(CParticle::TYPE::TYPE00_NORMAL, 1, 60, 5.0f, 40.0f, 40.0f, 200.0f, 100, 10, true, SenterPos, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), true);
 
+	// この処理が呼ばれて100f経過したら目的の高さにジャンプさせ、元のストラテジーに戻します
 	if (m_nCntTime == 100)
-	{//100fたったら
-		CObjectX::MoveInfo& MoveInfo = pEnemy->GetMoveInfo();//移動情報を取得する
+	{
+		CObjectX::MoveInfo& MoveInfo = pEnemy->GetMoveInfo(); // 移動情報を取得する
+		const D3DXVECTOR3& Move = MoveInfo.GetMove(); // 移動量
 
-		const D3DXVECTOR3& Move = MoveInfo.GetMove();//移動量
+		// 移動量を設定
+		MoveInfo.SetMove(D3DXVECTOR3(Move.x,
+			Calculation::Move::GetInitialVelocityHeight(m_fGoalHeight,pEnemy->GetMoveInfo().GetGravity()) + 5.0f,
+			Move.z));
 
-		//移動量を設定
-		MoveInfo.SetMove(D3DXVECTOR3(Move.x,CCalculation::GetInitialVelocityHeight(m_fGoalHeight,pEnemy->GetMoveInfo().GetGravity()) + 5.0f,Move.z));
-		pEnemy->ResetJumpCoolTime();                      //次にジャンプを発動するまでのクールタイムをリセットする
-		pEnemy->ChengeMove(DBG_NEW CEnemyMove_Battle()); //攻撃移動処理に戻す
+		pEnemy->ResetJumpCoolTime(); // 次にジャンプを発動するまでのクールタイムをリセットする
+		pEnemy->ChengeMove(DBG_NEW CEnemyMove_Battle()); // 攻撃移動処理に戻す
 	}
 }
 //============================================================================================================================================

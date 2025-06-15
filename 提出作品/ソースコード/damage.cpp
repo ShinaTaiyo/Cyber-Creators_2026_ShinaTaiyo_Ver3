@@ -130,30 +130,41 @@ void CDamage::SetDeath()
 //========================================================================
 CDamage* CDamage::Create(int nDamage, D3DXVECTOR3 Pos, D3DXCOLOR col, float fWidth, float fHeight)
 {
-	CDamage* pDamage = DBG_NEW CDamage;                           //ダメージオブジェクトを生成 
-	bool bSuccess = pDamage->CObject::GetCreateSuccess();         //生成が成功したかどうかを取得する
-	float fHalfWidth = fWidth * 0.5f;                             //指定された横幅の半分
-	pDamage->m_fWidth = fHalfWidth;                               //上記の値を横幅に格納
-	pDamage->m_fHeight = fHeight;                                 //高さはそのまま
-	if (pDamage != nullptr)
-	{//ダメージオブジェクトが存在していたら
+	// === 処理に使用する情報を宣言、初期化 ===
+
+	CDamage* pDamage = DBG_NEW CDamage(); // インスタンス生成
+	float fHalfWidth = fWidth * 0.5f; // 指定された横幅の半分
+	pDamage->m_fWidth = fHalfWidth; // 上記の値を横幅に格納
+	pDamage->m_fHeight = fHeight;   // 高さはそのまま
+
+	// === 生成処理開始 ===
+
+	// ダメージへのポインタが存在していたら生成処理を開始
+	if (pDamage)
+	{
+		// ダメージの最大値は999とする
 		if (nDamage > 999)
-		{//ダメージの最大値は999とする
+		{
 			nDamage = 999;
 		}
-		pDamage->Init();                                                                                //初期化処理
-		pDamage->SetUseDeath(true);                                                                     //死亡フラグを発動するかどうかを設定する
-		pDamage->m_nDamage = nDamage;                                                                   //ダメージ量
-		pDamage->m_nDigit = CCalculation::CalculationDigit(nDamage);                                    //桁数を計算する
-		pDamage->m_Pos = Pos;                                                                           //位置
-		pDamage->CObject::SetType(CObject::TYPE::NONE);                                                 //オブジェクトの種類を決める
-		for (int nCnt = 0; nCnt < m_nMAX_DAMAGEDIGIT; nCnt++)
-		{//ダメージの最大桁数分
+
+		pDamage->Init(); // 初期化処理
+		pDamage->SetUseDeath(true);   // 死亡フラグを使用する
+		pDamage->m_nDamage = nDamage; // ダメージ値
+		pDamage->m_nDigit = Calculation::Value::CalcDigit(nDamage); // 桁数を計算する
+		pDamage->m_Pos = Pos; // 位置
+		pDamage->CObject::SetType(CObject::TYPE::NONE);  // オブジェクト種類設定
+
+		// ダメージ数値設定
+		for (int nCnt = 0; nCnt < m_nMAX_DAMAGEDIGIT; nCnt++) 
+		{
+			// 数字3Dを生成しダメージ表記として使用                                                
 			pDamage->m_pNumber3D[nCnt] = CNumber3D::Create(fWidth, fHeight, D3DXVECTOR3(Pos.x + sinf(CManager::GetCamera()->GetRot().y) * (fHalfWidth) * nCnt, Pos.y + fHeight,
 				Pos.z + cosf(CManager::GetCamera()->GetRot().y) * (fHalfWidth) * nCnt),D3DXVECTOR3(0.0f,12.0f,0.0f), col);
-			pDamage->m_pNumber3D[nCnt]->SetUseGravity(-0.5f);//ダメージ表記に重力をつける
+			pDamage->m_pNumber3D[nCnt]->SetUseGravity(-0.5f); // ダメージ表記に重力をつける
 		}
-		pDamage->DamageDispProcess();//格納したダメージをもとに数字を並べる処理
+
+		pDamage->DamageDispProcess(); // 格納したダメージをもとに数字を並べる処理
 	}
 	return pDamage;
 

@@ -49,21 +49,25 @@ public:
 	static void SummonParticle(TYPE type,int nNum,int nLife, float fWidth, float fHeight,int nRandSpeed,int nDivision,bool bRandumCol,D3DXVECTOR3 Pos,D3DXCOLOR col, bool bBreanding);//ランダム方向に放出するパーティクルを出す
 	static void SummonChargeParticle(TYPE type, int nNum, int nLife, float fInitialSpeed,float fWidth, float fHeight,float fSummonLength, int nRandSpeed, int nDivision, bool bRandumCol,D3DXVECTOR3 SupportPos, D3DXCOLOR col, bool bBreanding);//チャージするような挙動のパーティクルを出す
 private:
-	bool m_bBranding;                                  //アルファブレンディングをするかどうか
-	TYPE m_Type;                                       //種類
-	float m_fReductionWidth;                           //横幅縮小スピード
-	float m_fReductionHeight;                          //高さ縮小スピード
-							                           
-	bool m_bAddSpeed;                                  //加速させるかどうか
-	float m_fAddSpeed;                                 //加速度
-							                           
-	bool m_bUseChargePartilce;                         //チャージする挙動をするかどうか
-	bool m_bGravity;                                   //重力をかけるかどうか
-	float m_fGravity;                                  //重力
+	// === 静的メンバ変数 ===
 
-	D3DXVECTOR3 m_SupportPos;                          //支点となる位置
+	static const char* m_apPARTICLE_FILENAME[TYPE_MAX]; // パーティクルのファイル名
 
-	static const char* m_apPARTICLE_FILENAME[TYPE_MAX];//パーティクルのファイル名
+	// === メンバ変数 ===
+
+	TYPE m_Type; //種類							                           
+	bool 
+		m_bBranding, // アルファブレンディングをするかどうか
+	    m_bAddSpeed, // 加速させるかどうか
+	    m_bGravity,  // 重力をかけるかどうか
+	    m_bUseChargePartilce; // チャージする挙動をするかどうか
+	float
+		m_fAddSpeed, // 加速度
+	    m_fGravity;  // 重力
+	D3DXVECTOR3 
+		m_SupportPos,  // 支点
+		m_InitialSize; // 初期サイズ
+
 };
 //====================================================================================================================================
 #endif

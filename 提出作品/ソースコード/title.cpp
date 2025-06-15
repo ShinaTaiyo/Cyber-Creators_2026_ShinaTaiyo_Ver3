@@ -61,8 +61,8 @@ HRESULT CTitle::Init()
 {
 	CScene::Init();//シーン初期化処理
 
-	//タイトル背景を生成
-	CManager::GetCamera()->SetRot(D3DXVECTOR3(0.0f, 0.0f, 0.0f));//カメラの向きを設定
+	CCamera * pCamera = CManager::GetCamera(); // カメラへのポインタ
+	pCamera->SetRot(D3DXVECTOR3(0.0f, 0.0f, 0.0f)); // 向きを前に設定
 
 	CUi* pUi = CUi::Create(CUi::UITYPE::PRESSENTER_000, false, CObject2D::POLYGONTYPE::SENTERROLLING, 200.0f, 200.0f, 100, false, D3DXVECTOR3(SCREEN_WIDTH - 200.0f,
 		SCREEN_HEIGHT - 100.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));//エンターを押したらスタートというUIを生成
@@ -124,6 +124,7 @@ void CTitle::Update()
 		m_pBg3D->GetPosInfo().SetPos(m_pPlayer->GetPosInfo().GetPos());//3D背景の中心をプレイヤーに設定
 
 		PlayerProcess();//プレイヤーの処理
+		m_pPlayer->GetPosInfo().SetPos(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
 	}
 }
 //=========================================================================================================================
@@ -142,26 +143,6 @@ void CTitle::Draw()
 //=============================================================
 void CTitle::PlayerProcess()
 {
-	if (m_bMoveSwitch == false)
-	{//フラグをオンオフしてプレイヤーを上下に動かす
-		m_pPlayer->GetMoveInfo().SetMove(D3DXVECTOR3(m_pPlayer->GetMoveInfo().GetMove().x,m_pPlayer->GetMoveInfo().GetMove().y + 0.1f,m_pPlayer->GetMoveInfo().GetMove().z));
-
-		if (m_pPlayer->GetMoveInfo().GetMove().y >= 5.0f)
-		{
-			m_bMoveSwitch = m_bMoveSwitch ? false : true;
-		}
-
-	}
-	else
-	{
-		m_pPlayer->GetMoveInfo().SetMove(D3DXVECTOR3(m_pPlayer->GetMoveInfo().GetMove().x, m_pPlayer->GetMoveInfo().GetMove().y - 0.1f, m_pPlayer->GetMoveInfo().GetMove().z));
-
-		if (m_pPlayer->GetMoveInfo().GetMove().y <= -5.0f)
-		{
-			m_bMoveSwitch = m_bMoveSwitch ? false : true;
-		}
-	}
-
 	//指定した位置からランダムに演出用の攻撃を召喚
 	float fPosX = static_cast<float>(rand() % 1500 - 750);
 	float fPosY = static_cast<float>(rand() % 1500 - 750);

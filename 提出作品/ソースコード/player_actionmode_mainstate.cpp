@@ -17,6 +17,7 @@
 #include "tutorial.h"
 #include "game.h"
 #include "input.h"
+#include "wire_head.h"
 #include "sound.h"
 #include "calculation.h"
 //=========================================================================================================================================================
@@ -195,11 +196,16 @@ CPlayerActionMode_WireShot::CPlayerActionMode_WireShot(CPlayer* pPlayer)
 	float fPitch = atan2f(LockOnRay.y, sqrtf(powf(LockOnRay.x, 2) + powf(LockOnRay.z, 2)));//XZ平面の長さを軸にして求める
 	WireHeadRotInfo.SetRot(D3DXVECTOR3(-fPitch, fYaw, 0.0f));                                                            // 向きを設定                                                                                 
 
-	WireHeadMoveInfo.SetMove(CCalculation::Calculation3DVec(WireHeadPos, LockOnRayCollisionPos, s_fWIREHEAD_SHOTSPEED)); // ワイヤーの頭をロックオンのレイの衝突位置に発射する
-	pWireHead->ResetCoolTime();                                                                                          // ワイヤーの頭が当たるまでのクールタイムをリセット
-	WireHeadMoveInfo.SetUseInteria(false, CObjectX::GetNormalInertia());                                                 // ワイヤーの頭の慣性をオフにする
-	WireHeadMoveInfo.SetUseGravity(false, 1.0f);                                                                         // ワイヤーの頭の重力をオフにする
-	WireHeadDrawInfo.SetUseDraw(true);                                                                                   // ワイヤーの頭の描画を復活させる
+	// ワイヤーの頭をロックオンのレイの衝突位置に発射する
+	WireHeadMoveInfo.SetMove(
+		Calculation::Move::DirrectionToTarget(
+			WireHeadPos, LockOnRayCollisionPos, s_fWIREHEAD_SHOTSPEED)
+	); 
+
+	pWireHead->ResetCoolTime(); // ワイヤーの頭が当たるまでのクールタイムをリセット
+	WireHeadMoveInfo.SetUseInteria(false, CObjectX::GetNormalInertia()); // ワイヤーの頭の慣性をオフにする
+	WireHeadMoveInfo.SetUseGravity(false, 1.0f); // ワイヤーの頭の重力をオフにする
+	WireHeadDrawInfo.SetUseDraw(true);           // ワイヤーの頭の描画を復活させる
 
 	//ワイヤー
 	pWire->SetUseDraw(true);   // ワイヤーの描画を復活させる
@@ -225,37 +231,43 @@ CPlayerActionMode_WireShot::~CPlayerActionMode_WireShot()
 //===================================================================================================================
 void CPlayerActionMode_WireShot::Process(CPlayer* pPlayer)
 {
-	//=================
-	//変数宣言
-	//=================
-    CWire* pWire = pPlayer->GetWire();                              //ワイヤーを取得
-    CWireHead* pWireHead = pWire->GetWireHead();                    //ワイヤーの頭を取得
+	// === 処理に使用する情報を宣言、初期化 ===
+
+	CWire* pWire = pPlayer->GetWire();           // ワイヤーへのポインタ
+    CWireHead* pWireHead = pWire->GetWireHead(); // ワイヤーヘッドへのポインタ
 	
 	//プレイヤー
-	CObjectX::MoveInfo& PlayerMoveInfo = pPlayer->GetMoveInfo();    //プレイヤーの移動情報を取得
-	CObjectX::PosInfo& PlayerPosInfo = pPlayer->GetPosInfo();       //プレイヤーの位置情報を取得
-	const D3DXVECTOR3& PlayerPos = PlayerPosInfo.GetPos();          //プレイヤーの位置
+	CObjectX::MoveInfo& PlayerMoveInfo = pPlayer->GetMoveInfo();    // プレイヤーの移動情報を取得
+	CObjectX::PosInfo& PlayerPosInfo = pPlayer->GetPosInfo();       // プレイヤーの位置情報を取得
+	const D3DXVECTOR3& PlayerPos = PlayerPosInfo.GetPos();          // プレイヤーの位置
 
 	//ワイヤーの頭
-	CObjectX::PosInfo& WireHeadPosInfo = pWireHead->GetPosInfo();   //ワイヤーの頭の位置情報を取得
-	const D3DXVECTOR3& WireHeadPos = WireHeadPosInfo.GetPos();      //ワイヤーの頭の位置
-	CObjectX::MoveInfo& WireHeadMoveInfo = pWireHead->GetMoveInfo();//ワイヤーの頭の移動情報を取得
-    
-    FrightenedEnemy(pPlayer);                                       //この処理の途中で狙った敵は怯える
-    
-	PlayerMoveInfo.SetMove(D3DXVECTOR3(0.0f, 0.0f, 0.0f));          //ワイヤー発射中はプレイヤーの動きを止める
+	CObjectX::PosInfo& WireHeadPosInfo = pWireHead->GetPosInfo();    // ワイヤーの頭の位置情報を取得
+	const D3DXVECTOR3& WireHeadPos = WireHeadPosInfo.GetPos();       // ワイヤーの頭の位置
+	CObjectX::MoveInfo& WireHeadMoveInfo = pWireHead->GetMoveInfo(); // ワイヤーの頭の移動情報を取得
 
+	// === ワイヤー発射処理開始 ===
+    
+    FrightenedEnemy(pPlayer); // この処理の途中で狙った敵は怯える
+	PlayerMoveInfo.SetMove(D3DXVECTOR3(0.0f, 0.0f, 0.0f)); // ワイヤー発射中はプレイヤーの動きを止める
+
+	// ワイヤーヘッドがどれかのオブジェクトに当たったら
 	if (pWireHead->GetSuccessCollision())
-	{//ワイヤーがどれかのオブジェクトに当たったら
-		DecisionCameraRot(pPlayer);                                 //カメラの向きを決める
-		WireHeadMoveInfo.SetMove(D3DXVECTOR3(0.0f, 0.0f, 0.0f));    //ワイヤーヘッドの移動を止める
-		//メインステートを「ダイブ移動」	に変更
-		pPlayer->ChengeActionMode(DBG_NEW CPlayerActionMode_DiveMove(CCalculation::Calculation3DVec(PlayerPos,WireHeadPos,s_fWIREHEAD_SHOTSPEED * 0.5f),pPlayer));
-		pPlayer->SetSuccessCollision(false);                        //判定状態を確定解除
+	{
+		DecisionCameraRot(pPlayer); // カメラの向きを決める
+		WireHeadMoveInfo.SetMove(D3DXVECTOR3(0.0f, 0.0f, 0.0f)); // ワイヤーヘッドの移動を止める
+
+		// メインステートを「ダイブ移動」に変更
+		pPlayer->ChengeActionMode(DBG_NEW CPlayerActionMode_DiveMove(
+			Calculation::Move::DirrectionToTarget(
+				PlayerPos,WireHeadPos,s_fWIREHEAD_SHOTSPEED * 0.5f
+			),
+			pPlayer));
+
+		pPlayer->SetSuccessCollision(false); // 判定状態を確定解除
 	}
 
 }
-//=========================================================================================================================================================
 
 //===================================================================================================================
 //敵を怯えさせる処理
@@ -349,7 +361,7 @@ CPlayerActionMode_DiveMove::~CPlayerActionMode_DiveMove()
 //===================================================================================================================
 void CPlayerActionMode_DiveMove::Process(CPlayer* pPlayer)
 {
-	// === 変数 ===
+	// === 処理に使用する情報を宣言、初期化 ===
 
 	bool bInput = false;//指定のボタンを押しているかどうか
 
@@ -369,7 +381,7 @@ void CPlayerActionMode_DiveMove::Process(CPlayer* pPlayer)
 	CInputJoypad* pInputJoypad = CManager::GetInputJoypad(); // ジョイパッド入力情報へのポインタ
 	CInputMouse* pInputMouse = CManager::GetInputMouse();    // マウス入力情報へのポインタ
 
-	// === 処理 ===
+	// === ダイブ移動処理を開始 ===
 
 	// 指定されたボタンを押したらtrueにする
 	if (pInputJoypad->GetRT_Press() || pInputMouse->GetMouseLeftClickPress())
@@ -378,7 +390,7 @@ void CPlayerActionMode_DiveMove::Process(CPlayer* pPlayer)
 	}
 
 	// ダイブ時に判定したら移動モードと攻撃モードを通常に戻す
-	if (CCalculation::CalculationLength(PlayerPos,WireHeadPos) < s_fCOLLISIONSTARTLENGTH)
+	if (Calculation::Length::ToGoalPos(PlayerPos,WireHeadPos) < s_fCOLLISIONSTARTLENGTH)
 	{
 		// 引っ付き（敵以外なら引っ付く）
 		if (bInput == true && pWireHead->GetCollisionObjType() != CObject::TYPE::ENEMY)

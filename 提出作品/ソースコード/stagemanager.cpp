@@ -226,7 +226,7 @@ void CStageManager::LoadMapTxt(int nMapNum)
 		}
 		else if (Reading_Buff == "SETBLOCK")
 		{//ブロック
-			pObj = CBlock::Create(CBlock::BLOCKTYPE::NORMAL, 1, D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), false);//ブロックを生成
+			pObj = CBlock::Create(CBlock::TYPE::NORMAL, 1, D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), false);//ブロックを生成
 		}
 		else if (Reading_Buff == "SETBGMODEL")
 		{//背景モデル
@@ -450,7 +450,7 @@ void CStageManager::ResetScale()
 CStageManagerState_NewObject::CStageManagerState_NewObject() : m_pManagerObject(nullptr)
 {
 	//ブロックを生成
-	m_pManagerObject = CBlock::Create(CBlock::BLOCKTYPE::NORMAL,10, D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1.0f, 1.0f, 1.0f),false);
+	m_pManagerObject = CBlock::Create(CBlock::TYPE::NORMAL,10, D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1.0f, 1.0f, 1.0f),false);
 	m_pManagerObject->SetUseDeath(false);//死亡フラグを使用しない
 }
 //=======================================================================================================================
@@ -609,7 +609,7 @@ void CStageManagerState_NewObject::ChengeObject(CStageManager* pStageManager)
 	switch (ManagerObjectType)
 	{
 	case  CObject::MANAGEROBJECTTYPE::BLOCK://ブロック
-		m_pManagerObject = CBlock::Create(CBlock::BLOCKTYPE::NORMAL, 10, pStageManager->GetSavePos(),pStageManager->GetSaveRot(),pStageManager->GetSaveScale(),false);
+		m_pManagerObject = CBlock::Create(CBlock::TYPE::NORMAL, 10, pStageManager->GetSavePos(),pStageManager->GetSaveRot(),pStageManager->GetSaveScale(),false);
 		break;
 	case CObject::MANAGEROBJECTTYPE::BGMODEL://背景モデル
 		m_pManagerObject = CBgModel::Create(CBgModel::TYPE::BILL_00, pStageManager->GetSavePos(), pStageManager->GetSaveRot(), pStageManager->GetSaveScale(),false);
@@ -703,7 +703,16 @@ void CStageManagerState_PlacedObject::ChooseObject(CStageManager* pStageManager)
 
 	(*it)->ManagerChooseControlInfo();//オブジェクトクラスに情報を編集するための関数が各派生クラスにoverrideされているので編集することができる
 
-	DeleteObject(it, StgObjList);     //現在選択しているオブジェクトを破棄する
+	CObjectX* pObjX = dynamic_cast<CObjectX*>((*it)); // 選択オブジェクトのイテレータをオブジェクトXにダウンキャスト
+
+	// オブジェクトXへのポインタが存在していたらカメラの位置を選択オブジェクトの位置に固定
+	if (pObjX)
+	{
+		CCamera* pCamera = CManager::GetCamera();      // カメラへのポインタを取得
+		pCamera->SetPos(pObjX->GetPosInfo().GetPos()); // 位置を設定
+	}
+
+	DeleteObject(it, StgObjList);// 現在選択しているオブジェクトを破棄する
 }
 //=======================================================================================================================
 

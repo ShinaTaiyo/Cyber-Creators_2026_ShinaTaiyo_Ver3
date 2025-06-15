@@ -14,6 +14,7 @@
 #include "input.h"
 #include "ui.h"
 #include "fade.h"
+#include "camera.h"
 #include "game.h"
 #include "player.h"
 //=========================================================================================================================
@@ -44,6 +45,10 @@ HRESULT CResult::Init()
 	CScene::Init();             //シーン初期化処理
 	CBg::Create(CBg::TYPE::RESULT);//リザルト背景を生成	
 	CUi* pUi = nullptr;         //UIへのポインタ
+
+	CCamera* pCamera = CManager::GetCamera(); // カメラへのポインタ
+	pCamera->SetRot(D3DXVECTOR3(0.0f, 0.0f, 0.0f)); // 向きを前に設定
+
 	if (CGame::GetGameClear() == true)
 	{//ゲームをクリアしていたら
 		//「ゲームクリア」のUIを生成

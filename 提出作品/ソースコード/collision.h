@@ -33,10 +33,6 @@ public:
 	//点がAABBと当たったかどうかを判定
 	static bool CollisionSquarePoint(const D3DXVECTOR3 & Point,CObjectX* pObjX);
 
-	//円の当たり判定
-	static bool CollisionBall(D3DXVECTOR3 MySenterPos, D3DXVECTOR3 MySize,
-		D3DXVECTOR3 ComparisonSenterPos, D3DXVECTOR3 ComparisonSize);
-
 	//斜めの当たり判定XY
 	static bool RectAngleCollisionXY(D3DXVECTOR3 MyPos, D3DXVECTOR3 MyVtxMax, D3DXVECTOR3 MyVtxMin, D3DXVECTOR3 Rot,
 		D3DXVECTOR3 ComparisonPos, D3DXVECTOR3 ComparisonVtxMax, D3DXVECTOR3 ComparisonVtxMin);
@@ -44,11 +40,16 @@ public:
 	//斜めの当たり判定XZ
 	static bool RectAngleCollisionXZ(CObjectX* pMyObj, CObjectX* pComObj);
 
-	//XZ方向のOBBの当たり判定
-	static bool RectOBB_XZ(CObjectX* pMyObj, CObjectX* pComObj);
-
 	//点がAABBの中に入っているかどうか
-	static bool IsPointInsideAABB(const D3DXVECTOR3 & Point,CObjectX * pComObjX);
+	static bool IsPointInsideAABB(
+		const D3DXVECTOR3 & SelfPos,
+		const D3DXVECTOR3 & OtherPos,
+		const D3DXVECTOR3 & OtherVtxMax,
+		const D3DXVECTOR3 & OtherVtxMin
+	);
+
+	// OBB同士の衝突判定
+	static bool OBBToOBB(CObjectX* pSelf, CObjectX* pOther);
 
 	//==============================================
 	//正方形の押し出し判定

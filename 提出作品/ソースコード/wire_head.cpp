@@ -109,7 +109,7 @@ CWireHead* CWireHead::Create(D3DXVECTOR3 Pos, D3DXVECTOR3 Rot, D3DXVECTOR3 Move,
 	pWireHead->GetLifeInfo().SetLife(nLife);	               //体力の設定
 	pWireHead->GetLifeInfo().SetMaxLife(nLife);	               //最大体力の設定
 	pWireHead->GetLifeInfo().SetAutoSubLife(true);             //体力を自動的に減らす
-	
+	pWireHead->SetType(CObject::TYPE::WIREHEAD); // タイプを「ワイヤーヘッド」に設定
 
 	int nIdx = CManager::GetObjectXInfo()->Regist("data\\MODEL\\Wire_Head\\Wire_Head_001.x");//モデル情報を登録
 

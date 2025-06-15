@@ -1,94 +1,93 @@
-//====================================================
+//===================================================================================================================
 //
-//７月１０日：C++で基盤づくり[block.h]
-//Author:ShinaTaiyo
+// ２０２５年６月３日：コードを綺麗にする[block.h]
+// Author:ShinaTaiyo
 //
-//====================================================
+//===================================================================================================================
 
+//*******************************************************************************************************************
+// ２重インクルード防止
+//*******************************************************************************************************************
 #ifndef _BLOCK_H_  
 #define _BLOCK_H_
 
-//======================
-//インクルード
-//======================
+//*******************************************************************************************************************
+// インクルード
+//*******************************************************************************************************************
 #include "main.h"
 #include "objectX.h"
-//==========================================
 
-//===================================
-//マップのテキストファイルのマクロ
-//===================================
-#define MAP00_SENTRAL_TXT "data\\TEXTFILE\\Map\\Sentral.txt"
-
-//==========================================
-
-//==========================================
-//ブロッククラス
-//==========================================
+//*******************************************************************************************************************
+// ブロッククラス
+//*******************************************************************************************************************
 class CBlock : public CObjectX
 {
 public:
-	//===========================
-	//ブロックの種類
-	//===========================
-    enum class BLOCKTYPE
+	// === 列挙型 ===
+
+	// 種類
+	enum class TYPE
 	{
-		NORMAL = 0,    //普通ブロック
-		WATER,         //水ブロック
-		RENGA,         //レンガブロック
-		BLACK,         //黒ブロック
-		MAX
+		NORMAL = 0, // 普通ブロック
+		WATER,      // 水ブロック
+		RENGA,      // レンガブロック
+		BLACK,      // 黒ブロック
+		MAX         // 最大
 	};
-	//======================================================================
 
-	//===========================
-	//マップの種類
-	//===========================
-	typedef enum
-	{
-		MAP00_SENTRAL = 0,
-		MAP_MAX
-	}MAPTYPE;
-	//======================================================================
+	// === 特殊関数 ===
 
-	CBlock(int nPri = 0, bool bUseintPri = false, CObject::TYPE type = CObject::TYPE::BLOCK, CObject::OBJECTTYPE ObjType = CObject::OBJECTTYPE::OBJECTTYPE_X);                 //コンストラクタ
-	~CBlock() override;       //デストラクタ
-	HRESULT Init() override;  //初期化処理
-	void Uninit() override;   //終了処理
-	void Update() override;   //更新処理
-	void Draw() override;     //描画処理
-	void SetDeath() override; //死亡フラグを設定
-	static CBlock * Create(BLOCKTYPE type, int nLife,D3DXVECTOR3 pos,D3DXVECTOR3 rot,D3DXVECTOR3 scale,bool bSwapVtxXZ);//ブロックを生成
-	void SetBlockType(BLOCKTYPE Type);                                                                                  //ブロックのタイプを設定する
-	static int GetNumFile() { return m_nNumFile; }                                                                      //ファイル数を取得する
-	BLOCKTYPE GetType();//ブロックの種類を取得する
-	BLOCKTYPE GetBlockType() { return m_type; }                                                                         //ブロックのタイプを取得する
-	bool GetbCollision() { return m_bCollision; }                                                                       //判定可能かどうかを取得する     
+	// コンストラクタ
+	CBlock(
+		int nPri = 0, // 自分で決めるプライオリティ
+		bool bUseintPri = false, // 自分でプライオリティを決めるかどうか
+		CObject::TYPE type = CObject::TYPE::BLOCK, // タイプ
+		CObject::OBJECTTYPE ObjType = CObject::OBJECTTYPE::OBJECTTYPE_X // オブジェクトタイプ
+	);
+	~CBlock() override;       // デストラクタ
 
-    //==========================================================
-	//エディタ関係
-	//==========================================================
-	//関数
-	void SaveInfoTxt(fstream& WritingFile) override;                                                                    //テキストファイルに情報を保存するための関数
-	void LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff, CObject* pObj) override;        //テキストファイルから情報を読み込むための関数
-	CObject* ManagerChengeObject(bool bAim) override;                                                                   //ステージマネージャーに変更したオブジェクトを渡す
-	CObject* ManagerSaveObject() override;                                                                              //ステージマネージャーに今のオブジェクトを保存する
-	//=================================================================================================================
+	// === ライフサイクルメンバ関数 ===
+
+	HRESULT Init() override;  // 初期化処理
+	void Uninit() override;   // 終了処理
+	void Update() override;   // 更新処理
+	void Draw() override;     // 描画処理
+	void SetDeath() override; // 死亡フラグを設定
+
+	// === メンバ関数 ===
+
+	void SetType(TYPE Type); // ブロックのタイプを設定する
+	const TYPE & GetType();  // ブロックの種類を取得する
+	const bool& GetCollision(); // 判定可能かどうかを取得する     
+	void SaveInfoTxt(fstream& WritingFile) override; // テキストファイルに情報を保存するための関数
+
+	// テキストファイルから情報を読み込むための関数
+	void LoadInfoTxt(
+		fstream& LoadingFile, // ファイル読み込み用
+		list<CObject*>& listSaveManager, // ステージマネージャーオブジェクトリスト
+		string& Buff, // 文字列
+		CObject* pObj // 編集オブジェクトへのポインタ
+	) override;
+
+	CObject* ManagerChengeObject(bool bAim) override; // ステージマネージャーに変更したオブジェクトを渡す
+	CObject* ManagerSaveObject() override; //ステージマネージャーに今のオブジェクトを保存する
+
+	// === 静的メンバ関数 ===
+
+	// 生成
+	static CBlock * Create(
+		TYPE type, int nLife,D3DXVECTOR3 pos,D3DXVECTOR3 rot,D3DXVECTOR3 scale,
+		bool bSwapVtxXZ // 頂点XZを入れ替えるかどうか
+	);
 private:
-	//======================================
-	//静的メンバ
-	//======================================
-	static const char* m_BLOCK_FILENAME[static_cast<int>(BLOCKTYPE::MAX)];                                              //ブロックのファイルネーム
-	static const float m_fBLOCKCORRECTIONCOLLISION;                                                                     //判定に余裕を持たせる量
-	static int m_nNumFile;                                                                                              //ファイル数を格納する
-	//======================================================================================================================
+	// === 静的メンバ変数 ===
 
-	//======================================
-	//基本系
-	//======================================
-	BLOCKTYPE m_type;                                                              //ブロックの種類
-	bool m_bCollision;                                                             //当たり判定をするかどうか
-	//======================================================================================================================
+	static const string s_BlockModelFileName[static_cast<int>(TYPE::MAX)]; // ブロックのモデルファイル名
+	static const float m_fBLOCKCORRECTIONCOLLISION; // 判定に余裕を持たせる量
+
+	// === メンバ変数 ===
+
+	TYPE m_type;       // ブロックの種類
 };
 
 #endif

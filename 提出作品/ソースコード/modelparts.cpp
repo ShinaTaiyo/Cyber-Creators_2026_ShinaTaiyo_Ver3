@@ -106,6 +106,7 @@ CModelParts* CModelParts::Create(string String, CObject::TYPE Type)
 	int nIdx = 0;                                                                     //モデルのインデックス
 	pModelParts->Init();                                                              //初期化処理
 	pModelParts->GetSizeInfo().SetScale(D3DXVECTOR3(1.0f,1.0f,1.0f));                 //拡大率を設定する
+	pModelParts->SetType(CObject::TYPE::NONE); // タイプを「なし」にする
 	pModelParts->SetUseDeath(false);                                                  //死亡フラグを発動するかどうかを設定する
 	nIdx = CManager::GetObjectXInfo()->Regist(String);                                //モデル情報を登録し、モデル番号を取得
 

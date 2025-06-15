@@ -270,10 +270,10 @@ void CCharacter::MotionProcess()
             }
         }
 
-        //ジンバルロックを回避
-        CCalculation::CorrectionRot(DifferenceRot.x);
-        CCalculation::CorrectionRot(DifferenceRot.y);
-        CCalculation::CorrectionRot(DifferenceRot.z);
+        // 向きの差分を円周上に包み込む
+        Calculation::Rot::WrapAngle(DifferenceRot.x);
+        Calculation::Rot::WrapAngle(DifferenceRot.y);
+        Calculation::Rot::WrapAngle(DifferenceRot.z);
 
         //上記で求めたデータを使用し、モーションした位置と向きを求める
         D3DXVECTOR3 DecisionPos = { 0.0f,0.0f,0.0f };

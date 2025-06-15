@@ -104,8 +104,8 @@ CUi3D* CUi3D::Create(UI3DTYPE type, D3DXVECTOR3 Pos, D3DXVECTOR3 Move, int nLife
 	pUi3D->SetPos(Pos);						                                           //位置
 	pUi3D->SetSupportPos(Pos);				                                           //召喚位置
 											                                           
-	pUi3D->SetSize(fWidth,fHeight);			                                           //サイズを設定
-	pUi3D->SetFormarSize(fWidth, fHeight);	                                           //元のサイズを設定
+	pUi3D->SetSize(D3DXVECTOR3(fWidth, fHeight, 0.0f));			                                           //サイズを設定
+	pUi3D->SetFormarSize(D3DXVECTOR3(fWidth, fHeight, 0.0f));	                                           //元のサイズを設定
 
 	pUi3D->SetAnimInfo(1, 1, D3DXCOLOR(1.0f,1.0f,1.0f,1.0f), false);                   //アニメーション情報を設定
 

@@ -13,6 +13,7 @@
 #include "fade.h"
 #include "manager.h"
 #include "field.h"
+#include "camera.h"
 #include "input.h"
 #include "bg3d.h"
 //=========================================================================================================================
@@ -47,6 +48,9 @@ CEdit::~CEdit()
 HRESULT CEdit::Init()
 {
 	CScene::Init();//シーン初期化処理
+
+	CCamera* pCamera = CManager::GetCamera(); // カメラへのポインタ
+	pCamera->SetRot(D3DXVECTOR3(0.0f, 0.0f, 0.0f)); // 向きを前に設定
 
 	m_pStageManager = CStageManager::Create();//生成処理
 

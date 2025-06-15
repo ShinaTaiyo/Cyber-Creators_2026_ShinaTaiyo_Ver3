@@ -192,34 +192,37 @@ void CLockon::BackWallRayCollisionPosSearch()
 {
 	D3DXVECTOR3 Pos = GetPos();//位置
 
-	CCalculation::CalcScreenToWorld(&m_LockOnPos,GetPos().x,GetPos().y, 1.0f,SCREEN_WIDTH,SCREEN_HEIGHT,CManager::GetCamera()->GetMtxView(),
-		CManager::GetCamera()->GetMtxProjection()); //描画範囲の一番奥の位置
+	// 深度値で一番奥のワールド座標に変換
+	Calculation::Conversion::ScreenToWorld(&m_LockOnPos,GetPos().x,GetPos().y, 1.0f,SCREEN_WIDTH,SCREEN_HEIGHT,CManager::GetCamera()->GetMtxView(),
+		CManager::GetCamera()->GetMtxProjection());
 }
-//==============================================================================================================
 
 //===============================================================
 //レイを計算する
 //===============================================================
 void CLockon::CalcRay()
 {
+	// === 処理に使用する情報を宣言、初期化 ===
+
 	D3DXVECTOR3 FarPos = D3DXVECTOR3(0.0f,0.0f,0.0f); //奥
 	CCamera* pCamera = CManager::GetCamera();         //カメラへのポインタを取得
-	//============================================
-	//カメラ手前と奥のワールド座標を求める
-	//============================================
-	CCalculation::CalcScreenToWorld(&m_FrontPos,GetPos().x,GetPos().y, 0.0f, SCREEN_WIDTH, SCREEN_HEIGHT,
+
+	// === 深度値手前と奥のレイ計算処理開始 ===
+
+	// 深度値手前でのワールド座標を求める
+	Calculation::Conversion::ScreenToWorld(&m_FrontPos,GetPos().x,GetPos().y, 0.0f, SCREEN_WIDTH, SCREEN_HEIGHT,
 		CManager::GetCamera()->GetMtxView(), CManager::GetCamera()->GetMtxProjection());//手前
 
-	//デバッグ表示
+	// 深度値奥でのワールド座標を求める
+	Calculation::Conversion::ScreenToWorld(&FarPos,GetPos().x,GetPos().y, 1.0f, SCREEN_WIDTH, SCREEN_HEIGHT,
+		CManager::GetCamera()->GetMtxView(), CManager::GetCamera()->GetMtxProjection());//奥
+
+	m_NowRay = FarPos - m_FrontPos;          // 手前座標と奥座標のベクトルを求める
+	D3DXVec3Normalize(&m_NowRay, &m_NowRay); // ベクトルを正規化する
+
+	// デバッグ表示
 	CManager::GetDebugText()->PrintDebugText("カメラ手前座標：%f %f %f\n", m_FrontPos.x, m_FrontPos.y, m_FrontPos.z);
 	CManager::GetDebugText()->PrintDebugText("カメラ支点：%f %f %f\n", pCamera->GetPosV().x, pCamera->GetPosV().y, pCamera->GetPosV().z);
-
-	CCalculation::CalcScreenToWorld(&FarPos,GetPos().x,GetPos().y, 1.0f, SCREEN_WIDTH, SCREEN_HEIGHT,
-		CManager::GetCamera()->GetMtxView(), CManager::GetCamera()->GetMtxProjection());//奥
-	//============================================================================================================================
-
-	m_NowRay = FarPos - m_FrontPos;          //手前座標と奥座標のベクトルを求める
-	D3DXVec3Normalize(&m_NowRay, &m_NowRay); //ベクトルを正規化する
 }
 //==============================================================================================================
 
@@ -250,16 +253,15 @@ void CLockon::RayCollisionToObject()
 				bRayCollision = CCollision::RayIntersectsAABBCollisionPos(m_FrontPos, m_NowRay, pObjX->GetSizeInfo().GetVtxMin() + pObjX->GetPosInfo().GetPos(), pObjX->GetSizeInfo().GetVtxMax() + pObjX->GetPosInfo().GetPos(),
 					CollisionStartPos);
 
-				if (CCalculation::CalculationLength(m_FrontPos, CollisionStartPos) < CManager::GetCamera()->GetPosRToPosVLength())
-				{//当たった距離がカメラの注視点と視点の距離よりも近ければ
+				// レイが当たった距離がカメラの注視点と視点の距離よりも近ければ当たらなかったことにする
+				if (Calculation::Length::ToGoalPos(m_FrontPos, CollisionStartPos) < CManager::GetCamera()->GetPosRToPosVLength())
+				{
 					bRayCollision = false;//当たらなかったことにする
 				}
 
 				// レイが当たった
 				if (bRayCollision == true)
 				{
-					D3DXVECTOR3 ScreenPos = CCalculation::CalcWorldToScreenNoViewport(pObjX->GetPosInfo().GetSenterPos(), *CManager::GetCamera()->GetMtxView(), *CManager::GetCamera()->GetMtxProjection(),
-						float(SCREEN_WIDTH), float(SCREEN_HEIGHT));//対象のスクリーン座標を取得
 					VecCollisionSuccess.push_back(CollisionStartPos);//当たり判定が成功したオブジェクトの判定開始位置を保存する
 				}
 
@@ -273,13 +275,19 @@ void CLockon::RayCollisionToObject()
 
 	//レイの方向が一致したオブジェクトが存在したら、その中で一番距離が近いオブジェクトの中心点を求め、そこを目掛けた移動量を求める
 	if (VecCollisionSuccess.size() != 0)
-	{//狙っているオブジェクトの中心点に向かって撃つ
-		float fLength = 0.0f;//距離
+	{
+		// === 処理に使用する情報を宣言、初期化 ===
+
+		float fLength = 0.0f;   //距離
 		float fMinLength = 0.0f;//一番近い距離格納用
+
+		// === レイが当たったオブジェクトの中で一番近い位置を調べる処理開始 ===
+
 		for (auto it = VecCollisionSuccess.begin(); it != VecCollisionSuccess.end(); ++it)
 		{
-			fLength = CCalculation::CalculationLength(m_FrontPos, *it);//レイの判定が成功したオブジェクトの位置とプレイヤーの中心点の距離を測る
+			fLength = Calculation::Length::ToGoalPos(m_FrontPos, *it); // レイの判定が成功したオブジェクトの位置とプレイヤーの中心点の距離を測る
 
+			// 最初なので一番近い距離の初期値を設定
 			if (it == VecCollisionSuccess.begin())
 			{
 				fMinLength = fLength;
@@ -287,25 +295,20 @@ void CLockon::RayCollisionToObject()
 			}
 			else
 			{
+				// 一番近い距離より近かったら最も近い位置を更新する
 				if (fLength < fMinLength)
-				{//一番近い距離より近かったら
-					NearCollisionPos = *it;//一番近いオブジェクトを格納
+				{
+					NearCollisionPos = *it;
 				}
 			}
 		}
-		m_bRayCollision = true;//レイの当たり判定が成功
-		m_NearRayColObjPos = NearCollisionPos;//レイが当たった一番近いオブジェクトに向かって撃つ
+		m_bRayCollision = true; // レイの当たり判定が成功
+		m_NearRayColObjPos = NearCollisionPos; // レイが当たった一番近いオブジェクトの位置格納
 	}
 	else
 	{//狙っている方向の奥の壁に向かって撃つ
-		m_bRayCollision = false;//レイの当たり判定が失敗
-		m_NearRayColObjPos = m_LockOnPos;//レイが当たったオブジェクトがないので、奥の壁に向かって撃つ
+		m_bRayCollision = false; // レイの当たり判定が失敗
+		m_NearRayColObjPos = m_LockOnPos; // レイが当たったオブジェクトがないので、奥の壁に向かって撃つ
 	}
-	//====================================================================================================================================================================
-
-	//Vectorをクリア
-	VecCollisionSuccess.clear();         //確保した配列を空にする
-	VecCollisionSuccess.shrink_to_fit(); //現在のサイズに合わせてメモリ領域をコンパクトにする
 
 }
-//==============================================================================================================

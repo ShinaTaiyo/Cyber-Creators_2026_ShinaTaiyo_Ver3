@@ -81,6 +81,8 @@ public:
 	void ChengeLengthState(CCameraLengthState* pCameraLengthState);                       //カメラの距離の状態を変える
 																				          
 	const float& GetPosRToPosVLength() const { return m_fLength; }                        //中止点と視点の距離を取得する
+
+	CCameraState* GetCameraState() const; // カメラ状態取得
 																				          
 	//======================================									          
 	//静的メンバ敬														             
@@ -141,7 +143,8 @@ private:
 
 	int
 		m_nShakeFrame, // カメラを揺らすフレーム数
-		m_ModeTime;    // カメラモードの時間
+		m_ModeTime,    // カメラモードの時間
+		m_nNoControlFrame; // 操作不可能フレーム数
 
 	// === メンバ関数 ===
 
@@ -162,13 +165,37 @@ public:
 class CCameraState_Normal : public CCameraState
 {
 public:
-	CCameraState_Normal();          // コンストラクタ
-	~CCameraState_Normal();         // デストラクタ
+	// === 特殊関数 ===
+
+	CCameraState_Normal();  // コンストラクタ
+	~CCameraState_Normal(); // デストラクタ
+
+	// === ライフサイクルメンバ関数 ===
+
 	void Process(CCamera* pCamera); // 処理
+
+	// === メンバ関数 ===
+
+	// 操作不可能フレーム
+	const int& GetNoControlRotFrame() const; // 取得
+	void SetNoControlRotFrame(int nFrame);   // 設定
 private:
+	// === 静的メンバ変数 ===
+
 	static const float s_fNORMAL_AROUNDROTSPEED;  // カメラの回転速度
 	static constexpr float s_fMAX_STICKSENSITIVITY = 0.08f; // スティックの最大感度
 	static constexpr float s_fMAX_MOUSESENSITIVITY = 0.01f; // マウス最大感度
+
+	// === メンバ変数 ===
+
+	int m_nNoControlRotFrame; // カメラの向き操作不可能フレーム
+
+	// === メンバ関数 ===
+
+	void ControlPosR(CCamera* pCamera);   // 注視点を操作する
+	void ControlRot(CCamera * pCamera);   // 向きを操作する
+	void ControlPosV(CCamera* pCamera);   // 視点を操作する
+	void ControlLength(CCamera* pCamera); // 距離を操作する
 };
 
 //狙った向きを向かせる

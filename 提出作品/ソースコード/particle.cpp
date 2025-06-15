@@ -12,6 +12,7 @@
 #include "particle.h"
 #include "manager.h"
 #include "renderer.h"
+#include "debugtext.h"
 #include "texture.h"
 //================================================================
 
@@ -31,7 +32,7 @@ const char* CParticle::m_apPARTICLE_FILENAME[CParticle::TYPE_MAX] =
 //==========================================
 //コンストラクタ
 //==========================================
-CParticle::CParticle(int nPri, bool bUseintPri, CObject::TYPE type, CObject::OBJECTTYPE ObjType) : CBillboard(nPri,bUseintPri,type,ObjType), m_bBranding(true), m_Type(TYPE00_NORMAL), m_fReductionWidth(0.0f),m_fReductionHeight(0.0f), m_bAddSpeed(false),m_fAddSpeed(0.0f),
+CParticle::CParticle(int nPri, bool bUseintPri, CObject::TYPE type, CObject::OBJECTTYPE ObjType) : CBillboard(nPri,bUseintPri,type,ObjType), m_bBranding(true), m_Type(TYPE00_NORMAL), m_bAddSpeed(false),m_fAddSpeed(0.0f),
 m_bUseChargePartilce(false), m_bGravity(false), m_fGravity(0.0f),m_SupportPos(D3DXVECTOR3(0.0f,0.0f,0.0f))
 {
 
@@ -54,8 +55,6 @@ HRESULT CParticle::Init()
 {
 	CBillboard::Init();               //ビルボードの初期化
 								      
-	m_fReductionWidth = 0.0f;         //横幅の縮小スピード
-	m_fReductionHeight = 0.0f;        //高さの縮小スピード
 	m_bBranding = false;              //アルファブレンディングをするかどうか
 	m_Type = CParticle::TYPE00_NORMAL;//パーティクルの種類
 	m_fGravity = 0.0f;                //重力の強さ
@@ -81,14 +80,14 @@ void CParticle::Update()
 	//=======================
 	//変数宣言
 	//=======================
-	D3DXVECTOR3& Pos = CBillboard::GetPos();//位置
-	D3DXVECTOR3& Move = GetMove();          //移動量
-	float& fWidth = GetWidth();             //横幅
-	float& fHeight = GetHeight();           //高さ
+	const D3DXVECTOR3& Pos = GetPos(); // 位置
+	D3DXVECTOR3& Move = GetMove();     // 移動量
+	D3DXVECTOR3 Size = GetSize(); // サイズ
 	D3DXCOLOR col = GetColor();             //色合い
-	int& nLife = GetLife();                 //体力
-	int& nMaxLife = GetMaxLife();           //最大体力
-	float fAlpha = 0.0f;                    //色の透明度
+	const int & 
+		nLife = GetLife(),       // 体力
+	    nMaxLife = GetMaxLife(); // 最大体力
+	float fAlpha = 0.0f; // 色の透明度
 	//===========================================================================================
 
 	//=======================================
@@ -106,11 +105,10 @@ void CParticle::Update()
 		Move.y += m_fGravity * GetDeltaTimeScale(this);
 	}
 
-	fAlpha = (float)(nLife) / (float)(nMaxLife);       //色の透明度を体力の割合で決定
-	fWidth -= m_fReductionWidth;                       //横幅を減らす
-	fHeight -= m_fReductionHeight;                     //高さを減らす
-	SetColor(D3DXCOLOR(col.r, col.g, col.b, fAlpha));  //色合いの設定
-	//===========================================================================================
+	fAlpha = (float)(nLife) / (float)(nMaxLife); // 色の透明度を体力の割合で決定
+	Size = m_InitialSize * fAlpha;  // サイズ設定
+	SetSize(Size); // サイズを設定
+	SetColor(D3DXCOLOR(col.r, col.g, col.b, fAlpha)); //色合いの設定
 
 	//========================================
 	//ビルボードの更新処理
@@ -232,25 +230,25 @@ void CParticle::SetGravity(float fGravity)
 //==========================================
 CParticle* CParticle::Create(TYPE Type, int nLife, float fWidth, float fHeight, D3DXVECTOR3 pos, D3DXVECTOR3 move, D3DXCOLOR col, bool bBrending)
 {
-	CParticle* pParticle = DBG_NEW CParticle;                                    //エフェクトを生成
-	CTexture* pTexture = CManager::GetTexture();                                 //テクスチャ情報を取得
-	pParticle->Init();                                                           //初期化処理
-	pParticle->SetUseDeath(true);                                                //死亡フラグを発動するかどうかを設定する
-	pParticle->SetLife(nLife);                                                   //エフェクトの体力
-	pParticle->SetMaxLife(nLife);                                                //最大体力
-	pParticle->m_bBranding = bBrending;                                          //アルファブレンディングをするかどうか
-	pParticle->m_fReductionWidth = fWidth / (float)(nLife);                      //横幅縮小スピード
-	pParticle->m_fReductionHeight = fHeight / (float)(nLife);                    //高さ縮小スピード
-	pParticle->SetMove(move);                                                    //移動量の設定
-	pParticle->m_Type = Type;                                                    //種類
-	pParticle->SetTextureIndex(pTexture->Regist(m_apPARTICLE_FILENAME[Type]));   //テクスチャ割り当てとテクスチャ番号の設定
-	pParticle->bindTexture(pTexture->GetAddress(pParticle->GetTextureIndex()));  //テクスチャをセットする　
-	pParticle->SetPos(pos);                                                      //オブジェクト２Ｄの位置を設定
-	pParticle->SetSupportPos(pos);                                               //召喚位置を設定
-	pParticle->SetSize(fWidth, fHeight);                                         //サイズを設定する
-	pParticle->SetColor(col);                                                    //色合いを設定
-	pParticle->CObject::SetType(CObject::TYPE::PARTICLE);                        //オブジェクトの種類を決める
-	pParticle->SetAnimInfo(1, 1, col, false);                                    //アニメーション情報を設定
+	CParticle* pParticle = DBG_NEW CParticle; // エフェクトを生成
+	CTexture* pTexture = CManager::GetTexture(); // テクスチャ情報を取得
+	pParticle->Init(); // 初期化処理
+	pParticle->SetUseDeath(true); // 死亡フラグを発動するかどうかを設定する
+	pParticle->SetLife(nLife);    // エフェクトの体力
+	pParticle->SetMaxLife(nLife); // 最大体力
+	pParticle->m_bBranding = bBrending; // アルファブレンディングをするかどうか
+	pParticle->SetMove(move); // 移動量の設定
+	pParticle->m_Type = Type; // 種類
+	pParticle->SetTextureIndex(pTexture->Regist(m_apPARTICLE_FILENAME[Type]));  // テクスチャ割り当てとテクスチャ番号の設定
+	pParticle->bindTexture(pTexture->GetAddress(pParticle->GetTextureIndex())); // テクスチャをセットする　
+	pParticle->SetPos(pos); // オブジェクト２Ｄの位置を設定
+	pParticle->SetSupportPos(pos); // 召喚位置を設定
+	pParticle->SetSize(D3DXVECTOR3(fWidth, fHeight, 0.0f)); // サイズを設定する
+	pParticle->m_InitialSize.x = fWidth;   // 初期横幅
+	pParticle->m_InitialSize.y = fHeight;  // 初期高さ
+	pParticle->SetColor(col); // 色合いを設定
+	pParticle->CObject::SetType(CObject::TYPE::PARTICLE); // オブジェクトの種類を決める
+	pParticle->SetAnimInfo(1, 1, col, false); // アニメーション情報を設定
 	return pParticle;
 }
 //==========================================================================================================================================

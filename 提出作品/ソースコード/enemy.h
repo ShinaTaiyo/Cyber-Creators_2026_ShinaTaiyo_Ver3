@@ -61,10 +61,7 @@ public:
 	void Draw() override;                                                   //描画処理
 	void SetDeath() override;                                               //死亡フラグを設定
 	const ENEMYTYPE& GetEnemyType() const { return m_Type; }                //敵の種類を取得する
-	//==========================================================
-    //エディタ関係
-    //==========================================================
-    //関数
+
 	void SaveInfoTxt(fstream& WritingFile) override;                                              //テキストファイルに情報を保存するための関数
 	//static void LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff); //テキストファイルから情報を読み込むための関数   
 	void LoadInfoTxt(fstream& LoadingFile, list<CObject*>& listSaveManager, string& Buff, CObject* pObj) override;//テキストファイルから情報を読み込むための関数
@@ -72,21 +69,15 @@ public:
 	void ManagerChooseControlInfo() override;                                                     //ステージマネージャーから操作する
 	void SetPhaseNum(int nNum) { m_nPhaseNum = nNum; }                                            //フェーズ番号を設定する
 	const int& GetPhaseNum() const { return m_nPhaseNum; }                                        //フェーズ番号を取得する   
- 	//=================================================================================================================
 
-	//==========================================================
-	//行動
-	//==========================================================
 	void SetVecMoveAiInfo(vector<CAIModel*> vec);                    //移動AIの動的配列設定
 	vector<CAIModel*>& GetVecAiModelInfo() { return m_VecMoveAi; }   //移動AIの動的配列の取得
 	virtual void AIMoveProcess();                                    //AI移動処理
 	virtual void BattleMoveProcess();                                //バトル移動処理
 	void ChengeMove(CEnemyMove* pEnemyMove);                         //移動状態を変える
-	//=================================================================================================================
 
-	//==========================================================
-	//バトル関係
-	//==========================================================
+	void SetDamage(int nDamage, int nHitStopTime) override; // ダメージを設定
+
 	const int GetCntTime() const { return m_nCntTime; }               //時間を取得
 	void SetCntTime(int nTime) { m_nCntTime = nTime; }                //時間を設定（タイミングをずらすなどができる）
 	//感知射程														  

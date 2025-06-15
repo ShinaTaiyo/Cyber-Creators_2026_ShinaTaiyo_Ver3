@@ -1,92 +1,173 @@
-//====================================================
+//===================================================================================================================
 //
-//８月２９日：計算用のクラスを作る[calculation.h]
-//Author:ShinaTaiyo
+// ２０２５年６月１３日：計算用クラスがクラスである必要ないのでnamespaceに変更[calculation.h]
+// Author:ShinaTaiyo
 //
-//====================================================
+//===================================================================================================================
 
+//*******************************************************************************************************************
+// ２重インクルード防止
+//*******************************************************************************************************************
 #ifndef _CALCULATION_H_  
 #define _CALCULATION_H_
 
-//======================
-//インクルード
-//======================
+//*******************************************************************************************************************
+// インクルード
+//*******************************************************************************************************************
 #include "main.h"
-//==========================================
 
-//==========================================
-
-//==========================================
-//計算クラス
-//==========================================
-class CCalculation
+//*******************************************************************************************************************
+// 計算用名前空間
+//*******************************************************************************************************************
+namespace Calculation
 {
-public:
-    //==============================
-	//移動方向列挙型
-	//==============================
-	typedef enum
+
+	// === 名前空間 ===
+
+	// ベクトル名前空間
+	namespace Vec
 	{
-		MOVEAIM_XY = 0,//XY方向に動く
-		MOVEAIM_XZ,    //XZ方向に動く
-		MOVEAIM_ZY,    //ZY方向に動く
-		MOVEAIM_MAX
-	}MOVEAIM;
-	//=============================================================================================================
+		// ラジアンを方向ベクトルに変える
+		D3DXVECTOR3 RadTo(const D3DXVECTOR3& Rot);
 
-	//==============================
-	//プロトタイプ宣言
-	//==============================
-	CCalculation();                                                         //コンストラクタ
-	~CCalculation();                                                        //デストラクタ
-	static float CalculationLength(D3DXVECTOR3 Pos, D3DXVECTOR3 PurposePos);//2点の距離を計算する
-	static float CalculationXYaim(D3DXVECTOR3 Pos, D3DXVECTOR3 PurposePos); //２次元の目的方向への角度を求める
-	static float CalculationParabola(float fLength, float fGravity, float fSpeed,D3DXVECTOR3 Pos,D3DXVECTOR3 PurposePos);//距離、重力、速度をもとに２点の放物線移動を計算する
-	static float CalculationRandVecXY();                                    //ランダムな２次元ベクトルを返す
-	static float CalculationCollectionRot2D(float fMyRot, float fRotAim, float fDecayRot,bool bCameraOffSet); //２次元方向の向きの補正を行う
-	static bool CaluclationMove(bool bUseStick,D3DXVECTOR3 & Pos,D3DXVECTOR3& Move, float fSpeed, MOVEAIM MoveAim,float fAddMoveRot,float & fRot);//移動に使う処理の角度を求める
-	static D3DXVECTOR3 Calculation3DVec(D3DXVECTOR3 MyPos, D3DXVECTOR3 AimPos, float fSpeed);                 //目的への移動量を求める
-	static D3DXVECTOR2 VectorToYawPitch(const D3DXVECTOR3& MyPos, const D3DXVECTOR3& AimPos);                 //目的地へのYawとPitchへ変換する
-	static D3DXVECTOR3 Rand3DVec(int nMathSpeed,int nDivisionSpeed);                                          //ランダムな3次元空間の移動量を計算する
-	static D3DXCOLOR CalRaibowColor();
+		// ベクトルに対して点が左右どちらにいるかを求める
+		float DetermineSide(
+			const D3DXVECTOR3& origin,    // ベクトル原点 
+			const D3DXVECTOR3& direction, // ベクトル
+			const D3DXVECTOR3& up,        // 上方向ベクトル
+			const D3DXVECTOR3& point);    // 左右どちらにいるかの点
 
-	// スクリーン座標をワールド座標に変換
-	static D3DXVECTOR3* CalcScreenToWorld(D3DXVECTOR3* pout,
-		float Sx,  // スクリーンX座標
-		float Sy,  // スクリーンY座標
-		float fZ,  // 射影空間でのZ値（0～1）
-		int Screen_w,
-		int Screen_h,
-		D3DXMATRIX* View,
-		D3DXMATRIX* Prj
-	);
+	}
 
-	//ワールド座標をスクリーン座標に変換
-	static D3DXVECTOR3 CalcWorldToScreenNoViewport(D3DXVECTOR3 worldPos, D3DXMATRIX viewMatrix, D3DXMATRIX projectionMatrix, float screenWidth, float screenHeight);
+	// 移動量名前空間 
+	namespace Move
+	{
+		// === 列挙型 ===
 
-	//桁数を計算する
-	static int CalculationDigit(int nNum);
+        // 移動方向
+		enum class MOVEAIM
+		{
+			XY = 0, // XY方向
+			XZ,     // XZ方向
+			ZY,     // ZY方向
+			MAX     // 最大
+		};
 
-	//指定した桁数を取得する
-	static int getDigit(int number, int position);
+		// === 関数 ===
 
-	//ベクトルを計算する
-	static D3DXVECTOR3 CalcVec(D3DXVECTOR3 MyPos, D3DXVECTOR3 AimPos,bool bNormalize);
+		// 三次元ベクトル乱数値を求める
+		D3DXVECTOR3 Rand3D(
+			int nMaxSpeed,        // 最大速度 
+			int nDivisionMaxSpeed // 最大速度を割る値
+		);
 
-	//ラジアンを方向ベクトルに変える
-	static D3DXVECTOR3 RadToVec(const D3DXVECTOR3& Rot);//ラジアンを方向ベクトルに変える
+		// 目的地への移動量を求める
+		D3DXVECTOR3 DirrectionToTarget(
+			D3DXVECTOR3 SelfPos, // 自身の位置 
+			D3DXVECTOR3 AimPos,  // 目的地
+			float fSpeed         // 速度
+		);
 
-	//ベクトルに対して点が左右どちらにいるかを求める
-	static float DetermineSide3D(const D3DXVECTOR3& origin, const D3DXVECTOR3& direction, const D3DXVECTOR3& up, const D3DXVECTOR3& point);
+		// 入力による移動処理
+		bool MovementInput(
+			bool bUseStick,    // スティックを使用するかどうか
+			D3DXVECTOR3& Pos,  // 位置
+			D3DXVECTOR3& Move, // 移動量
+			float fSpeed,      // 速度
+			MOVEAIM MoveAim,   // 移動方向
+			float fAddAimRot,  // 目的の向きに加算する量（プレイヤーが逆側を向いているときなどに使える）
+			float& fRot        // 現在の角度を参照して変更する用
+		);   
 
-	//目的の高さへ移動するための初速度を求める
-	static float GetInitialVelocityHeight(float fHeight,float fGravity);
+		// XZ方向で目的地へホーミングさせる
+		D3DXVECTOR3 HormingToGoalPosXZ(
+			float& fNowRot, // 現在の向き
+			const D3DXVECTOR3& SelfPos,  // 自身の位置 
+			const D3DXVECTOR3& GoalPos,  // 目的地
+			float CorrectionRot, // 向き補正値
+			float fSpeed // 速度
+		);
 
-	//目的の位置への角度をホーミング式に求める
-	static D3DXVECTOR3 HormingVecRotXZ(float& fRotMove, const D3DXVECTOR3& MyPos, const D3DXVECTOR3& AimPos, float CorrectionRot,float fSpeed);
+		// 目的の高さへ移動するための初速度を求める
+		float GetInitialVelocityHeight(
+			float fHeight,  // 高さ
+			float fGravity  // 重力
+		);
+	}
 
-	//角度ラジアンの補正を行う
-	static float CorrectionRot(float fRot);
-	//=============================================================================================================
+	// 向き名前空間
+	namespace Rot
+	{
+		// 目的地へのベクトルをYawとPitchへ変換する
+		D3DXVECTOR2 VectorToYawPitch(
+			const D3DXVECTOR3& SelfPos,  // 自身の位置 
+			const D3DXVECTOR3& GoalPos   // 目的地
+		);
+
+		// 現在の向きを目的の向きに線形補間する処理
+		float Lerp(
+			float fSelfRot,   // 自身の向き
+			float fRotAim,    // 目的の向き
+			float fDecayRot   // 補正値
+		);
+
+		// 向きを円周上(-D3DX_PI～D3DX_PI)に包む
+		float WrapAngle(float fRot);
+
+		// 目的地までの放物線角度を求める
+		float ParabolaToGoalPos(
+			float fLength,  // 距離
+			float fGravity, // 重力
+			float fSpeed,   // 速度
+			D3DXVECTOR3 SelfPos, // 自身の位置
+			D3DXVECTOR3 GoalPos  // 目的地
+		); // 距離、重力、速度をもとに２点の放物線移動を計算する
+
+	}
+
+	// 距離名前空間
+	namespace Length
+	{
+		// 目的地までの距離を求める処理
+		float ToGoalPos(
+			D3DXVECTOR3 SelfPos, // 自身の位置
+			D3DXVECTOR3 GoalPos  // 目的地
+		);
+	}
+
+	// 変換
+	namespace Conversion
+	{
+		// スクリーン座標をワールド座標に変換
+		D3DXVECTOR3* ScreenToWorld(D3DXVECTOR3* pout,
+			float Sx,  // スクリーンX座標
+			float Sy,  // スクリーンY座標
+			float fZ,  // 射影空間でのZ値（0～1）
+			int Screen_w, // スクリーン横幅
+			int Screen_h, // スクリーン高さ
+			D3DXMATRIX* View, // ビューマトリックス
+			D3DXMATRIX* Prj   // プロジェクションマトリックス
+		);
+
+		// ワールド座標をスクリーン座標に変換
+		D3DXVECTOR3 WorldToScreen(
+			D3DXVECTOR3 worldPos,        // ワールド座標
+			D3DXMATRIX viewMatrix,       // ビューマトリックス
+			D3DXMATRIX projectionMatrix, // プロジェクションマトリックス
+			float screenWidth,   // スクリーン横幅
+			float screenHeight); // スクリーン高さ
+	}
+
+	// 値
+	namespace Value
+	{
+		// 桁数を計算する
+		int CalcDigit(
+			int nValue // 数値
+		);
+
+		// 指定した桁数を取得する
+		int GetDigit(int number, int position);
+	}
 };
 #endif

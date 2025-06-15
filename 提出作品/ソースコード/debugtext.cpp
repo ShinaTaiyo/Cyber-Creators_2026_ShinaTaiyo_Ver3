@@ -1,6 +1,6 @@
 //====================================================================================================================
 //
-//２０２５年１月１０日：C＋＋のデバッグ表示を作る[debugtext.cpp]
+// ２０２５年１月１０日：C＋＋のデバッグ表示を作る[debugtext.cpp]
 //Author:ShinaTaiyo
 //
 //====================================================================================================================
@@ -110,7 +110,7 @@ void CDebugText::Draw()
     if (s_bDispDebug == true)
     {//デバックモードがオンの時
      //テキストの描画
-        s_pFont->DrawText(NULL, s_DrawString.c_str(), -1, &rect, DT_LEFT, D3DCOLOR_RGBA(255, 255, 255, 255));
+        s_pFont->DrawText(NULL, s_DrawString.c_str(), -1, &rect, DT_LEFT, D3DCOLOR_RGBA(255, 0, 255, 255));
         s_DrawString.clear();//メモリを初期化（Printf用の関数が1fで呼ばれた分だけ表示するため)
     }
 }

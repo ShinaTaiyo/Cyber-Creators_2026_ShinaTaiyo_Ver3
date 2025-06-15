@@ -40,6 +40,7 @@ public:
 		NONE = 0,     // なし
 		SQUARE,       // 正方形 
 		RECTANGLE_XZ, // 回転正方形XZ
+		OBBTOOBB,     // OBB同士
 		MAX
 	};
 
@@ -139,16 +140,14 @@ public:
 	const CObject::TYPE& GetCollisionObjType(); // 当たったオブジェクトのタイプを取得
 
 	BoundInfo& GetBoundInfo(); // バウンド情報を取得
-protected:
-	// === 静的メンバ変数 ===
-
-	static const string ATTACK_FILENAME[static_cast<int>(ATTACKTYPE::MAX)]; //攻撃モデルのファイル名
-
-	// === メンバ関数 ===
 
 	// 攻撃の種類
 	void SetAttackType(ATTACKTYPE AttackType); // 設定
 	const ATTACKTYPE& GetAttackType() const;   // 取得
+protected:
+	// === 静的メンバ変数 ===
+
+	static const string ATTACK_FILENAME[static_cast<int>(ATTACKTYPE::MAX)]; //攻撃モデルのファイル名
 
 	const bool& GetCollisionSuccess() const;   //当たり判定が成功したかどうか取得
 private:
@@ -156,11 +155,12 @@ private:
 
 	int m_nPower; // 攻撃力
 
-	bool m_bCollisionRelease;   // 衝突時に消すかどうか
-	bool m_bHitOtherThanLiving; // 生きているオブジェクト以外にも当たるかどうか
-	bool m_bAutoCollision;      // 当たり判定を攻撃クラスに任せるかどうか
-	bool m_bExtrusionCollision; // 押し出し判定を使うかどうか
-	bool m_bCollisionSuccess;   // 判定が成功したかどうか
+	bool 
+		m_bCollisionRelease,   // 衝突時に消すかどうか
+        m_bHitOtherThanLiving, // 生きているオブジェクト以外にも当たるかどうか
+	    m_bAutoCollision,      // 当たり判定を攻撃クラスに任せるかどうか
+	    m_bExtrusionCollision, // 押し出し判定を使うかどうか
+		m_bCollisionSuccess;   // 判定が成功したかどうか
 
 	ATTACKTYPE m_Type;       // タイプ
 	TARGETTYPE m_TargetType; // 狙うオブジェクトの種類

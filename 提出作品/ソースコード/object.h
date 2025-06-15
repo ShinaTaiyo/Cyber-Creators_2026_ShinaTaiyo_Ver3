@@ -193,7 +193,7 @@ private:
 		static_cast<int>(TYPE::TUTORIAL),     
 		static_cast<int>(TYPE::SCORE),        
 		static_cast<int>(TYPE::FADE),         
-		static_cast<int>(TYPE::NONE),         
+		static_cast<int>(TYPE::NONE)     
 	};//描画プライオリティ
 
 	//===============================================

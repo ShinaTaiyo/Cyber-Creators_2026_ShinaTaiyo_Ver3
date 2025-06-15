@@ -70,27 +70,32 @@ void CEffect::Uninit()
 //==========================================
 void CEffect::Update()
 {
-	//=======================
-    //変数宣言
-    //=======================
-	D3DXVECTOR3 Pos = CBillboard::GetPos();                               //位置
-	float fWidth = CBillboard::GetWidth();                                //横幅
-	float fHeight = CBillboard::GetHeight();                              //高さ
-	float fAlpha = 1.0f;                                                  //色のアルファ値を決める
-	int& nLife = GetLife();                                               //体力
-	int& nMaxLife = GetMaxLife();                                         //最大体力
-	//===================================================
+	// === 変数 ===
+	D3DXVECTOR3 
+		Pos = CBillboard::GetPos(), // 位置
+	    Size = GetSize(), // サイズ
+	    FormarSize = GetFormarSize(); // 元のサイズ
+	float fAlpha = 1.0f; // 色のアルファ値を決める
+	const int& 
+		nLife = GetLife(),       // 体力
+	    nMaxLife = GetMaxLife(); // 最大体力
 	
-	fAlpha = (float)(nLife) / (float)(nMaxLife);                          //色のアルファ値を最大体力との割合で決める
-	fWidth -= m_fReductionWidth;                                          //横幅を減らす
-	fHeight -= m_fReductionHeight;                                        //高さを減らす
-	SetPos(Pos);                                                          //位置を設定
-	SetSize(fWidth, fHeight);                                             //ポリゴンサイズを設定
-	SetColor(D3DXCOLOR(GetColor().r, GetColor().g, GetColor().b, fAlpha));//アルファ値
+	// === 処理 ===
 
-	CBillboard::Update();                                                 //ビルボードの更新処理
+	fAlpha = (float)(nLife) / (float)(nMaxLife); // 色のアルファ値を最大体力との割合で決める
+	Size.x -= m_fReductionWidth;  // 横幅を減らす
+	Size.y -= m_fReductionHeight; // 高さを減らす
+	SetPos(Pos);   // 位置を設定
+	SetSize(Size); // ポリゴンサイズを設定
+
+	// 色合い設定
+	SetColor(D3DXCOLOR(GetColor().r, GetColor().g, GetColor().b, fAlpha));
+
+	CBillboard::Update(); // ビルボードの更新処理
+
+	// 体力が０になったら
 	if (nLife == 0)
-	{//体力が０になったら
+	{
 		SetDeath();//死亡フラグを設定する
 	}
 }
@@ -176,7 +181,8 @@ CEffect* CEffect::Create(EFFECTTYPE type, int nLife, float fWidth, float fHeight
 	{
 		pEffect->Init();                                                              //初期化処理
 		pEffect->SetUseDeath(true);                                                   //死亡フラグを発動するかどうかを設定する
-		pEffect->CBillboard::SetFormarSize(fWidth, fHeight);                          //ポリゴンの元のサイズを設定
+		pEffect->SetSize(D3DXVECTOR3(fWidth, fHeight, 0.0f)); //サイズを設定する
+		pEffect->CBillboard::SetFormarSize(D3DXVECTOR3(fWidth,fHeight,0.0f)); // ポリゴンの元のサイズを設定
 		pEffect->m_Type = type;                                                       //エフェクトの種類
 		pEffect->SetLife(nLife);                                                      //体力
 		pEffect->SetMaxLife(nLife);                                                   //最大体力
@@ -186,7 +192,6 @@ CEffect* CEffect::Create(EFFECTTYPE type, int nLife, float fWidth, float fHeight
 		pEffect->bindTexture(pTexture->GetAddress(pEffect->GetTextureIndex()));       //テクスチャをセットする　
 		pEffect->SetPos(pos);                                                         //オブジェクト２Ｄの位置を設定[
 		pEffect->SetSupportPos(pos);                                                                 //召喚位置を設定
-		pEffect->SetSize(fWidth, fHeight);                                            //サイズを設定する
 		pEffect->SetColor(col);                                                       //色合いを設定
 		pEffect->SetAnimInfo(1, 1, col, false);                                       //アニメーション情報を設定
 	}

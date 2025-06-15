@@ -9,10 +9,12 @@
 //インクルード
 //===============================================================
 #include "phasemanager.h"
+#include "stagemanager.h"
+#include "eventmanager.h"
 #include "aimodel.h"
 #include "manager.h"
-#include "stagemanager.h"
 #include "game.h"
+#include "player.h"
 #include "fade.h"
 //======================================================================================================================
 
@@ -148,7 +150,6 @@ void CPhaseManager::AdvancePhase()
 	{
 		if (CEnemy::GetNumEnemy() <= 0 && s_nNowPhase <= s_MaxPhase)
 		{
-
 			CEnemy::ENEMYTYPE EnemyType = {};//敵タイプ格納用 
 			CEnemy* pEnemy = nullptr;        //敵へのポインタ
 			vector<CAIModel*> VecMoveAi = {};//移動AIの動的配列

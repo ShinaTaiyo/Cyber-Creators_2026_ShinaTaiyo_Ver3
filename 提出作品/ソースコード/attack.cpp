@@ -21,7 +21,7 @@
 #include "particle.h"    // パーティクル
 #include "game.h"        // ゲーム
 #include "collision.h"   // コリジョン
-
+#include "ui.h"          // UI
 //**********************************************************************************************************************
 // 静的メンバ宣言
 //**********************************************************************************************************************
@@ -603,7 +603,6 @@ void CAttack::CollisionProcess(bool& bCollision, bool& bNowCollision, CObjectX* 
 	const D3DXVECTOR3& OtherVtxMax = OtherSizeInfo.GetVtxMax(); // 相手の最大頂点
 	const D3DXVECTOR3& OtherVtxMin = OtherSizeInfo.GetVtxMin(); // 相手の最小頂点
 
-
 	// === 当たり判定の種類によってポインタとして渡されたオブジェクトとの判定方法を変更して処理 ===
 
 	// 判定種類によって変更
@@ -625,6 +624,13 @@ void CAttack::CollisionProcess(bool& bCollision, bool& bNowCollision, CObjectX* 
 			bNowCollision = true; // 現在当たった
 		}
 		break;
+	case CAttack::COLLISIONTYPE::OBBTOOBB:
+		if (CCollision::OBBToOBB(this, pObjX))
+		{
+			bCollision = true;
+			bNowCollision = true;
+		}
+		break;
 	default:
 		break;
 	}
@@ -633,7 +639,7 @@ void CAttack::CollisionProcess(bool& bCollision, bool& bNowCollision, CObjectX* 
 	if (bNowCollision == true)
 	{
 		pObjX->SetDamage(GetPower(), m_HitStop.nSetTime); // 引数に設定されているオブジェクトにダメージを与える
-		pObjX->SetColor(D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f), m_HitStop.nSetTime, false, false,false); // 引数に設定されているオブジェクトの色合いを赤くする
+		pObjX->SetColor(D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f), m_HitStop.nSetTime + 1, false, false,false); // 引数に設定されているオブジェクトの色合いを赤くする
 	}
 
 }

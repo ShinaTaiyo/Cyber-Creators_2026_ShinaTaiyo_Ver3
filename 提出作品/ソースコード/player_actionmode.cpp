@@ -61,20 +61,26 @@ void CPlayerMove::MoveProcess(CPlayer* pPlayer)
 	// 回避中なら通常移動はさせない
 	if (m_bDodge == false)
 	{
-		// === 変数 ===
-		const D3DXVECTOR3& Move = pPlayer->GetMoveInfo().GetMove();//移動量
-		D3DXVECTOR3 AddMove = D3DXVECTOR3(0.0f, 0.0f, 0.0f);       //加算する移動量
-		bool bMove = false;                                        //移動しているかどうか
-		CObjectX::RotInfo& RotInfo = pPlayer->GetRotInfo();        //向き情報
-		D3DXVECTOR3 RotAim = RotInfo.GetRotAim();                  //目的の向きを取得
-																   //目的の向き
-		CObjectX::PosInfo& PosInfo = pPlayer->GetPosInfo();        //位置情報
-		D3DXVECTOR3 NextPos = PosInfo.GetPos();                    //位置
-		CCamera* pCamera = CManager::GetCamera();                  //カメラ
+		// === 処理に使用する情報を宣言、初期化 ===
+
+		const D3DXVECTOR3& Move = pPlayer->GetMoveInfo().GetMove(); // 移動量
+		D3DXVECTOR3 AddMove = D3DXVECTOR3(0.0f, 0.0f, 0.0f); // 加算移動量
+		bool bMove = false; // 移動しているかどうか
+
+		CObjectX::RotInfo& RotInfo = pPlayer->GetRotInfo(); // 向き情報
+		D3DXVECTOR3 RotAim = RotInfo.GetRotAim(); // 目的の向きを取得
+																   
+		CObjectX::PosInfo& PosInfo = pPlayer->GetPosInfo(); // 位置情報
+		D3DXVECTOR3 NextPos = PosInfo.GetPos(); // 次の位置
+
+		CCamera* pCamera = CManager::GetCamera();        // カメラへのポインタ
 		const D3DXVECTOR3& CameraRot = pCamera->GetRot(); // カメラの向き
 
 		//移動しているかどうかを取得。移動しているならAddMoveに値が入る
-		bMove = CCalculation::CaluclationMove(true, NextPos,AddMove, 10.0f, CCalculation::MOVEAIM_XZ, CameraRot.y, RotAim.y);
+		bMove = Calculation::Move::MovementInput(
+			true, NextPos,AddMove, 10.0f,
+			Calculation::Move::MOVEAIM::XZ, 
+			CameraRot.y, RotAim.y);
 
 		pPlayer->GetMoveInfo().SetUseInteria(true, CObjectX::GetNormalInertia());//慣性を使用する
 		pPlayer->GetMoveInfo().SetUseGravity(true, CObjectX::GetNormalGravity());//重力を使用する
@@ -240,9 +246,12 @@ CPlayerMove_Dive::~CPlayerMove_Dive()
 //=====================================================================================================
 void CPlayerMove_Dive::MoveProcess(CPlayer* pPlayer)
 {
-	CWireHead* pWireHead = pPlayer->GetWire()->GetWireHead();//ワイヤーの頭を取得
+	CWireHead* pWireHead = pPlayer->GetWire()->GetWireHead(); // ワイヤーヘッドへのポインタ
 
-	pPlayer->GetMoveInfo().SetMove(CCalculation::Calculation3DVec(pPlayer->GetPosInfo().GetPos(),pWireHead->GetPosInfo().GetPos(),s_fDIVEMOVE));//目的地に達するまで狙い続ける
+	// 目的地に達するまで狙い続ける
+	pPlayer->GetMoveInfo().SetMove(
+		Calculation::Move::DirrectionToTarget(pPlayer->GetPosInfo().GetPos()
+			,pWireHead->GetPosInfo().GetPos(),s_fDIVEMOVE));
 
 	if (pPlayer->IsDamaged())
 	{//ダイブ移動中にダメージを受けたら射撃モードの初期状態に戻す（ダイブ攻撃は強力な攻撃なので、ノーリスクで突撃させたくないから）
@@ -314,30 +323,41 @@ CPlayerAttack_Shot::~CPlayerAttack_Shot()
 //=====================================================================================================
 void CPlayerAttack_Shot::AttackProcess(CPlayer* pPlayer)
 {
-	CLockon* pLockon = pPlayer->GetLockOn();                                                                             //ロックオンへのポインタ
-	D3DXVECTOR3 ShotPos = pPlayer->GetPosInfo().GetPos() + D3DXVECTOR3(0.0f, pPlayer->GetSizeInfo().GetVtxMax().y, 0.0f);//射撃開始位置
-	D3DXVECTOR3 Move = CCalculation::Calculation3DVec(ShotPos, pLockon->GetNearRayColObjPos(), s_fNORMAL_SHOTSPEED);     //射撃開始位置とロックオンのレイが当たった位置への移動量を求める
-	CAttackPlayer* pAttackPlayer = nullptr;                                                                              //プレイヤー攻撃へのポインタ
-	CInputKeyboard* pInputKeyboard = CManager::GetInputKeyboard();//キー入力情報へのポインタ
-	CInputJoypad* pInputJoypad = CManager::GetInputJoypad();      //ジョイパッド入力情報へのポインタ
-	CInputMouse* pInputMouse = CManager::GetInputMouse();         //マウス入力情報へのポインタ
-	CSound* pSound = CManager::GetSound();                        //サウンド情報へのポインタ
+	CLockon* pLockon = pPlayer->GetLockOn();  // ロックオンへのポインタ
+
+	// 射撃開始位置
+	D3DXVECTOR3 ShotPos = pPlayer->GetPosInfo().GetPos() + D3DXVECTOR3(0.0f, pPlayer->GetSizeInfo().GetVtxMax().y, 0.0f);
+
+	 // 射撃開始位置とロックオンのレイが当たった位置への移動量を求める
+	D3DXVECTOR3 Move = Calculation::Move::DirrectionToTarget(ShotPos, pLockon->GetNearRayColObjPos(), s_fNORMAL_SHOTSPEED);   
+
+	CAttackPlayer* pAttackPlayer = nullptr; // プレイヤー攻撃へのポインタ
+	CInputKeyboard* pInputKeyboard = CManager::GetInputKeyboard(); // キー入力情報へのポインタ
+	CInputJoypad* pInputJoypad = CManager::GetInputJoypad(); // ジョイパッド入力情報へのポインタ
+	CInputMouse* pInputMouse = CManager::GetInputMouse();    // マウス入力情報へのポインタ
+	CSound* pSound = CManager::GetSound(); // サウンド情報へのポインタ
+
+	// Jキー又はジョイパッド右トリガーボタン又はマウスの左クリックボタンを押していたら弾を発射する
 	if (pInputKeyboard->GetTrigger(DIK_J) == true || pInputJoypad->GetRT_Repeat(4) == true ||
 		pInputMouse->GetMouseLeftClickRepeat(4) == true)
-	{//Jキー又はジョイパッド右トリガーボタン又はマウスの左クリックボタンを押していたら
+	{
 		//弾を生成
-		pAttackPlayer = CAttackPlayer::Create(CAttack::ATTACKTYPE::BULLET,CAttack::TARGETTYPE::ENEMY,CAttack::COLLISIONTYPE::SQUARE,true,true,3,0,45,ShotPos, pPlayer->GetRotInfo().GetRot(), Move, D3DXVECTOR3(1.0f, 1.0f, 1.0f));
-		pAttackPlayer->GetMoveInfo().SetUseInteria(false, CObjectX::GetNormalInertia());//慣性を使用しない
-		pAttackPlayer->GetLifeInfo().SetAutoSubLife(true);                              //体力がなくなったら死亡フラグを設定する
-		pAttackPlayer->SetHitOtherThanLibing(true);                                     //建物にも当たる
+		pAttackPlayer = CAttackPlayer::Create(
+			CAttack::ATTACKTYPE::BULLET,CAttack::TARGETTYPE::ENEMY,CAttack::COLLISIONTYPE::SQUARE,
+			true,true,3,0,45,ShotPos, pPlayer->GetRotInfo().GetRot(), Move, D3DXVECTOR3(1.0f, 1.0f, 1.0f));
 
-		pSound->PlaySoundB(CSound::SOUND_LABEL::SE_SHOT_001);                           //射撃効果音を出す
-		CGame::GetTutorial()->SetSuccessCheck(CTutorial::CHECK::SHOT);		            //射撃チュートリアル完了
+		pAttackPlayer->GetMoveInfo().SetUseInteria(false, CObjectX::GetNormalInertia()); // 慣性を使用しない
+		pAttackPlayer->GetLifeInfo().SetAutoSubLife(true); // 体力がなくなったら死亡フラグを設定する
+		pAttackPlayer->SetHitOtherThanLibing(true);        // 建物にも当たる
+
+		pSound->PlaySoundB(CSound::SOUND_LABEL::SE_SHOT_001); // 射撃効果音を出す
+		CGame::GetTutorial()->SetSuccessCheck(CTutorial::CHECK::SHOT); // 射撃チュートリアル完了
 	}
 
+	// ジョイパッドのプレスボタンを押していたら攻撃モーションに設定
 	if (pInputJoypad->GetRT_Press())
-	{//ジョイパッドのプレスボタンを押していたら
-		pPlayer->SetNextMotion(2);//攻撃ボタンを押している限り、次のモーションは攻撃モーションになる
+	{
+		pPlayer->SetNextMotion(2);
 	}
 }
 //======================================================================================================================================================

@@ -60,7 +60,8 @@ CCamera::CCamera() :
 ,   m_State(CAMERASTATE::NORMAL),
     m_pCameraState(DBG_NEW CCameraState_Normal()),
 	m_pCameraLengthState(DBG_NEW CCameraLengthState()),
-	m_Pos(D3DXVECTOR3(0.0f,0.0f,0.0f))
+	m_Pos(D3DXVECTOR3(0.0f,0.0f,0.0f)),
+	m_nNoControlFrame{ 0 }
 {
 #ifdef _DEBUG
 	if (s_bDEBUGCAMERACONTROLLMOUSE)
@@ -161,12 +162,16 @@ void CCamera::Uninit()
 //====================================================================
 void CCamera::Update()
 {
-	m_pCameraState->Process(this);      //カメラの角度に関する処理
-	m_pCameraLengthState->Process(this);//カメラの距離に関する処理
+	// === 処理に使用する情報を宣言、初期化 ===
+
 	CInputKeyboard* pInputKeyboard = CManager::GetInputKeyboard();//キー入力情報
 	CDebugText* pDebugText = CManager::GetDebugText();//デバッグ情報
 
-	pDebugText->PrintDebugText("カメラをマウスで操作するかどうか（Lシフトを押しながらM): %d\n", s_bCAMERACONTROLLMOUSE);
+	// === カメラ更新処理開始 ===
+
+	m_pCameraState->Process(this);      //カメラの角度に関する処理
+	m_pCameraLengthState->Process(this);//カメラの距離に関する処理
+
 
 	if (pInputKeyboard->GetPress(DIK_LSHIFT))
 	{
@@ -186,22 +191,29 @@ void CCamera::Update()
 		m_Rot.x = D3DX_PI * 0.5f - 0.01f;
 	}
 
-	// 向き調整
-	m_Rot.x = CCalculation::CorrectionRot(m_Rot.x);
-	m_Rot.y = CCalculation::CorrectionRot(m_Rot.y);
-	m_Rot.z = CCalculation::CorrectionRot(m_Rot.z);
-
-	//===============================================================================
+	// 向きを円周上に包み込む
+	m_Rot.x = Calculation::Rot::WrapAngle(m_Rot.x);
+	m_Rot.y = Calculation::Rot::WrapAngle(m_Rot.y);
+	m_Rot.z = Calculation::Rot::WrapAngle(m_Rot.z);
 
 	// デバッグ表示
 	CManager::GetDebugText()->PrintDebugText("カメラの向き：%f %f %f\n", m_Rot.x, m_Rot.y, m_Rot.z);
 	CManager::GetDebugText()->PrintDebugText("カメラの視点：%f %f %f\n", m_PosV.x, m_PosV.y, m_PosV.z);
 	CManager::GetDebugText()->PrintDebugText("カメラの注視点：%f %f %f\n", m_PosR.x, m_PosR.y, m_PosR.z);
 	CManager::GetDebugText()->PrintDebugText("カメラとの距離：%f\n",m_fAddLength);
+	pDebugText->PrintDebugText("カメラをマウスで操作するかどうか（Lシフトを押しながらM): %d\n", s_bCAMERACONTROLLMOUSE);
 
-	// カメラの通常の注視点を設定し続ける
-	NormalCameraMove();
-
+	// カメラ操作不可能フレームがあれば減らす
+	if (m_nNoControlFrame > 0)
+	{
+		m_nNoControlFrame--;
+	}
+	// カメラ操作不可能フレーム数がなければ操作処理をする
+	else
+	{
+		// カメラの通常の注視点を設定し続ける
+		NormalCameraMove();
+	}
 	// シーンがゲームの時のみ行う処理
 	if (CScene::GetMode() == CScene::MODE_GAME)
 	{
@@ -328,14 +340,21 @@ void CCamera::ChengeState(CCameraState* pCameraState)
 //====================================================================================================
 
 //====================================================================
-//カメラの距離の状態を変える
+// カメラの距離の状態を変える
 //====================================================================
 void CCamera::ChengeLengthState(CCameraLengthState* pCameraLengthState)
 {
 	delete m_pCameraLengthState;//カメラの距離の状態を破棄
 	m_pCameraLengthState = pCameraLengthState;//新しいカメラの距離の状態
 }
-//====================================================================================================
+
+//====================================================================
+// カメラ状態取得
+//====================================================================
+CCameraState* CCamera::GetCameraState() const
+{
+	return m_pCameraState;
+}
 
 //====================================================================
 //普通のカメラの位置を設定し続ける
@@ -398,34 +417,59 @@ void CCamera::NormalCameraMove()
 //====================================================================
 void CCamera::MakeTransparent()
 {
+	// シーンが「エディット」以外なら処理を開始 
 	if (CScene::GetMode() != CScene::MODE_EDIT)
-	{//シーンが「エディット」なら
-		D3DXVECTOR3 Ray = m_PosR - m_PosV;                          //注視点と支店のベクトルを取り、レイとする
-		D3DXVec3Normalize(&Ray, &Ray);                              //上記で求めたレイを正規化する
-		D3DXVECTOR3 RayCollisionPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);//レイが当たった位置代入用
-		float fLength = 0.0f;                                       //レイが当たった場所の距離
+	{
+		// === 処理に必要な情報を宣言、初期化 ===
+
+		D3DXVECTOR3 Ray = m_PosR - m_PosV; // 視点と注視点のベクトル
+		D3DXVec3Normalize(&Ray, &Ray);     // 上記で求めたベクトルを正規化する
+		D3DXVECTOR3 RayCollisionPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f); // レイが当たった位置
+		float fLength = 0.0f; // レイが当たった場所への距離
+
+		// === カメラと重なったオブジェクトを透明にする処理を開始 ===
+
+		// リスト検索
 		for (int nCntPri = 0; nCntPri < CObject::m_nMAXPRIORITY; nCntPri++)
-		{//オブジェクトリストを検索する
-			CObject* pObj = CObject::GetTopObject(nCntPri);//各リストの先頭オブジェクトを取得する
+		{
+			CObject* pObj = CObject::GetTopObject(nCntPri); // 先頭オブジェクト取得
 
+			// リストを末尾まで検索
 			while (pObj != nullptr)
-			{//オブジェクトがnullptrになるまで検索する
-				CObject* pNext = pObj->GetNextObject();//次のオブジェクトを取得する
-				CObject::TYPE Type = pObj->GetType();//オブジェクトの種類を取得する
-				if (Type == CObject::TYPE::BGMODEL || Type == CObject::TYPE::BLOCK)
+			{
+				CObject* pNext = pObj->GetNextObject(); // 次のオブジェクト
+				CObject::TYPE Type = pObj->GetType();   // オブジェクト種類
+
+				// タイプが「ブロック」以外なら処理を中断
+				if (Type != CObject::TYPE::BLOCK)
 				{
-					CObjectX* pObjX = static_cast<CObjectX*>(pObj);//オブジェクトXにキャストする
-					if (CCollision::RayIntersectsAABBCollisionPos(m_PosV, Ray, pObjX->GetPosInfo().GetPos() + pObjX->GetSizeInfo().GetVtxMin(), pObjX->GetPosInfo().GetPos() + pObjX->GetSizeInfo().GetVtxMax(), RayCollisionPos))
-					{//レイが当たっていたら
-
-						fLength = CCalculation::CalculationLength(m_PosV, RayCollisionPos);//レイが当たった位置と距離を求める
-
-						if (m_fLength > fLength)
-						{//カメラの距離よりもオブジェクトとレイが当たった位置が近い場合は透明にする
-							pObjX->SetColor(D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.5f), 3, true, true,false);
-						}
-					}
+					pObj = pNext;
+					continue;
 				}
+
+				CObjectX* pObjX = static_cast<CObjectX*>(pObj); // オブジェクトXにキャストする
+
+				// レイがブロックと当たらなかった場合、処理を中断
+				if (!CCollision::RayIntersectsAABBCollisionPos(
+					m_PosV, Ray, pObjX->GetPosInfo().GetPos() + pObjX->GetSizeInfo().GetVtxMin(),
+					pObjX->GetPosInfo().GetPos() + pObjX->GetSizeInfo().GetVtxMax(), RayCollisionPos))
+				{
+					pObj = pNext;
+					continue;
+				}
+
+				// レイが当たった位置と距離を求める
+				fLength = Calculation::Length::ToGoalPos(m_PosV, RayCollisionPos);
+
+				// カメラの距離よりもオブジェクトとレイが当たった距離が長い場合は処理を中断
+				if (m_fLength < fLength)
+				{
+					pObj = pNext;
+					continue;
+				}
+
+				// カメラの注視点と視点間の距離よりもレイが衝突した位置が短かったので色合いを薄くする
+				pObjX->SetColor(D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.5f), 3, true, true,false);
 
 				pObj = pNext;//リストを進める
 			}
@@ -469,9 +513,9 @@ void CCameraState_TurnAround::Process(CCamera* pCamera)
 	float fRotDiffX = m_AimRot.x - NowRot.x;
 	float fRotDiffY = m_AimRot.y - NowRot.y;
 
-	//向きの差分を補正（ジンバルロックを回避)
-	fRotDiffX = CCalculation::CorrectionRot(fRotDiffX);
-	fRotDiffY = CCalculation::CorrectionRot(fRotDiffY);
+	//向きの差分を円周上に包み込む
+	fRotDiffX = Calculation::Rot::WrapAngle(fRotDiffX);
+	fRotDiffY = Calculation::Rot::WrapAngle(fRotDiffY);
 
 	CManager::GetDebugText()->PrintDebugText("カメラの向きの差分:%f\n");//デバッグ表示
 
@@ -479,9 +523,9 @@ void CCameraState_TurnAround::Process(CCamera* pCamera)
 	float fAddRotX = fRotDiffX * m_fAdjustTurnSpeed;
 	float fAddRotY = fRotDiffY * m_fAdjustTurnSpeed;
 
-	//ジンバルロックを回避
-	fAddRotX = CCalculation::CorrectionRot(fAddRotX);
-	fAddRotY = CCalculation::CorrectionRot(fAddRotY);
+	//加算向きを円周上に包み込む
+	fAddRotX = Calculation::Rot::WrapAngle(fAddRotX);
+	fAddRotY = Calculation::Rot::WrapAngle(fAddRotY);
 
 	//向きを設定する
 	pCamera->SetRot(D3DXVECTOR3(pCamera->GetRot().x + fAddRotX, pCamera->GetRot().y + fAddRotY, pCamera->GetRot().z));
@@ -533,137 +577,191 @@ void CCameraState_Normal::Process(CCamera* pCamera)
     //========================================
 	if (CScene::GetMode() != CScene::MODE_TITLE && CScene::GetMode() != CScene::MODE_RESULT)
 	{//シーンがタイトルとリザルト以外なら
-		if (CManager::GetInputKeyboard()->GetPress(DIK_Q))
-		{//カメラを徐々に右に向かせる
-			pCamera->SetRot(pCamera->GetRot() + D3DXVECTOR3(0.0f, -s_fNORMAL_AROUNDROTSPEED, 0.0f));
-		}
-		if (CManager::GetInputKeyboard()->GetPress(DIK_E))
-		{//カメラを徐々に左に向かせる
-			if (CManager::GetInputKeyboard()->GetPress(DIK_LSHIFT))
-			{//LSHIFTを押しながらEキーを押すとYawをリセット
-				pCamera->SetRot(D3DXVECTOR3(pCamera->GetRot().x, 0.0f, pCamera->GetRot().z));
-			}
-			else
-			{//普通にカメラを徐々に左に向かせる
-				pCamera->SetRot(pCamera->GetRot() + D3DXVECTOR3(0.0f, s_fNORMAL_AROUNDROTSPEED, 0.0f));
-			}
-		}
 
-		if (CManager::GetInputJoypad()->GetPress(CInputJoypad::JOYKEY::LB))
-		{//コントローラーのLBボタンを押していたら
-			pCamera->SetRot(pCamera->GetRot() + D3DXVECTOR3(0.0f, -s_fNORMAL_AROUNDROTSPEED, 0.0f));
-		}
-		if (CManager::GetInputJoypad()->GetPress(CInputJoypad::JOYKEY::RB))
-		{//コントローラーのRBボタンを押していたら
-			pCamera->SetRot(pCamera->GetRot() + D3DXVECTOR3(0.0f, s_fNORMAL_AROUNDROTSPEED, 0.0f));
-		}
+		ControlPosR(pCamera);   // 注視点を操作する
+		ControlRot(pCamera);
+		ControlPosV(pCamera);   // 視点を操作する
+		ControlLength(pCamera); // 距離を操作する
 
-		//===========================
-		//Xボタンを押していたら
-		//===========================
-		if (CManager::GetInputKeyboard()->GetPress(DIK_LSHIFT) == true)
-		{//シフトキーを押しながら・・・
-			if (CManager::GetInputKeyboard()->GetPress(DIK_X) == true)
-			{//注視点の加算量を減らす
-				pCamera->SetAddPosR(pCamera->GetAddPosR() + D3DXVECTOR3(0.0f, -5.0f, 0.0f));
-			}
-		}
-		else if (CManager::GetInputKeyboard()->GetPress(DIK_X) == true)
-		{//注視点の加算量を増やす
-			pCamera->SetAddPosR(pCamera->GetAddPosR() + D3DXVECTOR3(0.0f, 5.0f, 0.0f));
-		}
-		float fMagnification = 1.0f / CCamera::GetMaxSensitivityLevel();//感度倍率を求める
-		float fResultSensitivity = 0.0f;//結果的な感度
-		//=================================================
-		//ゲームパッド、又はマウスでカメラの向きを変える
-		//=================================================
-		if (CManager::GetInputJoypad()->GetRStickPress(16) == true)
-		{//右スティックを入力していたら
-			if (CScene::GetMode() == CScene::MODE::MODE_GAME)
-			{//シーンが「ゲーム」だったら
-				CGame::GetTutorial()->SetSuccessCheck(CTutorial::CHECK::CAMERACONTROLL);
-			}
-			fResultSensitivity = s_fMAX_STICKSENSITIVITY * (fMagnification * CCamera::GetSensitivityLevel());//感度レベルに応じて調整
-			//スティックを押した方向にカメラの向きを向かせる
-			CManager::GetCamera()->SetRot(pCamera->GetRot() + D3DXVECTOR3(cosf(CManager::GetInputJoypad()->GetRStickAimRot()) * fResultSensitivity,
-				sinf(CManager::GetInputJoypad()->GetRStickAimRot()) * fResultSensitivity, 0.0f));
-		}
-
-		if (CCamera::GetUseCameraControllMouse())
-		{//マウスでもカメラを操作するなら
-			float fAngle = 0.0f;    //角度
-			float fAddYaw = 0.0f;   //Yaw
-			float fAddPitch = 0.0f; //Pitch
-			if (CScene::GetMode() == CScene::MODE_GAME || CScene::GetMode() == CScene::MODE_EDIT)
-			{//ゲームモードとエディットモードの時だけマウスを固定
-				fResultSensitivity = s_fMAX_MOUSESENSITIVITY * (fMagnification * CCamera::GetSensitivityLevel());//感度レベルに応じて調整
-				if (CManager::GetInputMouse()->GetMouseMoveAngle(fAddYaw, fAddPitch, fResultSensitivity))
-				{//マウスが移動した方向からYawとPitchの加算量を取得する。マウスが動いていたらtrue
-					if (CScene::GetMode() == CScene::MODE::MODE_GAME)
-					{//シーンが「ゲーム」だったら
-						CGame::GetTutorial()->SetSuccessCheck(CTutorial::CHECK::CAMERACONTROLL);//カメラを動かすチュートリアルを完了
-					}
-					//向きを加算する
-					CManager::GetCamera()->SetRot(pCamera->GetRot() + D3DXVECTOR3(-fAddPitch,
-						fAddYaw, 0.0f));
-				}
-			}
-		}
-
-		//===========================
-		//Cボタンを押していたら
-		//===========================
-		if (CManager::GetInputKeyboard()->GetPress(DIK_LSHIFT) == true)
-		{//シフトキーを押しながら・・・
-			if (CManager::GetInputKeyboard()->GetPress(DIK_C) == true)
-			{//Cキーを教えいたｒ
-				pCamera->SetAddPosV(pCamera->GetAddPosV() + D3DXVECTOR3(0.0f, -5.0f, 0.0f));//視点の位置の加算量を減らす
-			}
-		}
-		else if (CManager::GetInputKeyboard()->GetPress(DIK_C) == true)
-		{//シフトキーを押していなくてCキーを押していたら
-			pCamera->SetAddPosV(pCamera->GetAddPosV() + D3DXVECTOR3(0.0f, 5.0f, 0.0f));//視点の位置の加算量を増やす
-		}
-
-		//===========================
-		//Vボタンを押していたら
-		//===========================
-		if (CManager::GetInputKeyboard()->GetPress(DIK_LSHIFT) == true)
-		{//左シフトキーを押しながら・・・
-			if (CManager::GetInputKeyboard()->GetPress(DIK_V) == true)
-			{//Vキーを押していたら
-				pCamera->SetLength(pCamera->GetLength() - 5.0f);//視点と注視点の距離を減らす
-			}
-		}
-		else if (CManager::GetInputKeyboard()->GetPress(DIK_V) == true)
-		{//左シフトキーをおしていなく、Vキーを押していたら
-			pCamera->SetLength(pCamera->GetLength() + 5.0f);//視点と注視点の距離を増やす
-		}
-
-
-		//========================================
-		//カメラを揺らす
-		//========================================
+		// F1キーを押していたら
 		if (CManager::GetInputKeyboard()->GetTrigger(DIK_F1) == true)
-		{//F1キーを押していたら
+		{
 			pCamera->SetShake(50, 0.2f);//カメラを揺らす
 		}
 
-		//========================================
-		//後ろを向く
-		//========================================
+		// シーンが「ゲーム」だったら
 		if (CScene::GetMode() == CScene::MODE::MODE_GAME)
-		{//シーンが「ゲーム」だったら
+		{
+			// コントローラーのYキーを押したかLコントロールキーを押していたら後ろを向かせる
 			if (CManager::GetInputJoypad()->GetTrigger(CInputJoypad::JOYKEY::Y) || CManager::GetInputKeyboard()->GetTrigger(DIK_LCONTROL))
-			{//コントローラーのYキーを押したかLコントロールキーを押していたら
-				CGame::GetTutorial()->SetSuccessCheck(CTutorial::CHECK::TURNAROUND);//後ろを向くチュートリアルを完了
+			{
+				CGame::GetTutorial()->SetSuccessCheck(CTutorial::CHECK::TURNAROUND); // 後ろを向くチュートリアルを完了
 
-				pCamera->ChengeState(DBG_NEW CCameraState_TurnAround(pCamera->GetRot() + D3DXVECTOR3(0.0f, D3DX_PI, 0.0f), 0.15f));//指定した向きを徐々に向く状態にし、現在の向きの後ろに設定
+				pCamera->ChengeState(DBG_NEW CCameraState_TurnAround(pCamera->GetRot() + D3DXVECTOR3(0.0f, D3DX_PI, 0.0f), 0.15f)); 
 			}
 		}
 	}
 }
-//===================================================================================================================================================
+
+//=================================================================
+// 注視点を操作する
+//=================================================================
+void CCameraState_Normal::ControlPosR(CCamera* pCamera)
+{
+	if (CManager::GetInputKeyboard()->GetPress(DIK_LSHIFT) == true)
+	{//シフトキーを押しながら・・・
+		if (CManager::GetInputKeyboard()->GetPress(DIK_X) == true)
+		{//注視点の加算量を減らす
+			pCamera->SetAddPosR(pCamera->GetAddPosR() + D3DXVECTOR3(0.0f, -5.0f, 0.0f));
+		}
+	}
+	else if (CManager::GetInputKeyboard()->GetPress(DIK_X) == true)
+	{//注視点の加算量を増やす
+		pCamera->SetAddPosR(pCamera->GetAddPosR() + D3DXVECTOR3(0.0f, 5.0f, 0.0f));
+	}
+}
+
+//=================================================================
+// 視点を操作する
+//=================================================================
+void CCameraState_Normal::ControlPosV(CCamera* pCamera)
+{
+	// Lシフトキーを押しながらCキーを押していたら視点の加算量を減らす
+	if (CManager::GetInputKeyboard()->GetPress(DIK_LSHIFT) == true)
+	{
+		if (CManager::GetInputKeyboard()->GetPress(DIK_C) == true)
+		{
+			pCamera->SetAddPosV(pCamera->GetAddPosV() + D3DXVECTOR3(0.0f, -5.0f, 0.0f));
+		}
+	}
+	// シフトキーを押していなくてCキーを押していたら視点の加算量を増やす
+	else if (CManager::GetInputKeyboard()->GetPress(DIK_C) == true)
+	{
+		pCamera->SetAddPosV(pCamera->GetAddPosV() + D3DXVECTOR3(0.0f, 5.0f, 0.0f));//視点の位置の加算量を増やす
+	}
+}
+
+//=================================================================
+// 向きを操作する
+//=================================================================
+void CCameraState_Normal::ControlRot(CCamera* pCamera)
+{
+
+	float fMagnification = 1.0f / CCamera::GetMaxSensitivityLevel();//感度倍率を求める
+	float fResultSensitivity = 0.0f;//結果的な感度
+
+	// カメラを徐々に右に向かせる
+	if (CManager::GetInputKeyboard()->GetPress(DIK_Q))
+	{
+		pCamera->SetRot(pCamera->GetRot() + D3DXVECTOR3(0.0f, -s_fNORMAL_AROUNDROTSPEED, 0.0f));
+	}
+
+	// カメラを徐々に左に向かせる
+	if (CManager::GetInputKeyboard()->GetPress(DIK_E))
+	{
+		// LSHIFTを押しながらEキーを押すとYawをリセット
+		if (CManager::GetInputKeyboard()->GetPress(DIK_LSHIFT))
+		{
+			pCamera->SetRot(D3DXVECTOR3(pCamera->GetRot().x, 0.0f, pCamera->GetRot().z));
+		}
+		// 普通にカメラを徐々に左に向かせる
+		else
+		{
+			pCamera->SetRot(pCamera->GetRot() + D3DXVECTOR3(0.0f, s_fNORMAL_AROUNDROTSPEED, 0.0f));
+		}
+	}
+
+	// コントローラーのLBボタンを押していたら
+	if (CManager::GetInputJoypad()->GetPress(CInputJoypad::JOYKEY::LB))
+	{
+		pCamera->SetRot(pCamera->GetRot() + D3DXVECTOR3(0.0f, -s_fNORMAL_AROUNDROTSPEED, 0.0f));
+	}
+	// コントローラーのRBボタンを押していたら
+	if (CManager::GetInputJoypad()->GetPress(CInputJoypad::JOYKEY::RB))
+	{
+		pCamera->SetRot(pCamera->GetRot() + D3DXVECTOR3(0.0f, s_fNORMAL_AROUNDROTSPEED, 0.0f));
+	}
+
+	// 右スティックを入力していたら
+	if (CManager::GetInputJoypad()->GetRStickPress(16) == true)
+	{
+		// シーンが「ゲーム」だったら
+		if (CScene::GetMode() == CScene::MODE::MODE_GAME)
+		{
+			CGame::GetTutorial()->SetSuccessCheck(CTutorial::CHECK::CAMERACONTROLL);
+		}
+		fResultSensitivity = s_fMAX_STICKSENSITIVITY * (fMagnification * CCamera::GetSensitivityLevel());//感度レベルに応じて調整
+		// スティックを押した方向にカメラの向きを向かせる
+		CManager::GetCamera()->SetRot(pCamera->GetRot() + D3DXVECTOR3(cosf(CManager::GetInputJoypad()->GetRStickAimRot()) * fResultSensitivity,
+			sinf(CManager::GetInputJoypad()->GetRStickAimRot()) * fResultSensitivity, 0.0f));
+	}
+
+	// マウスでもカメラを操作するなら
+	if (CCamera::GetUseCameraControllMouse())
+	{
+		float fAngle = 0.0f;    //角度
+		float fAddYaw = 0.0f;   //Yaw
+		float fAddPitch = 0.0f; //Pitch
+
+		// ゲームモードとエディットモードの時だけマウスを固定
+		if (CScene::GetMode() == CScene::MODE_GAME || CScene::GetMode() == CScene::MODE_EDIT)
+		{
+			// 感度レベルに応じて調整
+			fResultSensitivity = s_fMAX_MOUSESENSITIVITY * (fMagnification * CCamera::GetSensitivityLevel());
+
+			// マウスが移動した方向からYawとPitchの加算量を取得する。マウスが動いていたらtrue
+			if (CManager::GetInputMouse()->GetMouseMoveAngle(fAddYaw, fAddPitch, fResultSensitivity))
+			{
+				// シーンが「ゲーム」だったら
+				if (CScene::GetMode() == CScene::MODE::MODE_GAME)
+				{
+					CGame::GetTutorial()->SetSuccessCheck(CTutorial::CHECK::CAMERACONTROLL);//カメラを動かすチュートリアルを完了
+				}
+
+				// 向きを加算する
+				CManager::GetCamera()->SetRot(pCamera->GetRot() + D3DXVECTOR3(-fAddPitch,
+					fAddYaw, 0.0f));
+			}
+		}
+	}
+}
+
+//=================================================================
+// 距離を操作する
+//=================================================================
+void CCameraState_Normal::ControlLength(CCamera* pCamera)
+{
+	// 左シフトキーを押していたら距離の値を減らす
+	if (CManager::GetInputKeyboard()->GetPress(DIK_LSHIFT) == true)
+	{
+		// 距離を減らす
+		if (CManager::GetInputKeyboard()->GetPress(DIK_V) == true)
+		{
+			pCamera->SetLength(pCamera->GetLength() - 5.0f);
+		}
+	}
+	// 左シフトキーを押しておらずVキーを押していたら距離の値を増やす
+	else if (CManager::GetInputKeyboard()->GetPress(DIK_V) == true)
+	{
+		pCamera->SetLength(pCamera->GetLength() + 5.0f);
+	}
+}
+
+//=================================================================
+// 向き操作不可能フレームを取得
+//=================================================================
+const int & CCameraState_Normal::GetNoControlRotFrame() const
+{
+	return m_nNoControlRotFrame;
+}
+
+//=================================================================
+// 向き操作不可能フレームを設定
+//=================================================================
+void CCameraState_Normal::SetNoControlRotFrame(int nFrame)
+{
+	m_nNoControlRotFrame = nFrame;
+}
 
 //*****************************************************************
 //カメラの距離を変える状態のクラス
